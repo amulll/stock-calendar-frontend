@@ -68,7 +68,29 @@ export default function StockModal({
             <div className="py-10 text-center text-slate-500">載入中...</div>
           ) : (
             <div className="space-y-6">
-              
+
+            {/* 🔥 股價與殖利率儀表板 */}
+              {currentInfo && (
+                <div className="grid grid-cols-2 gap-4 mb-2">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+                        <div className="text-xs text-slate-500 mb-1">參考收盤價</div>
+                        <div className="text-xl font-bold text-slate-700">
+                            {currentInfo.stock_price ? `$${currentInfo.stock_price}` : "--"}
+                        </div>
+                    </div>
+                    <div className={`p-4 rounded-xl border flex flex-col items-center justify-center
+                        ${currentInfo.yield_rate > 5 ? "bg-rose-50 border-rose-100" : "bg-blue-50 border-blue-100"}
+                    `}>
+                        <div className={`text-xs mb-1 ${currentInfo.yield_rate > 5 ? "text-rose-600" : "text-blue-600"}`}>
+                            預估殖利率
+                        </div>
+                        <div className={`text-xl font-bold ${currentInfo.yield_rate > 5 ? "text-rose-600" : "text-blue-600"}`}>
+                            {currentInfo.yield_rate ? `${currentInfo.yield_rate}%` : "--"}
+                        </div>
+                    </div>
+                </div>
+              )}
+
               {/* 最新股利 */}
               {currentInfo && (
                 <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">

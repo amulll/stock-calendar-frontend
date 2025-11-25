@@ -41,7 +41,8 @@ export default function CalendarPage() {
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
-
+  const [showHighYieldOnly, setShowHighYieldOnly] = useState(false);
+  
   // 1. 初始化：載入股票清單 & LocalStorage
   useEffect(() => {
     // 載入 API 股票清單
@@ -133,16 +134,22 @@ export default function CalendarPage() {
     }
   };
 
-  // 3. 綜合過濾邏輯 (文字搜尋 + 追蹤清單)
+ // 3. 綜合過濾邏輯 (文字搜尋 + 追蹤清單 + 高殖利率)
   const getFilteredDividends = () => {
     let result = dividends;
 
-    // A. 如果開啟「只看追蹤」，先過濾掉不在清單內的
+    // A. 追蹤過濾：如果開啟「只看追蹤」，先過濾掉不在清單內的
     if (showWatchlistOnly) {
         result = result.filter(d => watchlist.includes(d.stock_code));
     }
 
-    // B. 再進行文字過濾
+    // 🔥 B. 高殖利率過濾 (新增)：只顯示殖利率 >= 5% 的股票
+    if (showHighYieldOnly) {
+        // 確保有 yield_rate 欄位且數值大於等於 5.0
+        result = result.filter(d => d.yield_rate && d.yield_rate >= 5.0);
+    }
+
+    // C. 文字搜尋：最後進行關鍵字匹配
     if (filterText) {
         const lowerCaseFilter = filterText.toLowerCase();
         result = result.filter(d => 
@@ -153,7 +160,8 @@ export default function CalendarPage() {
     
     return result;
   };
-  
+
+
   const finalDividends = getFilteredDividends(); 
 
   // 月曆邏輯
@@ -256,7 +264,17 @@ export default function CalendarPage() {
             <Heart size={20} className={showWatchlistOnly ? "fill-white" : ""} />
             <span className="hidden md:inline">只看追蹤</span>
         </button>
-
+        <button
+            onClick={() => setShowHighYieldOnly(!showHighYieldOnly)}
+            className={`
+                flex items-center gap-2 px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
+                ${showHighYieldOnly 
+                    ? "bg-amber-500 text-white shadow-amber-200 ring-2 ring-amber-300" 
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
+            `}
+        >
+            <span>🔥 &gt;5%</span>
+        </button>
       </div>
 
       {/* Calendar Grid */}
@@ -274,6 +292,9 @@ export default function CalendarPage() {
             const isCurrentMonth = isSameMonth(day, monthStart);
             const dayDividends = getDividendsForDay(day, finalDividends); 
             const isToday = isSameDay(day, new Date());
+            
+            // 🔥🔥🔥 新增關鍵邏輯：檢查當天是否有「追蹤清單內」的股票
+            const hasTrackedStock = dayDividends.some(div => watchlist.includes(div.stock_code));
             
             return (
               <div 
@@ -293,18 +314,25 @@ export default function CalendarPage() {
                     {format(day, "d")}
                   </span>
                   
-                  {dayDividends.length > 0 && (
-                     <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1 md:px-2 py-0.5 rounded-full">
-                       <span className="hidden md:inline">{dayDividends.length} 家</span>
-                       <span className="inline md:hidden">●</span> 
-                     </span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {/* ❤️ 愛心指標：手機和電腦都會顯示 */}
+                    {hasTrackedStock && (
+                        <Heart size={14} className="fill-rose-500 text-rose-500" />
+                    )}
+
+                    {/* 股利計數 (綠色小圓點/標籤) */}
+                    {dayDividends.length > 0 && (
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1 md:px-2 py-0.5 rounded-full">
+                        <span className="hidden md:inline">{dayDividends.length} 家</span>
+                        <span className="inline md:hidden">●</span> 
+                        </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="hidden md:block space-y-1"> 
                   {dayDividends.slice(0, 3).map((div) => (
                     <div key={div.id} className="text-xs truncate text-slate-600 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200/50">
-                      {/* 如果在追蹤清單內，顯示小紅點 (選用功能，增加辨識度) */}
                       {watchlist.includes(div.stock_code) && <span className="text-rose-500 mr-1">♥</span>}
                       {div.stock_code} {div.stock_name}
                     </div>
