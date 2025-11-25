@@ -16,42 +16,41 @@ import {
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart } from "lucide-react";
 import axios from "axios";
-import DividendModal from "../components/DividendModal";
-import StockModal from "../components/StockModal";
+// ⚠️ 修改 1: 路徑修正，同目錄下直接引用
+import DividendModal from "./DividendModal";
+import StockModal from "./StockModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const MAX_SUGGESTIONS = 4;
 
-// 1. 接收 Server Component 傳來的初始資料
+// ⚠️ 修改 2: 接收 Server 端傳來的初始資料
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   
-  // 2. 使用初始資料設定 State (這樣畫面一出來就有資料)
+  // ⚠️ 修改 3: 使用初始資料設定 State
   const [dividends, setDividends] = useState(initialDividends || []);
   const [allStocks, setAllStocks] = useState(initialAllStocks || []);
   
   const [loading, setLoading] = useState(false);
   
-  // 搜尋與過濾
   const [filterText, setFilterText] = useState(''); 
   const [suggestions, setSuggestions] = useState([]);
 
-  // ❤️ 追蹤清單 (Watchlist) 相關狀態
   const [watchlist, setWatchlist] = useState([]);
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
-  const [showHighYieldOnly, setShowHighYieldOnly] = useState(false); // 確保這個狀態存在
+  const [showHighYieldOnly, setShowHighYieldOnly] = useState(false); 
   
-  // Modal States
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
 
-  // 用來防止初次 render 時重複 fetch
+  // ⚠️ 修改 4: 防止初次 render 重複 fetch (因為 Server 已經給資料了)
   const isFirstRender = useRef(true);
 
-  // 1. 初始化：只載入 LocalStorage (API 資料已由 Server 提供)
+  // 1. 初始化：只載入 LocalStorage (API 資料已由 Server 提供，這裡不用再 fetch stocks)
   useEffect(() => {
+    // 載入 LocalStorage 追蹤清單
     const savedWatchlist = localStorage.getItem("myWatchlist");
     if (savedWatchlist) {
         try {
@@ -89,7 +88,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  // 當月份切換時才 fetch，第一次載入跳過 (因為 Server 已經給了)
+  // ⚠️ 修改 5: 當月份切換時才 fetch，第一次載入跳過
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -151,7 +150,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         result = result.filter(d => d.yield_rate && d.yield_rate >= 5.0);
     }
 
-    // C. 文字過濾
+    // C. 文字搜尋
     if (filterText) {
         const lowerCaseFilter = filterText.toLowerCase();
         result = result.filter(d => 
@@ -218,7 +217,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         </div>
       </div>
 
-      {/* ❤️ 搜尋與過濾控制區 */}
+      {/* 搜尋與過濾控制區 */}
       <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative"> 
         
         {/* 搜尋框 */}
