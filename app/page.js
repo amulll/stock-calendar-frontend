@@ -14,42 +14,66 @@ import {
   isSameDay, 
   parseISO 
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart } from "lucide-react";
 import axios from "axios";
 import DividendModal from "../components/DividendModal";
 import StockModal from "../components/StockModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const MAX_SUGGESTIONS = 4; // 建議數量限制
+const MAX_SUGGESTIONS = 4;
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [dividends, setDividends] = useState([]);
   const [loading, setLoading] = useState(false);
   
+  // 搜尋與過濾
   const [filterText, setFilterText] = useState(''); 
-  
-  // 1. 新增：全域股票清單狀態
-  const [allStocks, setAllStocks] = useState([]); 
   const [suggestions, setSuggestions] = useState([]);
+  const [allStocks, setAllStocks] = useState([]); 
+
+  // ❤️ 追蹤清單 (Watchlist) 相關狀態
+  const [watchlist, setWatchlist] = useState([]);
+  const [showWatchlistOnly, setShowWatchlistOnly] = useState(false); // 開關：是否只看追蹤
   
+  // Modal States
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
 
-  // 2. 初始化時：取得所有股票清單 (只做一次)
+  // 1. 初始化：載入股票清單 & LocalStorage
   useEffect(() => {
-    const fetchAllStocks = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/stocks/list`);
-        setAllStocks(res.data);
-      } catch (error) {
-        console.error("Failed to fetch stock list:", error);
-      }
-    };
-    fetchAllStocks();
+    // 載入 API 股票清單
+    axios.get(`${API_URL}/api/stocks/list`)
+      .then(res => setAllStocks(res.data))
+      .catch(err => console.error(err));
+
+    // 載入 LocalStorage 追蹤清單
+    const savedWatchlist = localStorage.getItem("myWatchlist");
+    if (savedWatchlist) {
+        try {
+            setWatchlist(JSON.parse(savedWatchlist));
+        } catch (e) {
+            console.error("Failed to parse watchlist", e);
+        }
+    }
   }, []);
+
+  // ❤️ 2. 追蹤功能邏輯
+  const toggleWatchlist = (code) => {
+    let newWatchlist;
+    if (watchlist.includes(code)) {
+        // 移除
+        newWatchlist = watchlist.filter(c => c !== code);
+    } else {
+        // 新增
+        newWatchlist = [...watchlist, code];
+    }
+    setWatchlist(newWatchlist);
+    // 儲存到 LocalStorage
+    localStorage.setItem("myWatchlist", JSON.stringify(newWatchlist));
+  };
 
   // 取得當月資料
   const fetchDividends = async (date) => {
@@ -70,51 +94,34 @@ export default function CalendarPage() {
     fetchDividends(currentDate);
   }, [currentDate]);
 
-  // 3. 搜尋建議邏輯 (改用 allStocks 過濾)
+  // 搜尋建議邏輯
   const handleFilterChange = (text) => {
     setFilterText(text);
-    
     if (text.length < 1) {
         setSuggestions([]);
         return;
     }
-
     const lowerCaseText = text.toLowerCase();
-    
-    // 使用全域清單進行過濾
     const filteredSuggestions = allStocks.filter(stock => 
-        stock.stock_code.toLowerCase().startsWith(lowerCaseText) || // 代號用 startsWith
-        stock.stock_name.toLowerCase().includes(lowerCaseText)      // 名稱用 includes
+        stock.stock_code.toLowerCase().startsWith(lowerCaseText) || 
+        stock.stock_name.toLowerCase().includes(lowerCaseText)
     );
-
-    // 排序：讓數字小的代號排前面
     filteredSuggestions.sort((a, b) => a.stock_code.localeCompare(b.stock_code));
-
     setSuggestions(filteredSuggestions.slice(0, MAX_SUGGESTIONS));
   };
   
-  // 4. 關鍵功能：點擊建議後「跳轉」到該股票月份
+  // 跳轉邏輯
   const handleSuggestionClick = async (stock) => {
-    setFilterText(stock.stock_code); // 填入代號
-    setSuggestions([]); // 關閉選單
+    setFilterText(stock.stock_code);
+    setSuggestions([]);
     setLoading(true);
-
     try {
-        // 呼叫後端查詢該股票「最新」的日期
         const res = await axios.get(`${API_URL}/api/stock/${stock.stock_code}/latest`);
-        
         if (res.data && (res.data.pay_date || res.data.ex_date)) {
-            // 優先使用發放日，若無則用除息日
             const targetDateStr = res.data.pay_date || res.data.ex_date;
             const targetDate = parseISO(targetDateStr);
-            
-            // 檢查目標日期是否與當前顯示月份不同
             if (!isSameMonth(targetDate, currentDate)) {
-                console.log(`Jumping to ${targetDateStr}`);
-                setCurrentDate(targetDate); // 觸發月份切換 -> useEffect 會自動重抓該月資料
-            } else {
-                // 如果已經在同一個月，就不需要切換，useEffect 也不會觸發
-                // 但因為 filterText 已經設定了，畫面會自動過濾出該股票
+                setCurrentDate(targetDate);
             }
         } else {
             alert("查無該股票近期股利資料");
@@ -126,15 +133,25 @@ export default function CalendarPage() {
     }
   };
 
-  // 前端顯示過濾 (針對當月已載入的資料)
+  // 3. 綜合過濾邏輯 (文字搜尋 + 追蹤清單)
   const getFilteredDividends = () => {
-    if (!filterText) return dividends;
-    const lowerCaseFilter = filterText.toLowerCase();
+    let result = dividends;
+
+    // A. 如果開啟「只看追蹤」，先過濾掉不在清單內的
+    if (showWatchlistOnly) {
+        result = result.filter(d => watchlist.includes(d.stock_code));
+    }
+
+    // B. 再進行文字過濾
+    if (filterText) {
+        const lowerCaseFilter = filterText.toLowerCase();
+        result = result.filter(d => 
+          (d.stock_code && d.stock_code.toLowerCase().includes(lowerCaseFilter)) ||
+          (d.stock_name && d.stock_name.toLowerCase().includes(lowerCaseFilter))
+        );
+    }
     
-    return dividends.filter(d => 
-      (d.stock_code && d.stock_code.toLowerCase().includes(lowerCaseFilter)) ||
-      (d.stock_name && d.stock_name.toLowerCase().includes(lowerCaseFilter))
-    );
+    return result;
   };
   
   const finalDividends = getFilteredDividends(); 
@@ -192,49 +209,54 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      {/* 置頂搜尋列 */}
-      <div className="sticky top-2 md:top-6 z-20 mb-4 relative"> 
-        <div className="relative">
+      {/* ❤️ 搜尋與過濾控制區 */}
+      <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative"> 
+        
+        {/* 搜尋框 */}
+        <div className="relative flex-grow">
             <input
             type="text"
             value={filterText}
             onChange={(e) => handleFilterChange(e.target.value)}
-            placeholder="🔍 輸入代號或名稱 (搜尋全域)..."
-            className="w-full p-3 pl-10 border border-blue-200 rounded-xl shadow-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 text-slate-700 placeholder-slate-400 bg-white"
-            // 移除 onBlur，改用點擊事件控制，避免點擊建議時選單先消失
+            placeholder="🔍 搜尋代號 (2330...)"
+            className="w-full p-3 pl-10 border border-blue-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
             />
             <Search className="absolute left-3 top-3.5 text-slate-400" size={18} />
-            
-            {/* 清除按鈕 (當有輸入文字時顯示) */}
             {filterText && (
-                <button 
-                    onClick={() => {
-                        setFilterText('');
-                        setSuggestions([]);
-                    }}
-                    className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600"
+                <button onClick={() => {setFilterText(''); setSuggestions([]);}} className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">✕</button>
+            )}
+            
+            {/* 建議下拉選單 */}
+            {suggestions.length > 0 && (
+            <ul className="absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
+                {suggestions.map(stock => (
+                <li 
+                    key={stock.stock_code}
+                    onMouseDown={() => handleSuggestionClick(stock)} 
+                    className="p-3 cursor-pointer hover:bg-blue-50/50 transition duration-100 flex justify-between items-center text-sm border-b border-slate-50 last:border-0"
                 >
-                    ✕
-                </button>
+                    <span className="font-bold text-slate-800 font-mono text-base">{stock.stock_code}</span>
+                    <span className="text-slate-600 truncate ml-2">{stock.stock_name}</span>
+                </li>
+                ))}
+            </ul>
             )}
         </div>
-        
-        {/* Autocomplete 下拉選單 */}
-        {suggestions.length > 0 && (
-          <ul className="absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
-            {suggestions.map(stock => (
-              <li 
-                key={stock.stock_code}
-                // 這裡傳入整個 stock 物件
-                onMouseDown={() => handleSuggestionClick(stock)} 
-                className="p-3 cursor-pointer hover:bg-blue-50/50 transition duration-100 flex justify-between items-center text-sm border-b border-slate-50 last:border-0"
-              >
-                <span className="font-bold text-slate-800 font-mono text-base">{stock.stock_code}</span>
-                <span className="text-slate-600 truncate ml-2">{stock.stock_name}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+
+        {/* ❤️ 追蹤切換按鈕 */}
+        <button
+            onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
+            className={`
+                flex items-center gap-2 px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
+                ${showWatchlistOnly 
+                    ? "bg-rose-500 text-white shadow-rose-200 ring-2 ring-rose-300" 
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
+            `}
+        >
+            <Heart size={20} className={showWatchlistOnly ? "fill-white" : ""} />
+            <span className="hidden md:inline">只看追蹤</span>
+        </button>
+
       </div>
 
       {/* Calendar Grid */}
@@ -282,6 +304,8 @@ export default function CalendarPage() {
                 <div className="hidden md:block space-y-1"> 
                   {dayDividends.slice(0, 3).map((div) => (
                     <div key={div.id} className="text-xs truncate text-slate-600 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200/50">
+                      {/* 如果在追蹤清單內，顯示小紅點 (選用功能，增加辨識度) */}
+                      {watchlist.includes(div.stock_code) && <span className="text-rose-500 mr-1">♥</span>}
                       {div.stock_code} {div.stock_name}
                     </div>
                   ))}
@@ -316,6 +340,9 @@ export default function CalendarPage() {
         onClose={() => setStockModalOpen(false)}
         stockCode={selectedStockCode}
         apiUrl={API_URL}
+        // ❤️ 傳遞追蹤狀態
+        isTracked={watchlist.includes(selectedStockCode)}
+        onToggleTrack={toggleWatchlist}
       />
     </main>
   );

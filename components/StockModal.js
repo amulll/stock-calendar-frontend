@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { X, TrendingUp, Calendar, Info } from "lucide-react";
+import { X, TrendingUp, Calendar, Heart } from "lucide-react"; // 新增 Heart icon
 
-export default function StockModal({ isOpen, onClose, stockCode, apiUrl }) {
+export default function StockModal({ 
+  isOpen, 
+  onClose, 
+  stockCode, 
+  apiUrl,
+  isTracked,      // 新增：是否已追蹤
+  onToggleTrack   // 新增：切換追蹤的函式
+}) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -32,12 +39,26 @@ export default function StockModal({ isOpen, onClose, stockCode, apiUrl }) {
             <X size={24} />
           </button>
           
-          <div className="relative z-10">
-            <h2 className="text-3xl font-bold mb-1">{currentInfo?.stock_name || stockCode}</h2>
-            <div className="flex items-center gap-2 text-blue-100">
-              <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
-              <span className="text-sm">{currentInfo?.market_type}</span>
+          <div className="relative z-10 flex justify-between items-start mt-2">
+            <div>
+                <h2 className="text-3xl font-bold mb-1">{currentInfo?.stock_name || stockCode}</h2>
+                <div className="flex items-center gap-2 text-blue-100">
+                <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
+                <span className="text-sm">{currentInfo?.market_type}</span>
+                </div>
             </div>
+
+            {/* ❤️ 追蹤按鈕 */}
+            <button 
+                onClick={() => onToggleTrack(stockCode)}
+                className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition active:scale-95 mr-8"
+                title={isTracked ? "取消追蹤" : "加入追蹤"}
+            >
+                <Heart 
+                    size={24} 
+                    className={isTracked ? "fill-rose-400 text-rose-400" : "text-white"} 
+                />
+            </button>
           </div>
         </div>
 
