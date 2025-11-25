@@ -14,20 +14,18 @@ import {
   isSameDay, 
   parseISO 
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart, List } from "lucide-react";
 import axios from "axios";
-// ⚠️ 修改 1: 路徑修正，同目錄下直接引用
 import DividendModal from "./DividendModal";
 import StockModal from "./StockModal";
+import WatchlistModal from "./WatchlistModal"; // 🆕 引入新元件
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const MAX_SUGGESTIONS = 4;
 
-// ⚠️ 修改 2: 接收 Server 端傳來的初始資料
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   
-  // ⚠️ 修改 3: 使用初始資料設定 State
   const [dividends, setDividends] = useState(initialDividends || []);
   const [allStocks, setAllStocks] = useState(initialAllStocks || []);
   
@@ -40,17 +38,18 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [showHighYieldOnly, setShowHighYieldOnly] = useState(false); 
   
+  // Modal States
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
+  
+  // 🆕 新增：追蹤清單 Modal 狀態
+  const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
 
-  // ⚠️ 修改 4: 防止初次 render 重複 fetch (因為 Server 已經給資料了)
   const isFirstRender = useRef(true);
 
-  // 1. 初始化：只載入 LocalStorage (API 資料已由 Server 提供，這裡不用再 fetch stocks)
   useEffect(() => {
-    // 載入 LocalStorage 追蹤清單
     const savedWatchlist = localStorage.getItem("myWatchlist");
     if (savedWatchlist) {
         try {
@@ -61,7 +60,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   }, []);
 
-  // ❤️ 2. 追蹤功能邏輯
   const toggleWatchlist = (code) => {
     let newWatchlist;
     if (watchlist.includes(code)) {
@@ -73,7 +71,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     localStorage.setItem("myWatchlist", JSON.stringify(newWatchlist));
   };
 
-  // 取得當月資料
   const fetchDividends = async (date) => {
     setLoading(true);
     try {
@@ -88,7 +85,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  // ⚠️ 修改 5: 當月份切換時才 fetch，第一次載入跳過
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -97,7 +93,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     fetchDividends(currentDate);
   }, [currentDate]);
 
-  // 搜尋建議邏輯
   const handleFilterChange = (text) => {
     setFilterText(text);
     if (text.length < 1) {
@@ -113,7 +108,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     setSuggestions(filteredSuggestions.slice(0, MAX_SUGGESTIONS));
   };
   
-  // 跳轉邏輯
   const handleSuggestionClick = async (stock) => {
     setFilterText(stock.stock_code);
     setSuggestions([]);
@@ -136,21 +130,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  // 3. 綜合過濾邏輯
   const getFilteredDividends = () => {
     let result = dividends;
-
-    // A. 追蹤過濾
     if (showWatchlistOnly) {
         result = result.filter(d => watchlist.includes(d.stock_code));
     }
-
-    // 🔥 B. 高殖利率過濾
     if (showHighYieldOnly) {
         result = result.filter(d => d.yield_rate && d.yield_rate >= 5.0);
     }
-
-    // C. 文字搜尋
     if (filterText) {
         const lowerCaseFilter = filterText.toLowerCase();
         result = result.filter(d => 
@@ -158,13 +145,11 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
           (d.stock_name && d.stock_name.toLowerCase().includes(lowerCaseFilter))
         );
     }
-    
     return result;
   };
   
   const finalDividends = getFilteredDividends(); 
 
-  // 月曆邏輯
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart);
@@ -226,7 +211,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             type="text"
             value={filterText}
             onChange={(e) => handleFilterChange(e.target.value)}
-            placeholder="🔍 搜尋代號 (2330...)"
+            placeholder="🔍 搜尋代號..."
             className="w-full p-3 pl-10 border border-blue-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
             />
             <Search className="absolute left-3 top-3.5 text-slate-400" size={18} />
@@ -234,7 +219,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                 <button onClick={() => {setFilterText(''); setSuggestions([]);}} className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">✕</button>
             )}
             
-            {/* 建議下拉選單 */}
             {suggestions.length > 0 && (
             <ul className="absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                 {suggestions.map(stock => (
@@ -251,31 +235,44 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             )}
         </div>
 
-        {/* ❤️ 追蹤切換按鈕 */}
+        {/* 🆕 管理清單按鈕 */}
+        <button
+            onClick={() => setWatchlistModalOpen(true)}
+            className="flex items-center justify-center w-12 md:w-auto md:px-4 py-3 bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-xl shadow-sm transition"
+            title="追蹤清單"
+        >
+            <List size={20} />
+            <span className="hidden md:inline md:ml-2">清單</span>
+        </button>
+
+        {/* ❤️ 追蹤過濾按鈕 */}
         <button
             onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
             className={`
-                flex items-center gap-2 px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
+                flex items-center justify-center w-12 md:w-auto md:px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
                 ${showWatchlistOnly 
                     ? "bg-rose-500 text-white shadow-rose-200 ring-2 ring-rose-300" 
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
             `}
+            title="只看追蹤"
         >
             <Heart size={20} className={showWatchlistOnly ? "fill-white" : ""} />
-            <span className="hidden md:inline">只看追蹤</span>
+            <span className="hidden md:inline md:ml-2">只看追蹤</span>
         </button>
         
         {/* 🔥 高殖利率按鈕 */}
         <button
             onClick={() => setShowHighYieldOnly(!showHighYieldOnly)}
             className={`
-                flex items-center gap-2 px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
+                flex items-center justify-center w-12 md:w-auto md:px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
                 ${showHighYieldOnly 
                     ? "bg-amber-500 text-white shadow-amber-200 ring-2 ring-amber-300" 
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
             `}
+            title="殖利率 > 5%"
         >
-            <span>🔥 &gt;5%</span>
+            <span>🔥</span>
+            <span className="hidden md:inline md:ml-1">&gt;5%</span>
         </button>
       </div>
 
@@ -317,19 +314,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </span>
                   
                   <div className="flex items-center gap-1">
-                    {/* 🔥 高殖利率提示 */}
                     {hasHighYield && (
                         <span className="text-[10px] bg-rose-100 text-rose-600 px-1 rounded font-bold hidden md:inline" title="高殖利率">
                             🔥
                         </span>
                     )}
-
-                    {/* ❤️ 愛心指標 */}
                     {hasTrackedStock && (
                         <Heart size={14} className="fill-rose-500 text-rose-500" />
                     )}
-
-                    {/* 股利計數 */}
                     {dayDividends.length > 0 && (
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1 md:px-2 py-0.5 rounded-full">
                         <span className="hidden md:inline">{dayDividends.length} 家</span>
@@ -342,11 +334,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                 <div className="hidden md:block space-y-1"> 
                   {dayDividends.slice(0, 3).map((div) => (
                     <div key={div.id} className="text-xs truncate text-slate-600 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200/50 flex justify-between items-center">
-                      <div>
-                        {watchlist.includes(div.stock_code) && <span className="text-rose-500 mr-1">♥</span>}
+                      <div className="flex items-center">
+                        {watchlist.includes(div.stock_code) && <span className="text-rose-500 mr-1 text-[10px]">♥</span>}
                         {div.stock_code} {div.stock_name}
                       </div>
-                      {/* 顯示殖利率 */}
                       {div.yield_rate > 0 && (
                         <span className={`text-[10px] ml-1 ${div.yield_rate >= 5 ? "text-rose-500 font-bold" : "text-slate-400"}`}>
                             {div.yield_rate}%
@@ -387,6 +378,16 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         apiUrl={API_URL}
         isTracked={watchlist.includes(selectedStockCode)}
         onToggleTrack={toggleWatchlist}
+      />
+
+      {/* 🆕 追蹤清單 Modal */}
+      <WatchlistModal
+        isOpen={watchlistModalOpen}
+        onClose={() => setWatchlistModalOpen(false)}
+        watchlist={watchlist}
+        allStocks={allStocks}
+        onRemove={toggleWatchlist}
+        onStockClick={handleStockClick}
       />
     </main>
   );
