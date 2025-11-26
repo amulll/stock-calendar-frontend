@@ -167,15 +167,23 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   };
 
   // 🔥 新增：處理歷史紀錄點擊 (跳轉 + 關閉 Modal)
+  // 🔥 修改：處理歷史紀錄點擊 (跳轉 + 開啟當日清單 Modal + 關閉個股 Modal)
   const handleHistoryDateClick = (dateStr) => {
     if (!dateStr) return;
     const targetDate = parseISO(dateStr);
     
-    // 如果目標月份不同，則切換
+    // 1. 如果目標月份不同，切換月曆月份
+    // (這會觸發 useEffect 重新抓取該月資料，畫面會出現短暫 Loading，資料載入後 Modal 會自動更新內容)
     if (!isSameMonth(targetDate, currentDate)) {
         setCurrentDate(targetDate);
     }
-    // 重要：關閉 Modal，讓使用者直接看到日曆上的位置
+
+    // 2. 設定選取的日期，並開啟 DividendModal (發放清單)
+    setSelectedDate(targetDate);
+    setDateModalOpen(true);
+
+    // 3. 關閉目前的 StockModal (個股詳情)
+    // 這樣使用者就會看到畫面轉場：個股關閉 -> 月曆跳轉 -> 當日清單跳出
     setStockModalOpen(false);
   };
 

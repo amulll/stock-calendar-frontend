@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { X, Banknote, Calendar, Heart, ChevronRight } from "lucide-react"; // 1. 改用 Banknote 圖示
 import Link from "next/link";
 import { X, TrendingUp, Calendar, Heart, Banknote, ChevronRight, ExternalLink } from "lucide-react";
 export default function StockModal({ 
