@@ -46,8 +46,8 @@ export default function WatchlistModal({
                   <div 
                     className="flex items-center gap-3 cursor-pointer flex-grow"
                     onClick={() => {
-                        onStockClick(code);
-                        // 選擇是否要在點擊後關閉清單，這裡保留清單開啟以便連續操作
+                        onStockClick(code); // 1. 開啟個股詳情
+                        onClose();          // 2. 自動關閉追蹤清單 (🔥 新增這行)
                     }}
                   >
                     <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm font-mono border border-rose-100">

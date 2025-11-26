@@ -14,41 +14,47 @@ import {
   isSameDay, 
   parseISO 
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart, List } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart, List, TrendingUp, Settings2 } from "lucide-react";
 import axios from "axios";
 import DividendModal from "./DividendModal";
 import StockModal from "./StockModal";
-import WatchlistModal from "./WatchlistModal"; // 🆕 引入新元件
+import WatchlistModal from "./WatchlistModal";
+import YieldListModal from "./YieldListModal"; // 🆕 引入新元件
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const MAX_SUGGESTIONS = 4;
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [currentDate, setCurrentDate] = useState(new Date());
-  
   const [dividends, setDividends] = useState(initialDividends || []);
   const [allStocks, setAllStocks] = useState(initialAllStocks || []);
-  
   const [loading, setLoading] = useState(false);
   
+  // 搜尋
   const [filterText, setFilterText] = useState(''); 
   const [suggestions, setSuggestions] = useState([]);
 
+  // 追蹤清單
   const [watchlist, setWatchlist] = useState([]);
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
-  const [showHighYieldOnly, setShowHighYieldOnly] = useState(false); 
+  const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
+
+  // 🔥 高殖利率篩選相關狀態
+  const [showHighYieldOnly, setShowHighYieldOnly] = useState(false); // 是否啟用篩選
+  const [yieldThreshold, setYieldThreshold] = useState(5);           // 門檻值 (預設 5%)
+  const [yieldMenuOpen, setYieldMenuOpen] = useState(false);         // 選單是否開啟
+  const [yieldListOpen, setYieldListOpen] = useState(false);         // 清單視窗是否開啟
   
   // Modal States
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
-  
-  // 🆕 新增：追蹤清單 Modal 狀態
-  const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
 
   const isFirstRender = useRef(true);
+  const yieldMenuRef = useRef(null); // 用於點擊外部關閉選單
 
+  // 初始化與 LocalStorage
   useEffect(() => {
     const savedWatchlist = localStorage.getItem("myWatchlist");
     if (savedWatchlist) {
@@ -58,6 +64,15 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             console.error("Failed to parse watchlist", e);
         }
     }
+
+    // 點擊外部關閉殖利率選單
+    function handleClickOutside(event) {
+      if (yieldMenuRef.current && !yieldMenuRef.current.contains(event.target)) {
+        setYieldMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const toggleWatchlist = (code) => {
@@ -130,14 +145,19 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
+  // 3. 綜合過濾邏輯 (更新版)
   const getFilteredDividends = () => {
     let result = dividends;
+
     if (showWatchlistOnly) {
         result = result.filter(d => watchlist.includes(d.stock_code));
     }
+
+    // 🔥 高殖利率過濾：使用動態閾值
     if (showHighYieldOnly) {
-        result = result.filter(d => d.yield_rate && d.yield_rate >= 5.0);
+        result = result.filter(d => d.yield_rate && d.yield_rate >= yieldThreshold);
     }
+
     if (filterText) {
         const lowerCaseFilter = filterText.toLowerCase();
         result = result.filter(d => 
@@ -150,6 +170,12 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   
   const finalDividends = getFilteredDividends(); 
 
+  // 專門為「高殖利率清單」準備的數據 (只考慮殖利率，不受文字搜尋影響，但受當月限制)
+  const getHighYieldList = () => {
+      return dividends.filter(d => d.yield_rate && d.yield_rate >= yieldThreshold);
+  };
+
+  // 月曆邏輯
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
   const startDate = startOfWeek(monthStart);
@@ -203,7 +229,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
       </div>
 
       {/* 搜尋與過濾控制區 */}
-      <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative"> 
+      <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative items-center"> 
         
         {/* 搜尋框 */}
         <div className="relative flex-grow">
@@ -218,7 +244,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             {filterText && (
                 <button onClick={() => {setFilterText(''); setSuggestions([]);}} className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">✕</button>
             )}
-            
             {suggestions.length > 0 && (
             <ul className="absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                 {suggestions.map(stock => (
@@ -235,45 +260,99 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             )}
         </div>
 
-        {/* 🆕 管理清單按鈕 */}
-        <button
-            onClick={() => setWatchlistModalOpen(true)}
-            className="flex items-center justify-center w-12 md:w-auto md:px-4 py-3 bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-xl shadow-sm transition"
-            title="追蹤清單"
-        >
-            <List size={20} />
-            <span className="hidden md:inline md:ml-2">清單</span>
-        </button>
+        {/* 清單與追蹤按鈕 (群組) */}
+        <div className="flex gap-2">
+            <button
+                onClick={() => setWatchlistModalOpen(true)}
+                className="p-3 bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 rounded-xl shadow-sm transition flex items-center justify-center"
+                title="追蹤清單"
+            >
+                <List size={20} />
+            </button>
 
-        {/* ❤️ 追蹤過濾按鈕 */}
-        <button
-            onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
-            className={`
-                flex items-center justify-center w-12 md:w-auto md:px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
-                ${showWatchlistOnly 
-                    ? "bg-rose-500 text-white shadow-rose-200 ring-2 ring-rose-300" 
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
-            `}
-            title="只看追蹤"
-        >
-            <Heart size={20} className={showWatchlistOnly ? "fill-white" : ""} />
-            <span className="hidden md:inline md:ml-2">只看追蹤</span>
-        </button>
-        
-        {/* 🔥 高殖利率按鈕 */}
-        <button
-            onClick={() => setShowHighYieldOnly(!showHighYieldOnly)}
-            className={`
-                flex items-center justify-center w-12 md:w-auto md:px-4 py-3 rounded-xl shadow-sm transition font-medium whitespace-nowrap
-                ${showHighYieldOnly 
-                    ? "bg-amber-500 text-white shadow-amber-200 ring-2 ring-amber-300" 
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
-            `}
-            title="殖利率 > 5%"
-        >
-            <span>🔥</span>
-            <span className="hidden md:inline md:ml-1">&gt;5%</span>
-        </button>
+            <button
+                onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
+                className={`
+                    p-3 rounded-xl shadow-sm transition flex items-center justify-center
+                    ${showWatchlistOnly 
+                        ? "bg-rose-500 text-white shadow-rose-200 ring-2 ring-rose-300" 
+                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
+                `}
+                title="只看追蹤"
+            >
+                <Heart size={20} className={showWatchlistOnly ? "fill-white" : ""} />
+            </button>
+            
+            {/* 🔥 高殖利率選單按鈕 (Popover) */}
+            <div className="relative" ref={yieldMenuRef}>
+                <button
+                    onClick={() => setYieldMenuOpen(!yieldMenuOpen)}
+                    className={`
+                        p-3 rounded-xl shadow-sm transition flex items-center justify-center gap-1 min-w-[4.5rem]
+                        ${showHighYieldOnly 
+                            ? "bg-amber-500 text-white shadow-amber-200 ring-2 ring-amber-300" 
+                            : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
+                    `}
+                    title="殖利率篩選"
+                >
+                    <TrendingUp size={20} />
+                    <span className="font-bold text-sm">&gt;{yieldThreshold}%</span>
+                </button>
+
+                {/* 🔽 下拉選單 */}
+                {yieldMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-4 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-sm font-bold text-slate-700">殖利率篩選</span>
+                            {/* 開關 */}
+                            <button 
+                                onClick={() => setShowHighYieldOnly(!showHighYieldOnly)}
+                                className={`
+                                    relative inline-flex h-6 w-11 items-center rounded-full transition-colors
+                                    ${showHighYieldOnly ? 'bg-amber-500' : 'bg-slate-200'}
+                                `}
+                            >
+                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${showHighYieldOnly ? 'translate-x-6' : 'translate-x-1'}`} />
+                            </button>
+                        </div>
+
+                        {/* 滑桿與數值 */}
+                        <div className="mb-4">
+                            <div className="flex justify-between text-xs text-slate-500 mb-2">
+                                <span>門檻值</span>
+                                <span className="font-bold text-amber-600">{yieldThreshold}%</span>
+                            </div>
+                            <input 
+                                type="range" 
+                                min="1" max="20" step="0.5"
+                                value={yieldThreshold} 
+                                onChange={(e) => {
+                                    setYieldThreshold(Number(e.target.value));
+                                    setShowHighYieldOnly(true); // 調整數值時自動開啟
+                                }}
+                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                            />
+                            <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                                <span>1%</span>
+                                <span>20%</span>
+                            </div>
+                        </div>
+
+                        {/* 查看清單按鈕 */}
+                        <button
+                            onClick={() => {
+                                setYieldListOpen(true);
+                                setYieldMenuOpen(false);
+                            }}
+                            className="w-full py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2"
+                        >
+                            <List size={16} />
+                            查看符合清單
+                        </button>
+                    </div>
+                )}
+            </div>
+        </div>
       </div>
 
       {/* Calendar Grid */}
@@ -293,7 +372,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             const isToday = isSameDay(day, new Date());
             
             const hasTrackedStock = dayDividends.some(div => watchlist.includes(div.stock_code));
-            const hasHighYield = dayDividends.some(d => d.yield_rate && d.yield_rate >= 5.0);
+            const hasHighYield = dayDividends.some(d => d.yield_rate && d.yield_rate >= yieldThreshold); // 使用動態門檻
             
             return (
               <div 
@@ -315,7 +394,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   
                   <div className="flex items-center gap-1">
                     {hasHighYield && (
-                        <span className="text-[10px] bg-rose-100 text-rose-600 px-1 rounded font-bold hidden md:inline" title="高殖利率">
+                        <span className="text-[10px] bg-amber-100 text-amber-600 px-1 rounded-full font-bold hidden md:inline" title={`殖利率 > ${yieldThreshold}%`}>
                             🔥
                         </span>
                     )}
@@ -339,7 +418,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                         {div.stock_code} {div.stock_name}
                       </div>
                       {div.yield_rate > 0 && (
-                        <span className={`text-[10px] ml-1 ${div.yield_rate >= 5 ? "text-rose-500 font-bold" : "text-slate-400"}`}>
+                        <span className={`text-[10px] ml-1 ${div.yield_rate >= yieldThreshold ? "text-amber-600 font-bold" : "text-slate-400"}`}>
                             {div.yield_rate}%
                         </span>
                       )}
@@ -380,13 +459,21 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         onToggleTrack={toggleWatchlist}
       />
 
-      {/* 🆕 追蹤清單 Modal */}
       <WatchlistModal
         isOpen={watchlistModalOpen}
         onClose={() => setWatchlistModalOpen(false)}
         watchlist={watchlist}
         allStocks={allStocks}
         onRemove={toggleWatchlist}
+        onStockClick={handleStockClick}
+      />
+
+      {/* 🆕 高殖利率清單 Modal */}
+      <YieldListModal
+        isOpen={yieldListOpen}
+        onClose={() => setYieldListOpen(false)}
+        dividends={getHighYieldList()} // 傳入符合當前門檻的股票
+        threshold={yieldThreshold}
         onStockClick={handleStockClick}
       />
     </main>
