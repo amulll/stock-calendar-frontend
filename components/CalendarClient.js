@@ -149,6 +149,20 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
+  // 修改：處理歷史紀錄點擊 (跳轉 + 開啟當日清單 Modal + 關閉個股 Modal)
+  const handleHistoryDateClick = (dateStr) => {
+    if (!dateStr) return;
+    const targetDate = parseISO(dateStr);
+    
+    if (!isSameMonth(targetDate, currentDate)) {
+        setCurrentDate(targetDate);
+    }
+
+    setSelectedDate(targetDate);
+    setDateModalOpen(true);
+    setStockModalOpen(false);
+  };
+
   const handleListStockClick = async (code) => {
     setSelectedStockCode(code);
     setStockModalOpen(true);
@@ -164,27 +178,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     } catch (error) {
         console.error("List jump error:", error);
     }
-  };
-
-  // 🔥 新增：處理歷史紀錄點擊 (跳轉 + 關閉 Modal)
-  // 🔥 修改：處理歷史紀錄點擊 (跳轉 + 開啟當日清單 Modal + 關閉個股 Modal)
-  const handleHistoryDateClick = (dateStr) => {
-    if (!dateStr) return;
-    const targetDate = parseISO(dateStr);
-    
-    // 1. 如果目標月份不同，切換月曆月份
-    // (這會觸發 useEffect 重新抓取該月資料，畫面會出現短暫 Loading，資料載入後 Modal 會自動更新內容)
-    if (!isSameMonth(targetDate, currentDate)) {
-        setCurrentDate(targetDate);
-    }
-
-    // 2. 設定選取的日期，並開啟 DividendModal (發放清單)
-    setSelectedDate(targetDate);
-    setDateModalOpen(true);
-
-    // 3. 關閉目前的 StockModal (個股詳情)
-    // 這樣使用者就會看到畫面轉場：個股關閉 -> 月曆跳轉 -> 當日清單跳出
-    setStockModalOpen(false);
   };
 
   const getFilteredDividends = () => {
@@ -272,6 +265,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
       {/* 搜尋與過濾控制區 */}
       <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative items-center"> 
+        
+        {/* 搜尋框 */}
         <div className="relative flex-grow">
             <input
             type="text"
@@ -300,7 +295,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             )}
         </div>
 
+        {/* 按鈕群組 */}
         <div className="flex gap-2">
+            {/* 追蹤選單 */}
             <div className="relative" ref={watchlistMenuRef}>
                 <button
                     onClick={() => setWatchlistMenuOpen(!watchlistMenuOpen)}
@@ -340,6 +337,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                 )}
             </div>
             
+            {/* 高殖利率選單 */}
             <div className="relative" ref={yieldMenuRef}>
                 <button
                     onClick={() => setYieldMenuOpen(!yieldMenuOpen)}
@@ -418,7 +416,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             const isToday = isSameDay(day, new Date());
             
             const hasTrackedStock = dayDividends.some(div => watchlist.includes(div.stock_code));
-            const hasHighYield = dayDividends.some(d => d.yield_rate && d.yield_rate >= yieldThreshold);
             
             return (
               <div 
@@ -439,11 +436,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </span>
                   
                   <div className="flex items-center gap-1">
-                    {hasHighYield && (
-                        <span className="text-[10px] bg-amber-100 text-amber-600 px-1 rounded-full font-bold hidden md:inline" title={`殖利率 > ${yieldThreshold}%`}>
-                            🔥
-                        </span>
-                    )}
+                    {/* 🗑️ 已移除：hasHighYield 檢查與火焰圖示 */}
+                    
                     {hasTrackedStock && (
                         <Heart size={14} className="fill-rose-500 text-rose-500" />
                     )}
@@ -503,7 +497,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         apiUrl={API_URL}
         isTracked={watchlist.includes(selectedStockCode)}
         onToggleTrack={toggleWatchlist}
-        // 3. 傳入跳轉處理函式
         onHistoryDateClick={handleHistoryDateClick} 
       />
 
