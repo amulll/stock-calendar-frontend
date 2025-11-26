@@ -1,11 +1,15 @@
 // app/sitemap.js
 
 export default async function sitemap() {
-  // 1. 定義您的網域
   const baseUrl = 'https://ugoodli.com';
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  
+  // 1. 優先讀取環境變數，若無則使用預設值
+  // 注意：在 Server Side 執行時，有時候讀不到 NEXT_PUBLIC_ 開頭的變數
+  // 建議在 Zeabur 額外設定一個名為 "API_URL" 的變數，或者直接在這裡寫死您的後端網址以確保萬無一失
+  const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app"; // <--- 建議暫時先寫死您的後端網址測試
 
-  // 2. 定義靜態頁面 (固定有的)
+  console.log(`[Sitemap] Starting generation... Target API: ${API_URL}`);
+
   const staticRoutes = [
     '',
     '/privacy',
@@ -17,32 +21,38 @@ export default async function sitemap() {
     priority: 1.0,
   }));
 
-  // 3. 抓取所有股票清單 (動態生成)
   let stockRoutes = [];
   try {
-    // 呼叫後端 API 取得所有股票代號
-    // 設定 next: { revalidate: 86400 } 代表這份清單每天更新一次即可
+    // 2. 呼叫 API
+    console.log(`[Sitemap] Fetching stocks from ${API_URL}/api/stocks/list`);
+    
     const res = await fetch(`${API_URL}/api/stocks/list`, { 
-        next: { revalidate: 86400 } 
+        next: { revalidate: 86400 },
+        headers: {
+            // 避免被自己的 Rate Limit 擋住，雖然通常內網/同IP不會
+            'User-Agent': 'Nextjs-Sitemap-Generator'
+        }
     });
     
     if (res.ok) {
       const stocks = await res.json();
+      console.log(`[Sitemap] Successfully fetched ${stocks.length} stocks.`);
       
-      // 為每一檔股票產生一個 sitemap 項目
-      stockRoutes = stocks
-      .filter(stock => stock.has_dividend_this_year && stock.yield_rate > 0) // 關鍵過濾！
-      .map((stock) => ({
+      stockRoutes = stocks.map((stock) => ({
         url: `${baseUrl}/stock/${stock.stock_code}`,
         lastModified: new Date(),
-        changeFrequency: 'weekly', // 股利資訊不用每天變，設週更即可
-        priority: 0.8,             // 權重設高一點，因為這是主要內容
+        changeFrequency: 'weekly',
+        priority: 0.8,
       }));
+    } else {
+      console.error(`[Sitemap] API returned error status: ${res.status}`);
+      const text = await res.text();
+      console.error(`[Sitemap] Error body: ${text}`);
     }
   } catch (error) {
-    console.error("Sitemap generate failed:", error);
+    console.error("[Sitemap] Fetch failed:", error);
   }
 
-  // 4. 合併回傳
+  console.log(`[Sitemap] Total URLs generated: ${staticRoutes.length + stockRoutes.length}`);
   return [...staticRoutes, ...stockRoutes];
 }

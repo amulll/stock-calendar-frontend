@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote } from "lucide-react";
 import { notFound } from "next/navigation";
-
+import Link from "next/link"; // 1. 確保引入 Link
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
 
@@ -159,14 +159,33 @@ export default async function StockPage({ params }) {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {historicalRecords.length === 0 ? (
-                      <tr>
-                        <td colSpan="3" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td>
-                      </tr>
+                      <tr><td colSpan="3" className="...">無過去紀錄</td></tr>
                     ) : (
                       historicalRecords.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                          <td className="px-4 py-3 font-medium text-slate-700">{item.pay_date || "未定"}</td>
-                          <td className="px-4 py-3 text-slate-500">{item.ex_date}</td>
+                          <td className="px-4 py-3 font-medium text-slate-700">
+                            {/* 🔥 修改：將日期變成連結，點擊回首頁並帶參數 */}
+                            {item.pay_date ? (
+                                <Link 
+                                    href={`/?date=${item.pay_date}`}
+                                    className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2"
+                                    title="在日曆上查看當天發放清單"
+                                >
+                                    {item.pay_date}
+                                </Link>
+                            ) : "未定"}
+                          </td>
+                          <td className="px-4 py-3 text-slate-500">
+                             {/* 除息日也可以做同樣的處理，看您需求 */}
+                             {item.ex_date ? (
+                                <Link 
+                                    href={`/?date=${item.ex_date}`}
+                                    className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2"
+                                >
+                                    {item.ex_date}
+                                </Link>
+                             ) : "-"}
+                          </td>
                           <td className="px-4 py-3 text-right font-bold text-slate-800">
                             {Number(item.cash_dividend).toFixed(4)}
                           </td>

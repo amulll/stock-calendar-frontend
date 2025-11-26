@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+// 1. 新增引入 useSearchParams, useRouter
+import { useSearchParams, useRouter } from "next/navigation"; 
 import { 
   format, 
   startOfMonth, 
@@ -12,7 +14,8 @@ import {
   subMonths, 
   isSameMonth, 
   isSameDay, 
-  parseISO 
+  parseISO,
+  isValid // 記得引入 isValid
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart, List, TrendingUp } from "lucide-react";
 import axios from "axios";
@@ -56,6 +59,31 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const isFirstRender = useRef(true);
   const yieldMenuRef = useRef(null); 
   const watchlistMenuRef = useRef(null);
+
+  // 2. 初始化 Router 和 Params
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // 🔥 新增：監聽 URL 參數，自動跳轉日期
+  useEffect(() => {
+    const dateParam = searchParams.get("date");
+    if (dateParam) {
+      const targetDate = parseISO(dateParam);
+      
+      // 檢查日期是否有效
+      if (isValid(targetDate)) {
+         // A. 設定當前月份 (這會觸發 fetchDividends 更新資料)
+         setCurrentDate(targetDate);
+         
+         // B. 設定選中日期並開啟 Modal
+         setSelectedDate(targetDate);
+         setDateModalOpen(true);
+
+         // C. 清除網址參數 (避免重新整理頁面時又跳一次，保持網址乾淨)
+         router.replace("/", { scroll: false });
+      }
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     const savedWatchlist = localStorage.getItem("myWatchlist");
@@ -149,15 +177,12 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  // 修改：處理歷史紀錄點擊 (跳轉 + 開啟當日清單 Modal + 關閉個股 Modal)
   const handleHistoryDateClick = (dateStr) => {
     if (!dateStr) return;
     const targetDate = parseISO(dateStr);
-    
     if (!isSameMonth(targetDate, currentDate)) {
         setCurrentDate(targetDate);
     }
-
     setSelectedDate(targetDate);
     setDateModalOpen(true);
     setStockModalOpen(false);
@@ -436,11 +461,12 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </span>
                   
                   <div className="flex items-center gap-1">
-                    {/* 🗑️ 已移除：hasHighYield 檢查與火焰圖示 */}
-                    
+                    {/* ❤️ 愛心指標：手機和電腦都會顯示 */}
                     {hasTrackedStock && (
                         <Heart size={14} className="fill-rose-500 text-rose-500" />
                     )}
+
+                    {/* 股利計數 (綠色小圓點/標籤) */}
                     {dayDividends.length > 0 && (
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1 md:px-2 py-0.5 rounded-full">
                         <span className="hidden md:inline">{dayDividends.length} 家</span>
