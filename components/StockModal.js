@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { X, Banknote, Calendar, Heart, ChevronRight } from "lucide-react"; // 1. 改用 Banknote 圖示
-
+import Link from "next/link";
+import { X, TrendingUp, Calendar, Heart, Banknote, ChevronRight, ExternalLink } from "lucide-react";
 export default function StockModal({ 
   isOpen, 
   onClose, 
@@ -82,10 +83,21 @@ export default function StockModal({
           
           <div className="relative z-10 flex justify-between items-start mt-2">
             <div>
+              <div className="flex items-center gap-2 mb-1">
                 <h2 className="text-3xl font-bold mb-1">{currentInfo?.stock_name || stockCode}</h2>
+                {/* 🔥 新增：跳轉獨立頁面按鈕 */}
+                    <Link 
+                        href={`/stock/${stockCode}`}
+                        target="_blank" // 在新分頁開啟，不打斷使用者目前的瀏覽
+                        className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition text-white/90 hover:text-white"
+                        title="查看完整詳情頁 (新分頁)"
+                    >
+                        <ExternalLink size={16} />
+                    </Link>
+                  </div>
                 <div className="flex items-center gap-2 text-blue-100">
-                <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
-                <span className="text-sm">{currentInfo?.market_type}</span>
+                  <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
+                  <span className="text-sm">{currentInfo?.market_type}</span>
                 </div>
             </div>
 
