@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
-import Footer from "../components/Footer"; // 🆕 引入 Footer
+import Script from "next/script"; // 1. 引入 Script 組件
+import Footer from "../components/Footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,15 +13,33 @@ export const metadata = {
   },
 };
 
+// 2. 設定您的 GA4 評估 ID
+const GA_MEASUREMENT_ID = 'G-42YJG79QR1'; 
+
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-TW">
-      {/* 加入 flex-col 與 min-h-screen 確保 Footer 永遠在底部 */}
       <body className={`${inter.className} flex flex-col min-h-screen bg-slate-50 text-slate-900`}>
+        
+        {/* 3. Google Analytics 腳本 (放在 body 內) */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', '${GA_MEASUREMENT_ID}');
+          `}
+        </Script>
+
         <div className="flex-grow">
           {children}
         </div>
-        <Footer /> {/* 🆕 加入 Footer */}
+        <Footer /> 
       </body>
     </html>
   );
