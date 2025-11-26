@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { X, TrendingUp, Calendar, Heart, Banknote, ChevronRight, ExternalLink, Download, CalendarPlus } from "lucide-react";
 import Link from "next/link";
+import AdUnit from "./AdUnit"; // 引入招財貓廣告
+import { X, TrendingUp, Calendar, Heart, Banknote, ChevronRight, ExternalLink, Download, CalendarPlus } from "lucide-react";
 
 export default function StockModal({ 
   isOpen, 
@@ -10,7 +11,7 @@ export default function StockModal({
   apiUrl,
   isTracked,
   onToggleTrack,
-  onHistoryDateClick 
+  onHistoryDateClick // 2. 新增：接收跳轉函式
 }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -29,29 +30,42 @@ export default function StockModal({
 
   const currentInfo = history.length > 0 ? history[0] : null;
 
-  // 過濾歷史紀錄
+  // 過濾掉未來的紀錄 (只顯示歷史)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
   const historicalRecords = history.filter(item => {
       const dateStr = item.pay_date || item.ex_date;
       if (!dateStr) return false;
       return new Date(dateStr) < today;
   });
 
-  // 🔥 動態生成描述文字
   const generateDescription = (info) => {
     if (!info) return "";
+    
     const { stock_code, stock_name, cash_dividend, ex_date, pay_date, yield_rate, stock_price } = info;
     const year = ex_date ? ex_date.split("-")[0] : new Date().getFullYear();
-    let desc = `<strong>${stock_name} (${stock_code})</strong> 公告 ${year} 年度股利分派。`;
-    if (cash_dividend > 0) desc += `本次預計配發現金股利 <strong>${Number(cash_dividend).toFixed(2)}</strong> 元。`;
-    if (ex_date) desc += `除權息交易日為 ${ex_date}，`;
+    
+    let desc = `<strong>${stock_name} (${stock_code})</strong> `;
+    
+    if (cash_dividend > 0) {
+        desc += `最新一期配發現金股利 <strong>${Number(cash_dividend).toFixed(2)}</strong> 元。`;
+    }
+    
+    if (ex_date) {
+        desc += `除權息交易日為 ${ex_date}，`;
+    }
+    
     if (pay_date) {
         desc += `現金股利發放日預計為 <strong>${pay_date}</strong>。`;
     } else {
         desc += `現金股利發放日尚未公告。`;
     }
-    if (yield_rate > 0) desc += ` 依據參考收盤價 ${stock_price} 元計算，預估現金殖利率約為 <span class="text-amber-600 font-bold">${yield_rate}%</span>。`;
+    
+    if (yield_rate > 0) {
+        desc += ` 依據參考收盤價 ${stock_price} 元計算，預估現金殖利率約為 <span class="text-amber-600 font-bold">${yield_rate}%</span>。`;
+    }
+    
     return desc;
   };
 
@@ -111,21 +125,22 @@ export default function StockModal({
           
           <div className="relative z-10 flex justify-between items-start mt-2">
             <div>
-                <div className="flex items-center gap-2 mb-1">
-                    <h2 className="text-3xl font-bold">{currentInfo?.stock_name || stockCode}</h2>
-                    <Link 
-                        href={`/stock/${stockCode}`}
-                        target="_blank"
-                        className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition text-white/90 hover:text-white"
-                        title="查看完整詳情頁"
-                    >
-                        <ExternalLink size={16} />
-                    </Link>
-                </div>
-                <div className="flex items-center gap-2 text-blue-100">
-                    <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
-                    <span className="text-sm">{currentInfo?.market_type}</span>
-                </div>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-3xl font-bold mb-1">{currentInfo?.stock_name || stockCode}</h2>
+                {/* 🔥 新增：跳轉獨立頁面按鈕 */}
+                <Link 
+                    href={`/stock/${stockCode}`}
+                    target="_blank"
+                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition text-white/90 hover:text-white"
+                    title="查看完整詳情頁 (新分頁)"
+                >
+                    <ExternalLink size={16} />
+                </Link>
+              </div>
+              <div className="flex items-center gap-2 text-blue-100">
+                <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
+                <span className="text-sm">{currentInfo?.market_type}</span>
+              </div>
             </div>
 
             <button 
@@ -148,7 +163,7 @@ export default function StockModal({
           ) : (
             <div className="space-y-6">
 
-              {/* 動態描述 */}
+              {/* 新增：在最上方插入動態生成的文字 */}
               {currentInfo && (
                 <div 
                     className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100"
@@ -156,16 +171,16 @@ export default function StockModal({
                 />
               )}
 
-              {/* 儀表板 */}
+              {/* 股價與殖利率儀表板 */}
               {currentInfo && (
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white p-4 rounded-xl border border-slate-200 flex flex-col items-center justify-center shadow-sm">
+                <div className="grid grid-cols-2 gap-4 mb-2">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
                         <div className="text-xs text-slate-500 mb-1">參考收盤價</div>
                         <div className="text-xl font-bold text-slate-700">
                             {currentInfo.stock_price ? `$${currentInfo.stock_price}` : "--"}
                         </div>
                     </div>
-                    <div className={`p-4 rounded-xl border flex flex-col items-center justify-center shadow-sm
+                    <div className={`p-4 rounded-xl border flex flex-col items-center justify-center
                         ${currentInfo.yield_rate > 5 ? "bg-rose-50 border-rose-100" : "bg-blue-50 border-blue-100"}
                     `}>
                         <div className={`text-xs mb-1 ${currentInfo.yield_rate > 5 ? "text-rose-600" : "text-blue-600"}`}>
@@ -178,7 +193,7 @@ export default function StockModal({
                 </div>
               )}
               
-              {/* 最新股利資訊 (含行事曆按鈕) */}
+              {/* 最新股利資訊 */}
               {currentInfo && (
                 <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                   <h3 className="text-emerald-800 font-bold flex items-center gap-2 mb-3">
@@ -193,9 +208,7 @@ export default function StockModal({
                     </div>
                     <div>
                       <div className="text-xs text-emerald-600 mb-1">發放日期</div>
-                      <div className="text-lg font-bold text-emerald-700">
-                        {currentInfo.pay_date || "尚未公布"}
-                      </div>
+                      <div className="text-lg font-bold text-emerald-700">{currentInfo.pay_date || "尚未公布"}</div>
                       
                       {/* 📅 行事曆按鈕區塊 */}
                       {currentInfo.pay_date && (
@@ -255,13 +268,10 @@ export default function StockModal({
                 </div>
               </div>
               
-              {/* 廣告版位 */}
+              {/* 🐱 招財貓版位 (In-Feed) */}
               <div className="pt-4 border-t border-slate-100">
-                <div className="w-full h-[250px] bg-slate-50 border border-slate-200 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-sm">
-                    廣告贊助版位 (300x250)
-                </div>
+                <AdUnit type="rectangle" />
               </div>
-
             </div>
           )}
         </div>
