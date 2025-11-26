@@ -11,15 +11,25 @@ export default async function sitemap() {
   console.log(`[Sitemap] Starting generation... Target API: ${API_URL}`);
 
   const staticRoutes = [
-    '',
-    '/privacy',
-    '/disclaimer',
-  ].map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily',
-    priority: 1.0,
-  }));
+    {
+      url: `${baseUrl}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 1.0, // 首頁最重要
+    },
+    {
+      url: `${baseUrl}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly', // 幾乎不會改
+      priority: 0.3, // 權重低
+    },
+    {
+      url: `${baseUrl}/disclaimer`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.3,
+    },
+  ];
 
   let stockRoutes = [];
   try {

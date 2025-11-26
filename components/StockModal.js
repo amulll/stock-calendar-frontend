@@ -45,10 +45,10 @@ export default function StockModal({
     const year = ex_date ? ex_date.split("-")[0] : new Date().getFullYear();
     
     let desc = `<strong>${stock_name} (${stock_code})</strong> `;
-    desc += `公告 ${year} 年度股利分派。`;
+    
     
     if (cash_dividend > 0) {
-        desc += `本次預計配發現金股利 <strong>${Number(cash_dividend).toFixed(2)}</strong> 元。`;
+        desc += `最新一期配發現金股利 <strong>${Number(cash_dividend).toFixed(2)}</strong> 元。`;
     }
     
     if (ex_date) {

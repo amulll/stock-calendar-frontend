@@ -5,7 +5,7 @@ import Footer from "../components/Footer"; // 🆕 引入 Footer
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "台股股利日曆 - 存股族的領錢行事曆",
+  title: "uGoodly 股利日曆 - 存股族的領錢行事曆",
   description: "查詢台股最新除權息日、現金股利發放日，並提供殖利率計算與個人化追蹤清單。",
   icons: {
     icon: '/favicon.ico', 
