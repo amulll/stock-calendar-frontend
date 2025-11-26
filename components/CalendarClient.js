@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-// 1. 新增引入 useSearchParams, useRouter
-import { useSearchParams, useRouter } from "next/navigation"; 
 import { 
   format, 
   startOfMonth, 
@@ -15,42 +13,61 @@ import {
   isSameMonth, 
   isSameDay, 
   parseISO,
-  isValid // 記得引入 isValid
+  isValid
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart, List, TrendingUp } from "lucide-react";
 import axios from "axios";
+import { useSearchParams, useRouter, usePathname } from "next/navigation"; // 引入路由鉤子
+
 import DividendModal from "./DividendModal";
 import StockModal from "./StockModal";
 import WatchlistModal from "./WatchlistModal";
 import YieldListModal from "./YieldListModal";
+import AdUnit from "./AdUnit";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const MAX_SUGGESTIONS = 4;
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // 1. 初始化狀態 (從 URL 讀取參數，若無則用預設值)
+  const [currentDate, setCurrentDate] = useState(() => {
+    const y = searchParams.get("year");
+    const m = searchParams.get("month");
+    if (y && m) {
+        const date = new Date(parseInt(y), parseInt(m) - 1); // month 是 0-indexed
+        if (isValid(date)) return date;
+    }
+    return new Date();
+  });
   
   const [dividends, setDividends] = useState(initialDividends || []);
   const [allStocks, setAllStocks] = useState(initialAllStocks || []);
   const [loading, setLoading] = useState(false);
   
-  // 搜尋
   const [filterText, setFilterText] = useState(''); 
   const [suggestions, setSuggestions] = useState([]);
 
-  // 追蹤清單
   const [watchlist, setWatchlist] = useState([]);
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [watchlistMenuOpen, setWatchlistMenuOpen] = useState(false); 
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false); 
 
-  // 高殖利率篩選
-  const [showHighYieldOnly, setShowHighYieldOnly] = useState(false); 
-  const [yieldThreshold, setYieldThreshold] = useState(5);           
+  // 高殖利率篩選 (從 URL 讀取)
+  const [yieldThreshold, setYieldThreshold] = useState(() => {
+      const y = searchParams.get("yield");
+      return y ? Number(y) : 5;
+  });
+  const [showHighYieldOnly, setShowHighYieldOnly] = useState(() => {
+      return searchParams.has("yield"); // 如果網址有 yield 參數，預設開啟篩選
+  });
+
   const [yieldMenuOpen, setYieldMenuOpen] = useState(false);         
   const [yieldListOpen, setYieldListOpen] = useState(false);         
   
-  // Modal States
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
@@ -60,31 +77,32 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const yieldMenuRef = useRef(null); 
   const watchlistMenuRef = useRef(null);
 
-  // 2. 初始化 Router 和 Params
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  // 🔥 新增：監聽 URL 參數，自動跳轉日期
+  // 2. 網址同步邏輯 (State -> URL)
+  // 當日期或篩選條件改變時，更新網址
   useEffect(() => {
-    const dateParam = searchParams.get("date");
-    if (dateParam) {
-      const targetDate = parseISO(dateParam);
-      
-      // 檢查日期是否有效
-      if (isValid(targetDate)) {
-         // A. 設定當前月份 (這會觸發 fetchDividends 更新資料)
-         setCurrentDate(targetDate);
-         
-         // B. 設定選中日期並開啟 Modal
-         setSelectedDate(targetDate);
-         setDateModalOpen(true);
-
-         // C. 清除網址參數 (避免重新整理頁面時又跳一次，保持網址乾淨)
-         router.replace("/", { scroll: false });
-      }
+    // 避免初次渲染時重複操作 (雖然 replace 是淺層更新，但為了保險)
+    // 但如果是從首頁進來，我們希望能補上 ?year=...&month=...，所以這裡不做 isFirstRender 阻擋也可以
+    
+    const params = new URLSearchParams(searchParams);
+    
+    // 同步日期
+    params.set("year", format(currentDate, "yyyy"));
+    params.set("month", format(currentDate, "M"));
+    
+    // 同步殖利率
+    if (showHighYieldOnly) {
+        params.set("yield", yieldThreshold.toString());
+    } else {
+        params.delete("yield");
     }
-  }, [searchParams, router]);
 
+    // 使用 replace 更新網址 (scroll: false 避免頁面跳動)
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+  }, [currentDate, yieldThreshold, showHighYieldOnly, pathname, router]);
+
+
+  // 初始化 LocalStorage 與點擊偵測
   useEffect(() => {
     const savedWatchlist = localStorage.getItem("myWatchlist");
     if (savedWatchlist) {
@@ -118,6 +136,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     localStorage.setItem("myWatchlist", JSON.stringify(newWatchlist));
   };
 
+  // API 資料抓取
   const fetchDividends = async (date) => {
     setLoading(true);
     try {
@@ -132,14 +151,24 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
+  // 月份切換時抓取資料
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      // 如果是從 URL 帶參數進來的 (例如分享連結)，初始資料已經由 Server 抓好了 (initialDividends)
+      // 我們可以檢查 initialDividends 是否為空，如果 Server 沒抓到 (或是首頁進來)，再自己抓一次
+      if (initialDividends.length === 0) {
+          fetchDividends(currentDate);
+      }
       return;
     }
     fetchDividends(currentDate);
   }, [currentDate]);
 
+  // 搜尋建議邏輯 (包含自動跳轉的 URL 更新)
+  // 這裡的邏輯不需要大改，因為 handleSuggestionClick 會呼叫 setCurrentDate
+  // 而 setCurrentDate 改變後，上面的 useEffect 會自動負責更新 URL
+  
   const handleFilterChange = (text) => {
     setFilterText(text);
     if (text.length < 1) {
@@ -177,12 +206,15 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
+  // 處理歷史紀錄點擊 (跳轉 + 開啟當日清單 Modal + 關閉個股 Modal)
   const handleHistoryDateClick = (dateStr) => {
     if (!dateStr) return;
     const targetDate = parseISO(dateStr);
+    
     if (!isSameMonth(targetDate, currentDate)) {
         setCurrentDate(targetDate);
     }
+
     setSelectedDate(targetDate);
     setDateModalOpen(true);
     setStockModalOpen(false);
@@ -259,17 +291,11 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   return (
     <main className="min-h-screen p-2 md:p-8 max-w-7xl mx-auto"> 
       
-      {/* 📢 廣告版位 A (Top Banner) 
-      <div className="mb-4 w-full flex justify-center">
-        <div className="w-full max-w-[728px] h-[90px] bg-slate-100 border border-slate-200 border-dashed rounded-lg flex items-center justify-center text-slate-400 text-sm">
-          廣告贊助版位 (728x90)
-        </div>
-      </div>
-      */}
       {/* 🐱 招財貓版位 (Top Banner) */}
       <div className="mb-4 w-full flex justify-center">
         <AdUnit type="horizontal" />
       </div>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3 mb-2 md:mb-0">
@@ -445,6 +471,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             const isToday = isSameDay(day, new Date());
             
             const hasTrackedStock = dayDividends.some(div => watchlist.includes(div.stock_code));
+            const hasHighYield = dayDividends.some(d => d.yield_rate && d.yield_rate >= yieldThreshold);
             
             return (
               <div 
@@ -465,12 +492,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </span>
                   
                   <div className="flex items-center gap-1">
-                    {/* ❤️ 愛心指標：手機和電腦都會顯示 */}
+                    {hasHighYield && (
+                        <span className="text-[10px] bg-amber-100 text-amber-600 px-1 rounded-full font-bold hidden md:inline" title={`殖利率 > ${yieldThreshold}%`}>
+                            🔥
+                        </span>
+                    )}
                     {hasTrackedStock && (
                         <Heart size={14} className="fill-rose-500 text-rose-500" />
                     )}
-
-                    {/* 股利計數 (綠色小圓點/標籤) */}
                     {dayDividends.length > 0 && (
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1 md:px-2 py-0.5 rounded-full">
                         <span className="hidden md:inline">{dayDividends.length} 家</span>

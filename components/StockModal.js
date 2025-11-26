@@ -88,7 +88,6 @@ export default function StockModal({
                 {/* 🔥 新增：跳轉獨立頁面按鈕 */}
                     <Link 
                         href={`/stock/${stockCode}`}
-                        target="_blank" // 在新分頁開啟，不打斷使用者目前的瀏覽
                         className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition text-white/90 hover:text-white"
                         title="查看完整詳情頁 (新分頁)"
                     >

@@ -1,25 +1,24 @@
 import CalendarClient from "../components/CalendarClient";
 import { format } from "date-fns";
-import { Suspense } from "react"; // 1. 引入 Suspense
+import { Suspense } from "react";
 
-// 這是 Server Component
-async function getData() {
-  // ⚠️ 在 Zeabur Build 時，確保這個變數有被讀到。
-  // 如果是跨服務溝通，建議確認 Zeabur 的內網/公網網址設定。
+// 資料抓取函式 (加入參數)
+async function getData(searchParams) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const now = new Date();
   
-  const year = format(now, "yyyy");
-  const month = format(now, "M");
+  // 1. 優先使用網址參數，若無則使用當前時間
+  // 注意：searchParams 傳進來通常是字串
+  const year = searchParams?.year || format(now, "yyyy");
+  const month = searchParams?.month || format(now, "M");
 
   try {
     // 平行發送請求
     const [dividendRes, stockRes] = await Promise.all([
-      // 當月股利資料：ISR 快取 1 小時
+      // 根據參數抓取特定月份
       fetch(`${API_URL}/api/dividends?year=${year}&month=${month}`, { 
         next: { revalidate: 3600 } 
       }),
-      // 所有股票清單：ISR 快取 24 小時
       fetch(`${API_URL}/api/stocks/list`, { 
         next: { revalidate: 86400 } 
       })
@@ -41,16 +40,20 @@ async function getData() {
   }
 }
 
-// 2. 建立一個 Loading 元件 (可選，這是 Suspense 等待時顯示的內容)
 function CalendarFallback() {
-  return <div className="min-h-screen flex items-center justify-center">載入中...</div>;
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+        <p className="animate-pulse">正在載入股利日曆...</p>
+    </div>
+  );
 }
 
-export default async function Page() {
-  const data = await getData();
+// 2. Page 接收 props.searchParams (Next.js 預設功能)
+export default async function Page({ searchParams }) {
+  const data = await getData(searchParams);
 
   return (
-    // 3. 使用 Suspense 包裹 Client Component
     <Suspense fallback={<CalendarFallback />}>
       <CalendarClient 
         initialDividends={data.initialDividends} 
