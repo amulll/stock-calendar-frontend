@@ -92,7 +92,7 @@ export default function StockModal({
                         ${currentInfo.yield_rate > 5 ? "bg-rose-50 border-rose-100" : "bg-blue-50 border-blue-100"}
                     `}>
                         <div className={`text-xs mb-1 ${currentInfo.yield_rate > 5 ? "text-rose-600" : "text-blue-600"}`}>
-                            預估殖利率
+                            預估殖利率(最新一次股利/收盤)
                         </div>
                         <div className={`text-xl font-bold ${currentInfo.yield_rate > 5 ? "text-rose-600" : "text-blue-600"}`}>
                             {currentInfo.yield_rate ? `${currentInfo.yield_rate}%` : "--"}
@@ -148,6 +148,14 @@ export default function StockModal({
                             </div>
                         ))
                     )}
+                </div>
+              </div>
+              
+              
+              {/* 📢 廣告版位 B (In-Feed) - 預留空間 */}
+              <div className="pt-4 border-t border-slate-100">
+                <div className="w-full h-[250px] bg-slate-50 border border-slate-200 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-sm">
+                    廣告贊助版位 (300x250)
                 </div>
               </div>
             </div>

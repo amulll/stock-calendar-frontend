@@ -281,7 +281,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             </ul>
             )}
         </div>
-
+        
+        {/* 📢 廣告版位 A (Top Banner) - 預留空間 */}
+      <div className="mb-6 w-full flex justify-center">
+        <div className="w-full max-w-[728px] h-[90px] bg-slate-100 border border-slate-200 border-dashed rounded-lg flex items-center justify-center text-slate-400 text-sm">
+          廣告贊助版位 (728x90)
+        </div>
+      </div>
+      
         {/* 按鈕群組 */}
         <div className="flex gap-2">
             {/* 追蹤選單 */}
