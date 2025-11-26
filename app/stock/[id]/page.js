@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote } from "lucide-react";
 import { notFound } from "next/navigation";
-import Link from "next/link"; // 1. 確保引入 Link
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
 
