@@ -1,15 +1,11 @@
-// ⚠️ 路徑修正：因為 CalendarClient 在 components/ 底下 (與 app 平行)
-import CalendarClient from "../components/CalendarClient"; 
-import SeoContent from "../components/SeoContent"; // 🆕 引入元件
+import CalendarClient from "../components/CalendarClient";
 import { format } from "date-fns";
+import { Suspense } from "react"; // 1. 引入 Suspense
 
 // 這是 Server Component
 async function getData() {
-  // ⚠️ 注意：Server Component 無法讀取 NEXT_PUBLIC_ 開頭的環境變數，需要使用完整的絕對路徑
-  // 請確保您在部署平台 (Zeabur) 設定了完整的後端網址，或者在這裡寫死 (若都在同一內網)
-  // 建議：如果是在 Zeabur，後端網址可能是 http://stock-calendar-backend.zeabur.internal:8000 (內網)
-  // 但為了保險起見，這裡先用公開網址。
-  
+  // ⚠️ 在 Zeabur Build 時，確保這個變數有被讀到。
+  // 如果是跨服務溝通，建議確認 Zeabur 的內網/公網網址設定。
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const now = new Date();
   
@@ -31,7 +27,6 @@ async function getData() {
 
     if (!dividendRes.ok || !stockRes.ok) {
       console.error("Server fetch failed:", dividendRes.status, stockRes.status);
-      // 出錯時不拋出 Error 讓頁面掛掉，而是回傳空陣列，讓 Client Component 自己去 fetch
       return { initialDividends: [], initialAllStocks: [] };
     }
 
@@ -46,17 +41,21 @@ async function getData() {
   }
 }
 
+// 2. 建立一個 Loading 元件 (可選，這是 Suspense 等待時顯示的內容)
+function CalendarFallback() {
+  return <div className="min-h-screen flex items-center justify-center">載入中...</div>;
+}
+
 export default async function Page() {
   const data = await getData();
 
   return (
-    <>
+    // 3. 使用 Suspense 包裹 Client Component
+    <Suspense fallback={<CalendarFallback />}>
       <CalendarClient 
         initialDividends={data.initialDividends} 
         initialAllStocks={data.initialAllStocks} 
       />
-      {/* 🆕 將 SEO 文字放在主程式下方，不影響操作，但爬蟲讀得到 */}
-      <SeoContent />
-    </>
+    </Suspense>
   );
 }
