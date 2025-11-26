@@ -30,7 +30,6 @@ export default function DividendModal({ isOpen, onClose, date, dividends, onStoc
                   key={div.id} 
                   onClick={() => {
                     onStockClick(div.stock_code);
-                    // 這裡可以選擇是否要關閉目前的 Modal，目前保留以便使用者返回
                   }}
                   className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-md transition cursor-pointer bg-white group"
                 >
@@ -47,7 +46,8 @@ export default function DividendModal({ isOpen, onClose, date, dividends, onStoc
                     <div className="text-sm font-medium text-slate-500">現金股利</div>
                     <div className="text-lg font-bold text-emerald-600 flex items-center justify-end gap-1">
                       <DollarSign size={14} />
-                      {div.cash_dividend}
+                      {/* 1. 修改：顯示小數點後四位 */}
+                      {Number(div.cash_dividend).toFixed(4)}
                     </div>
                   </div>
                 </div>

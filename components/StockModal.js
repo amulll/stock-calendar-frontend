@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { X, TrendingUp, Calendar, Heart } from "lucide-react"; // 新增 Heart icon
+import { X, TrendingUp, Calendar, Heart } from "lucide-react";
 
 export default function StockModal({ 
   isOpen, 
   onClose, 
   stockCode, 
   apiUrl,
-  isTracked,      // 新增：是否已追蹤
-  onToggleTrack   // 新增：切換追蹤的函式
+  isTracked,
+  onToggleTrack
 }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,6 +26,17 @@ export default function StockModal({
   if (!isOpen) return null;
 
   const currentInfo = history.length > 0 ? history[0] : null;
+
+  // 3. 過濾邏輯：只保留「早於今天」的歷史紀錄
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 歸零時分秒，只比對日期
+
+  const historicalRecords = history.filter(item => {
+      // 優先判斷發放日，若無則判斷除息日
+      const dateStr = item.pay_date || item.ex_date;
+      if (!dateStr) return false;
+      return new Date(dateStr) < today;
+  });
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
@@ -48,7 +59,6 @@ export default function StockModal({
                 </div>
             </div>
 
-            {/* ❤️ 追蹤按鈕 */}
             <button 
                 onClick={() => onToggleTrack(stockCode)}
                 className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition active:scale-95 mr-8"
@@ -69,7 +79,7 @@ export default function StockModal({
           ) : (
             <div className="space-y-6">
 
-            {/* 🔥 股價與殖利率儀表板 */}
+              {/* 股價與殖利率儀表板 */}
               {currentInfo && (
                 <div className="grid grid-cols-2 gap-4 mb-2">
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
@@ -90,7 +100,7 @@ export default function StockModal({
                     </div>
                 </div>
               )}
-
+              
               {/* 最新股利 */}
               {currentInfo && (
                 <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
@@ -100,33 +110,44 @@ export default function StockModal({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-xs text-emerald-600 mb-1">現金股利</div>
-                      <div className="text-2xl font-bold text-emerald-700">{currentInfo.cash_dividend} <span className="text-sm">元</span></div>
+                      {/* 1. 修改：小數點後四位 */}
+                      <div className="text-2xl font-bold text-emerald-700">
+                        {Number(currentInfo.cash_dividend).toFixed(4)} <span className="text-sm">元</span>
+                      </div>
                     </div>
                     <div>
                       <div className="text-xs text-emerald-600 mb-1">發放日期</div>
                       <div className="text-lg font-bold text-emerald-700">{currentInfo.pay_date || "尚未公布"}</div>
+                      {/* 2. 修改：新增下方小字的除息日 */}
+                      <div className="text-xs text-slate-400 mt-1">除息: {currentInfo.ex_date}</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* 歷史紀錄 */}
+              {/* 歷史紀錄 (已過濾掉未來的) */}
               <div>
                 <h3 className="text-slate-800 font-bold flex items-center gap-2 mb-4">
                   <Calendar size={18} /> 歷史發放紀錄
                 </h3>
                 <div className="space-y-3">
-                    {history.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
-                            <div>
-                                <div className="text-sm font-medium text-slate-700">發放日: {item.pay_date || "未定"}</div>
-                                <div className="text-xs text-slate-400">除息日: {item.ex_date}</div>
+                    {/* 3. 修改：使用過濾後的 historicalRecords */}
+                    {historicalRecords.length === 0 ? (
+                        <div className="text-center text-slate-400 text-sm py-2">無過去紀錄</div>
+                    ) : (
+                        historicalRecords.map((item) => (
+                            <div key={item.id} className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
+                                <div>
+                                    <div className="text-sm font-medium text-slate-700">發放日: {item.pay_date || "未定"}</div>
+                                    <div className="text-xs text-slate-400">除息日: {item.ex_date}</div>
+                                </div>
+                                <div className="text-right">
+                                    {/* 1. 修改：小數點後四位 */}
+                                    <div className="font-bold text-slate-800">{Number(item.cash_dividend).toFixed(4)} 元</div>
+                                </div>
                             </div>
-                            <div className="text-right">
-                                <div className="font-bold text-slate-800">{item.cash_dividend} 元</div>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    )}
                 </div>
               </div>
             </div>
