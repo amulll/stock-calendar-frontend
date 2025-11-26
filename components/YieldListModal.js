@@ -6,7 +6,9 @@ export default function YieldListModal({
   isOpen, 
   onClose, 
   threshold, // 當前的門檻 (例如 5)
-  onStockClick 
+  onStockClick, // 接收 handleListStockClick
+  onClose 
+  
 }) {
   const [dividends, setDividends] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -98,7 +100,8 @@ export default function YieldListModal({
                   key={`${div.stock_code}-${div.ex_date}`}
                   className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-amber-400 hover:shadow-md transition cursor-pointer group"
                   onClick={() => {
-                      onStockClick(div.stock_code);
+                      onStockClick(div.stock_code); // 跳轉 + 開 StockModal
+                      onClose();                    // 關閉自己
                       // 這裡不關閉清單，讓使用者可以看完一個再看下一個
                   }}
                 >
