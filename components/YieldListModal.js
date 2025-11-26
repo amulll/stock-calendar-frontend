@@ -4,7 +4,6 @@ import axios from "axios";
 
 export default function YieldListModal({ 
   isOpen, 
-  onClose, 
   threshold, // 當前的門檻 (例如 5)
   onStockClick, // 接收 handleListStockClick
   onClose 
