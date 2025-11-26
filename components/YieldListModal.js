@@ -1,17 +1,51 @@
-import { X, ExternalLink, TrendingUp } from "lucide-react";
-import { format, parseISO } from "date-fns";
+import { useState, useEffect } from "react";
+import { X, ExternalLink, TrendingUp, Loader2, ArrowUpDown } from "lucide-react";
+import axios from "axios";
 
 export default function YieldListModal({ 
   isOpen, 
   onClose, 
-  dividends, // 這是已經過濾好的高殖利率股票列表
-  threshold,
+  threshold, // 當前的門檻 (例如 5)
   onStockClick 
 }) {
+  const [dividends, setDividends] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [sortAsc, setSortAsc] = useState(true); // 預設由低到高 (3%, 4%, 5%...)
+
+  // 當 Modal 開啟或門檻改變時，去後端抓全域資料
+  useEffect(() => {
+    if (isOpen) {
+      fetchHighYieldStocks();
+    }
+  }, [isOpen, threshold]);
+
+  const fetchHighYieldStocks = async () => {
+    setLoading(true);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      // 呼叫新做的後端 API
+      const res = await axios.get(`${API_URL}/api/dividends/high-yield`, {
+        params: {
+          threshold: threshold,
+          year: new Date().getFullYear() // 只看今年的
+        }
+      });
+      setDividends(res.data);
+    } catch (error) {
+      console.error("Fetch high yield failed", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
-  // 依殖利率由高到低排序
-  const sortedList = [...dividends].sort((a, b) => (b.yield_rate || 0) - (a.yield_rate || 0));
+  // 前端排序邏輯 (支援切換)
+  const sortedList = [...dividends].sort((a, b) => {
+    return sortAsc 
+      ? (a.yield_rate || 0) - (b.yield_rate || 0) // 低 -> 高
+      : (b.yield_rate || 0) - (a.yield_rate || 0); // 高 -> 低
+  });
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
@@ -24,9 +58,9 @@ export default function YieldListModal({
                 <TrendingUp size={20} />
             </div>
             <div>
-                <h2 className="text-lg font-bold text-slate-800">高殖利率清單</h2>
+                <h2 className="text-lg font-bold text-slate-800">全年度高殖利率清單</h2>
                 <p className="text-xs text-amber-600 font-medium">
-                    篩選標準： &gt; {threshold}% ({sortedList.length} 檔)
+                    篩選：&gt;{threshold}% (共 {sortedList.length} 檔)
                 </p>
             </div>
           </div>
@@ -35,12 +69,27 @@ export default function YieldListModal({
           </button>
         </div>
 
+        {/* Toolbar: 排序切換 */}
+        <div className="px-4 py-2 bg-slate-50 border-b border-slate-100 flex justify-end">
+            <button 
+                onClick={() => setSortAsc(!sortAsc)}
+                className="text-xs flex items-center gap-1 text-slate-500 hover:text-slate-800 transition"
+            >
+                <ArrowUpDown size={12} />
+                {sortAsc ? "由低到高 (方便篩選)" : "由高到低 (看最高)"}
+            </button>
+        </div>
+
         {/* Content */}
         <div className="p-2 overflow-y-auto flex-grow bg-slate-50/50">
-          {sortedList.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center items-center py-12 text-slate-400">
+                <Loader2 className="animate-spin mr-2" /> 載入中...
+            </div>
+          ) : sortedList.length === 0 ? (
             <div className="text-center text-slate-400 py-12 flex flex-col items-center">
                 <TrendingUp size={48} className="mb-3 opacity-20" />
-                <p>本月沒有符合條件的股票</p>
+                <p>沒有符合 {threshold}% 以上的股票</p>
             </div>
           ) : (
             <div className="space-y-2 p-2">
@@ -50,8 +99,7 @@ export default function YieldListModal({
                   className="flex items-center justify-between p-3 rounded-xl border border-slate-200 bg-white hover:border-amber-400 hover:shadow-md transition cursor-pointer group"
                   onClick={() => {
                       onStockClick(div.stock_code);
-                      // 保持清單開啟或關閉視需求而定，這裡建議關閉以便看詳情
-                      // onClose(); 
+                      // 這裡不關閉清單，讓使用者可以看完一個再看下一個
                   }}
                 >
                   <div className="flex items-center gap-3">
@@ -70,7 +118,7 @@ export default function YieldListModal({
                     <div className="text-lg font-bold text-amber-500 flex items-center justify-end gap-1">
                         {div.yield_rate}%
                     </div>
-                    <div className="text-xs text-slate-400">殖利率</div>
+                    <div className="text-xs text-slate-400">預估殖利率</div>
                   </div>
                 </div>
               ))}
