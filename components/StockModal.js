@@ -38,6 +38,36 @@ export default function StockModal({
       return new Date(dateStr) < today;
   });
 
+  const generateDescription = (info) => {
+    if (!info) return "";
+    
+    const { stock_code, stock_name, cash_dividend, ex_date, pay_date, yield_rate, stock_price } = info;
+    const year = ex_date ? ex_date.split("-")[0] : new Date().getFullYear();
+    
+    let desc = `<strong>${stock_name} (${stock_code})</strong> `;
+    desc += `公告 ${year} 年度股利分派。`;
+    
+    if (cash_dividend > 0) {
+        desc += `本次預計配發現金股利 <strong>${Number(cash_dividend).toFixed(2)}</strong> 元。`;
+    }
+    
+    if (ex_date) {
+        desc += `除權息交易日為 ${ex_date}，`;
+    }
+    
+    if (pay_date) {
+        desc += `現金股利發放日預計為 <strong>${pay_date}</strong>。`;
+    } else {
+        desc += `現金股利發放日尚未公告。`;
+    }
+    
+    if (yield_rate > 0) {
+        desc += ` 依據參考收盤價 ${stock_price} 元計算，預估現金殖利率約為 <span class="text-amber-600 font-bold">${yield_rate}%</span>。`;
+    }
+    
+    return desc;
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
@@ -78,6 +108,14 @@ export default function StockModal({
             <div className="py-10 text-center text-slate-500">載入中...</div>
           ) : (
             <div className="space-y-6">
+
+              {/*  新增：在最上方插入動態生成的文字 */}
+              {currentInfo && (
+                <div 
+                    className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100"
+                    dangerouslySetInnerHTML={{ __html: generateDescription(currentInfo) }}
+                />
+              )}
 
               {/* 股價與殖利率儀表板 */}
               {currentInfo && (

@@ -1,5 +1,6 @@
 // ⚠️ 路徑修正：因為 CalendarClient 在 components/ 底下 (與 app 平行)
 import CalendarClient from "../components/CalendarClient"; 
+import SeoContent from "../components/SeoContent"; // 🆕 引入元件
 import { format } from "date-fns";
 
 // 這是 Server Component
@@ -49,9 +50,13 @@ export default async function Page() {
   const data = await getData();
 
   return (
-    <CalendarClient 
-      initialDividends={data.initialDividends} 
-      initialAllStocks={data.initialAllStocks} 
-    />
+    <>
+      <CalendarClient 
+        initialDividends={data.initialDividends} 
+        initialAllStocks={data.initialAllStocks} 
+      />
+      {/* 🆕 將 SEO 文字放在主程式下方，不影響操作，但爬蟲讀得到 */}
+      <SeoContent />
+    </>
   );
 }
