@@ -166,6 +166,19 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
+  // 🔥 新增：處理歷史紀錄點擊 (跳轉 + 關閉 Modal)
+  const handleHistoryDateClick = (dateStr) => {
+    if (!dateStr) return;
+    const targetDate = parseISO(dateStr);
+    
+    // 如果目標月份不同，則切換
+    if (!isSameMonth(targetDate, currentDate)) {
+        setCurrentDate(targetDate);
+    }
+    // 重要：關閉 Modal，讓使用者直接看到日曆上的位置
+    setStockModalOpen(false);
+  };
+
   const getFilteredDividends = () => {
     let result = dividends;
 
@@ -220,7 +233,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   return (
     <main className="min-h-screen p-2 md:p-8 max-w-7xl mx-auto"> 
       
-      {/* 📢 廣告版位 A (Top Banner) - 移至 Header 之上 */}
+      {/* 📢 廣告版位 A (Top Banner) */}
       <div className="mb-4 w-full flex justify-center">
         <div className="w-full max-w-[728px] h-[90px] bg-slate-100 border border-slate-200 border-dashed rounded-lg flex items-center justify-center text-slate-400 text-sm">
           廣告贊助版位 (728x90)
@@ -233,7 +246,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
           <div className="p-2 md:p-3 bg-blue-50 text-blue-600 rounded-xl">
             <CalendarIcon size={20} className="md:w-6 md:h-6" /> 
           </div>
-          {/* ✏️ 修改標題 */}
           <h1 className="text-xl font-bold text-slate-800 md:text-2xl">uGoodly 股利日曆</h1>
         </div>
         
@@ -252,8 +264,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
       {/* 搜尋與過濾控制區 */}
       <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative items-center"> 
-        
-        {/* 搜尋框 */}
         <div className="relative flex-grow">
             <input
             type="text"
@@ -282,9 +292,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             )}
         </div>
 
-        {/* 按鈕群組 */}
         <div className="flex gap-2">
-            {/* 追蹤選單 */}
             <div className="relative" ref={watchlistMenuRef}>
                 <button
                     onClick={() => setWatchlistMenuOpen(!watchlistMenuOpen)}
@@ -324,7 +332,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                 )}
             </div>
             
-            {/* 高殖利率選單 */}
             <div className="relative" ref={yieldMenuRef}>
                 <button
                     onClick={() => setYieldMenuOpen(!yieldMenuOpen)}
@@ -488,6 +495,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         apiUrl={API_URL}
         isTracked={watchlist.includes(selectedStockCode)}
         onToggleTrack={toggleWatchlist}
+        // 3. 傳入跳轉處理函式
+        onHistoryDateClick={handleHistoryDateClick} 
       />
 
       <WatchlistModal

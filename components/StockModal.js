@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { X, TrendingUp, Calendar, Heart } from "lucide-react";
+import { X, Banknote, Calendar, Heart, ChevronRight } from "lucide-react"; // 1. 改用 Banknote 圖示
 
 export default function StockModal({ 
   isOpen, 
@@ -8,7 +8,8 @@ export default function StockModal({
   stockCode, 
   apiUrl,
   isTracked,
-  onToggleTrack
+  onToggleTrack,
+  onHistoryDateClick // 2. 新增：接收跳轉函式
 }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,12 +28,11 @@ export default function StockModal({
 
   const currentInfo = history.length > 0 ? history[0] : null;
 
-  // 3. 過濾邏輯：只保留「早於今天」的歷史紀錄
+  // 過濾掉未來的紀錄 (只顯示歷史)
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // 歸零時分秒，只比對日期
+  today.setHours(0, 0, 0, 0);
 
   const historicalRecords = history.filter(item => {
-      // 優先判斷發放日，若無則判斷除息日
       const dateStr = item.pay_date || item.ex_date;
       if (!dateStr) return false;
       return new Date(dateStr) < today;
@@ -92,7 +92,7 @@ export default function StockModal({
                         ${currentInfo.yield_rate > 5 ? "bg-rose-50 border-rose-100" : "bg-blue-50 border-blue-100"}
                     `}>
                         <div className={`text-xs mb-1 ${currentInfo.yield_rate > 5 ? "text-rose-600" : "text-blue-600"}`}>
-                            預估殖利率(最新一次股利/收盤)
+                            預估殖利率
                         </div>
                         <div className={`text-xl font-bold ${currentInfo.yield_rate > 5 ? "text-rose-600" : "text-blue-600"}`}>
                             {currentInfo.yield_rate ? `${currentInfo.yield_rate}%` : "--"}
@@ -105,12 +105,12 @@ export default function StockModal({
               {currentInfo && (
                 <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                   <h3 className="text-emerald-800 font-bold flex items-center gap-2 mb-3">
-                    <TrendingUp size={18} /> 最新股利資訊
+                    {/* 3. 修改：換成 Banknote 圖示 */}
+                    <Banknote size={18} /> 最新股利資訊
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-xs text-emerald-600 mb-1">現金股利</div>
-                      {/* 1. 修改：小數點後四位 */}
                       <div className="text-2xl font-bold text-emerald-700">
                         {Number(currentInfo.cash_dividend).toFixed(4)} <span className="text-sm">元</span>
                       </div>
@@ -118,32 +118,38 @@ export default function StockModal({
                     <div>
                       <div className="text-xs text-emerald-600 mb-1">發放日期</div>
                       <div className="text-lg font-bold text-emerald-700">{currentInfo.pay_date || "尚未公布"}</div>
-                      {/* 2. 修改：新增下方小字的除息日 */}
                       <div className="text-xs text-slate-400 mt-1">除息: {currentInfo.ex_date}</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* 歷史紀錄 (已過濾掉未來的) */}
+              {/* 歷史紀錄 */}
               <div>
                 <h3 className="text-slate-800 font-bold flex items-center gap-2 mb-4">
                   <Calendar size={18} /> 歷史發放紀錄
+                  <span className="text-xs font-normal text-slate-400 ml-auto">(點擊跳轉)</span>
                 </h3>
-                <div className="space-y-3">
-                    {/* 3. 修改：使用過濾後的 historicalRecords */}
+                <div className="space-y-2">
                     {historicalRecords.length === 0 ? (
                         <div className="text-center text-slate-400 text-sm py-2">無過去紀錄</div>
                     ) : (
                         historicalRecords.map((item) => (
-                            <div key={item.id} className="flex justify-between items-center py-3 border-b border-slate-100 last:border-0">
+                            <div 
+                                key={item.id} 
+                                // 4. 修改：點擊歷史紀錄觸發跳轉
+                                onClick={() => onHistoryDateClick(item.pay_date || item.ex_date)}
+                                className="flex justify-between items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-blue-200 cursor-pointer transition group"
+                            >
                                 <div>
-                                    <div className="text-sm font-medium text-slate-700">發放日: {item.pay_date || "未定"}</div>
+                                    <div className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition">
+                                        發放日: {item.pay_date || "未定"}
+                                    </div>
                                     <div className="text-xs text-slate-400">除息日: {item.ex_date}</div>
                                 </div>
-                                <div className="text-right">
-                                    {/* 1. 修改：小數點後四位 */}
+                                <div className="flex items-center gap-3">
                                     <div className="font-bold text-slate-800">{Number(item.cash_dividend).toFixed(4)} 元</div>
+                                    <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-400" />
                                 </div>
                             </div>
                         ))
@@ -151,13 +157,13 @@ export default function StockModal({
                 </div>
               </div>
               
-              
-              {/* 📢 廣告版位 B (In-Feed) - 預留空間 */}
+              {/* 廣告版位 B (In-Feed) */}
               <div className="pt-4 border-t border-slate-100">
                 <div className="w-full h-[250px] bg-slate-50 border border-slate-200 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-sm">
                     廣告贊助版位 (300x250)
                 </div>
               </div>
+
             </div>
           )}
         </div>
