@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
+import AdUnit from "./AdUnit";
 import { X, TrendingUp, Calendar, Heart, Banknote, ChevronRight, ExternalLink } from "lucide-react";
 export default function StockModal({ 
   isOpen, 
@@ -206,13 +207,17 @@ export default function StockModal({
                 </div>
               </div>
               
-              {/* 廣告版位 B (In-Feed) */}
+              {/* 廣告版位 B (In-Feed) 
               <div className="pt-4 border-t border-slate-100">
                 <div className="w-full h-[250px] bg-slate-50 border border-slate-200 border-dashed rounded-xl flex items-center justify-center text-slate-400 text-sm">
                     廣告贊助版位 (300x250)
                 </div>
               </div>
-
+              */}
+              {/* 🐱 招財貓版位 (In-Feed) */}
+              <div className="pt-4 border-t border-slate-100">
+                <AdUnit type="rectangle" />
+              </div>
             </div>
           )}
         </div>

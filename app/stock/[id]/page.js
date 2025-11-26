@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote } from "lucide-react";
 import { notFound } from "next/navigation";
+import AdUnit from "../../../components/AdUnit"; 
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
 
@@ -196,11 +197,15 @@ export default async function StockPage({ params }) {
               </div>
             </section>
 
-            {/* 廣告版位 (In-Page) */}
+            {/* 廣告版位 (In-Page) 
             <div className="w-full h-[250px] bg-slate-100 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-slate-400">
               廣告贊助版位 (響應式)
             </div>
-
+            */}
+            {/* 🐱 招財貓版位 */}
+            <div className="mt-8">
+              <AdUnit type="rectangle" />
+            </div>
           </div>
         </div>
       </div>

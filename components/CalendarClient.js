@@ -259,13 +259,17 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   return (
     <main className="min-h-screen p-2 md:p-8 max-w-7xl mx-auto"> 
       
-      {/* 📢 廣告版位 A (Top Banner) */}
+      {/* 📢 廣告版位 A (Top Banner) 
       <div className="mb-4 w-full flex justify-center">
         <div className="w-full max-w-[728px] h-[90px] bg-slate-100 border border-slate-200 border-dashed rounded-lg flex items-center justify-center text-slate-400 text-sm">
           廣告贊助版位 (728x90)
         </div>
       </div>
-
+      */}
+      {/* 🐱 招財貓版位 (Top Banner) */}
+      <div className="mb-4 w-full flex justify-center">
+        <AdUnit type="horizontal" />
+      </div>
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3 mb-2 md:mb-0">
