@@ -127,7 +127,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     setSuggestions(filteredSuggestions.slice(0, MAX_SUGGESTIONS));
   };
   
-  // 搜尋建議點擊：只跳轉，不開 Modal
   const handleSuggestionClick = async (stock) => {
     setFilterText(stock.stock_code);
     setSuggestions([]);
@@ -150,20 +149,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  // 🔥🔥🔥 新增：清單專用點擊函式 (跳轉 + 開 Modal)
   const handleListStockClick = async (code) => {
-    // 1. 先開啟詳細資訊 Modal
     setSelectedStockCode(code);
     setStockModalOpen(true);
-
-    // 2. 接著執行月曆跳轉 (不顯示全頁 Loading，體驗較好)
     try {
         const res = await axios.get(`${API_URL}/api/stock/${code}/latest`);
         if (res.data && (res.data.pay_date || res.data.ex_date)) {
             const targetDateStr = res.data.pay_date || res.data.ex_date;
             const targetDate = parseISO(targetDateStr);
-            
-            // 如果目標月份不同，就切換月曆
             if (!isSameMonth(targetDate, currentDate)) {
                 setCurrentDate(targetDate);
             }
@@ -217,7 +210,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  // 普通點擊 (日曆上的)：只開 Modal，不跳轉 (因為已經在該月了)
   const handleStockClick = (code) => {
     setSelectedStockCode(code);
     setStockModalOpen(true);
@@ -228,13 +220,21 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   return (
     <main className="min-h-screen p-2 md:p-8 max-w-7xl mx-auto"> 
       
+      {/* 📢 廣告版位 A (Top Banner) - 移至 Header 之上 */}
+      <div className="mb-4 w-full flex justify-center">
+        <div className="w-full max-w-[728px] h-[90px] bg-slate-100 border border-slate-200 border-dashed rounded-lg flex items-center justify-center text-slate-400 text-sm">
+          廣告贊助版位 (728x90)
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3 mb-2 md:mb-0">
           <div className="p-2 md:p-3 bg-blue-50 text-blue-600 rounded-xl">
             <CalendarIcon size={20} className="md:w-6 md:h-6" /> 
           </div>
-          <h1 className="text-xl font-bold text-slate-800 md:text-2xl">台股股利發放日曆</h1>
+          {/* ✏️ 修改標題 */}
+          <h1 className="text-xl font-bold text-slate-800 md:text-2xl">uGoodly 股利日曆</h1>
         </div>
         
         <div className="flex items-center gap-4 md:gap-6">
@@ -250,7 +250,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         </div>
       </div>
 
-      {/* 搜尋與過濾 */}
+      {/* 搜尋與過濾控制區 */}
       <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative items-center"> 
         
         {/* 搜尋框 */}
@@ -281,14 +281,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             </ul>
             )}
         </div>
-        
-        {/* 📢 廣告版位 A (Top Banner) - 預留空間 */}
-      <div className="mb-6 w-full flex justify-center">
-        <div className="w-full max-w-[728px] h-[90px] bg-slate-100 border border-slate-200 border-dashed rounded-lg flex items-center justify-center text-slate-400 text-sm">
-          廣告贊助版位 (728x90)
-        </div>
-      </div>
-      
+
         {/* 按鈕群組 */}
         <div className="flex gap-2">
             {/* 追蹤選單 */}
@@ -497,22 +490,20 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         onToggleTrack={toggleWatchlist}
       />
 
-      {/* 🆕 追蹤清單 Modal - 傳入 handleListStockClick */}
       <WatchlistModal
         isOpen={watchlistModalOpen}
         onClose={() => setWatchlistModalOpen(false)}
         watchlist={watchlist}
         allStocks={allStocks}
         onRemove={toggleWatchlist}
-        onStockClick={handleListStockClick} // 👈 改用新函式
+        onStockClick={handleListStockClick}
       />
 
-      {/* 🆕 高殖利率清單 Modal - 傳入 handleListStockClick */}
       <YieldListModal
         isOpen={yieldListOpen}
         onClose={() => setYieldListOpen(false)}
         threshold={yieldThreshold}
-        onStockClick={handleListStockClick} // 👈 改用新函式
+        onStockClick={handleListStockClick}
       />
     </main>
   );

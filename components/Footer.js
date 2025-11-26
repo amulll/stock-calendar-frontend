@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="text-center md:text-left">
             <h3 className="font-bold text-slate-700">uGoodly 股利日曆</h3>
             <p className="text-xs text-slate-500 mt-1">
-              © {new Date().getFullYear()} TaiGuLi. All rights reserved.
+              © {new Date().getFullYear()} uGoodly. All rights reserved.
             </p>
           </div>
 
