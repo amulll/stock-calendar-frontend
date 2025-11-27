@@ -15,7 +15,7 @@ import {
   parseISO,
   isValid
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart, List, TrendingUp } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Search, Heart, List, TrendingUp } from "lucide-react";
 import axios from "axios";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
@@ -24,8 +24,9 @@ import StockModal from "./StockModal";
 import WatchlistModal from "./WatchlistModal";
 import YieldListModal from "./YieldListModal";
 import AdUnit from "./AdUnit";
+import Loading from "./Loading"; // 1. 引入 Loading 元件
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = "/api/proxy"; 
 const MAX_SUGGESTIONS = 4;
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
@@ -522,9 +523,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         </div>
       </div>
 
+      {/* 2. 這裡替換成您的新 Loading 元件 */}
       {loading && (
-        <div className="fixed inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <Loader2 className="animate-spin text-blue-600" size={48} />
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <Loading text="正在更新日曆..." />
         </div>
       )}
 
