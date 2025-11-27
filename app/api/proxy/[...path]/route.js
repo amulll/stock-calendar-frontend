@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN; // 從環境變數讀取密碼
 
   try {
-    const url = `${BACKEND_URL}/api/${path}${searchParams ? `?${searchParams}` : ""}`;
+    const url = `${BACKEND_URL}/${path}${searchParams ? `?${searchParams}` : ""}`;
     
     const res = await fetch(url, {
       headers: {
