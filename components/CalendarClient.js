@@ -12,7 +12,8 @@ import {
   subMonths, 
   isSameMonth, 
   isSameDay, 
-  parseISO 
+  parseISO,
+  isValid
 } from "date-fns";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Loader2, Search, Heart, List, TrendingUp } from "lucide-react";
 import axios from "axios";
@@ -24,11 +25,7 @@ import WatchlistModal from "./WatchlistModal";
 import YieldListModal from "./YieldListModal";
 import AdUnit from "./AdUnit";
 
-// 原本的 onst API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const API_URL = "/api/proxy"; // 👈 改成相對路徑，指向 Next.js 自己的 API
-// ... (其他 fetch 程式碼都不用動，因為路徑會自動接上)
-// 例如: axios.get(`${API_URL}/stocks/list`) 
-// 會變成: /api/proxy/stocks/list -> (Nextjs) -> 後端
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const MAX_SUGGESTIONS = 4;
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
@@ -42,7 +39,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     const m = searchParams.get("month");
     if (y && m) {
         const date = new Date(parseInt(y), parseInt(m) - 1); 
-        if (!isNaN(date.getTime())) return date;
+        if (isValid(date)) return date;
     }
     return new Date();
   });
@@ -85,14 +82,30 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   // 2. 網址同步邏輯
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
-    params.set("year", format(currentDate, "yyyy"));
-    params.set("month", format(currentDate, "M"));
+    
+    const today = new Date();
+    const isCurrentMonthDefault = 
+        format(currentDate, "yyyy") === format(today, "yyyy") && 
+        format(currentDate, "M") === format(today, "M");
+
+    if (isCurrentMonthDefault) {
+        params.delete("year");
+        params.delete("month");
+    } else {
+        params.set("year", format(currentDate, "yyyy"));
+        params.set("month", format(currentDate, "M"));
+    }
+    
     if (showHighYieldOnly) {
         params.set("yield", yieldThreshold.toString());
     } else {
         params.delete("yield");
     }
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    
+    router.replace(newUrl, { scroll: false });
 
   }, [currentDate, yieldThreshold, showHighYieldOnly, pathname, router]);
 
@@ -301,6 +314,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
       {/* 搜尋與過濾控制區 */}
       <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative items-center"> 
         
+        {/* 搜尋框 */}
         <div className="relative flex-grow">
             <input
             type="text"
@@ -450,7 +464,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             const isToday = isSameDay(day, new Date());
             
             const hasTrackedStock = dayDividends.some(div => watchlist.includes(div.stock_code));
-            // 移除 hasHighYield 變數，不再用於顯示火焰圖示
             
             return (
               <div 
@@ -471,7 +484,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </span>
                   
                   <div className="flex items-center gap-1">
-                    {/* 🔥 移除了火焰圖示 */}
                     {hasTrackedStock && (
                         <Heart size={14} className="fill-rose-500 text-rose-500" />
                     )}
