@@ -1,4 +1,5 @@
 import CalendarClient from "../components/CalendarClient";
+import Loading from "../components/Loading"; // 1. 引入
 import { format } from "date-fns";
 import { Suspense } from "react";
 
@@ -45,9 +46,8 @@ async function getData(searchParams) {
 
 function CalendarFallback() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 text-slate-400 gap-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-        <p className="animate-pulse">正在載入股利日曆...</p>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loading text="正在載入股利日曆..." />
     </div>
   );
 }

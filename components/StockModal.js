@@ -3,7 +3,7 @@ import axios from "axios";
 import Link from "next/link";
 import AdUnit from "./AdUnit"; // 引入招財貓廣告
 import { X, TrendingUp, Calendar, Heart, Banknote, ChevronRight, ExternalLink, Download, CalendarPlus } from "lucide-react";
-
+import Loading from "./Loading"; // 1. 引入
 export default function StockModal({ 
   isOpen, 
   onClose, 
@@ -158,7 +158,9 @@ export default function StockModal({
         {/* Content */}
         <div className="p-6 max-h-[60vh] overflow-y-auto">
           {loading ? (
-            <div className="py-10 text-center text-slate-500">載入中...</div>
+            <div className="h-full flex items-center justify-center">
+                <Loading text="正在查詢最新資料..." scale={0.4} /> {/* 縮小至 40% */}
+            </div>
           ) : (
             <div className="space-y-6">
 

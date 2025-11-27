@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
         {/* 3. Google Analytics 腳本 (放在 body 內) */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="afterInteractive"
+          strategy="lazyOnload" 
         />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
