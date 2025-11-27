@@ -3,11 +3,10 @@
 export default async function sitemap() {
   const baseUrl = 'https://ugoodli.com';
   
-  // 1. 讀取環境變數
-  // API_URL: 後端網址 (建議在 Zeabur 設定環境變數，或在此寫死)
-  // SERVICE_TOKEN: 通行證密碼 (必須與後端一致)
-  const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
-  const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
+  // 1. 優先讀取環境變數，若無則使用預設值
+  // 注意：在 Server Side 執行時，有時候讀不到 NEXT_PUBLIC_ 開頭的變數
+  // 建議在 Zeabur 額外設定一個名為 "API_URL" 的變數，或者直接在這裡寫死您的後端網址以確保萬無一失
+  const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app"; // <--- 建議暫時先寫死您的後端網址測試
 
   console.log(`[Sitemap] Starting generation... Target API: ${API_URL}`);
 
@@ -16,13 +15,13 @@ export default async function sitemap() {
       url: `${baseUrl}`,
       lastModified: new Date(),
       changeFrequency: 'daily',
-      priority: 1.0,
+      priority: 1.0, // 首頁最重要
     },
     {
       url: `${baseUrl}/privacy`,
       lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
+      changeFrequency: 'yearly', // 幾乎不會改
+      priority: 0.3, // 權重低
     },
     {
       url: `${baseUrl}/disclaimer`,
@@ -40,10 +39,8 @@ export default async function sitemap() {
     const res = await fetch(`${API_URL}/api/stocks/list`, { 
         next: { revalidate: 86400 },
         headers: {
-            // 加入 User-Agent 識別
-            'User-Agent': 'Nextjs-Sitemap-Generator',
-            // 🔥 關鍵修改：加入 Service Token 通行證
-            'X-Service-Token': SERVICE_TOKEN 
+            // 避免被自己的 Rate Limit 擋住，雖然通常內網/同IP不會
+            'User-Agent': 'Nextjs-Sitemap-Generator'
         }
     });
     
