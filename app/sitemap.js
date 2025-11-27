@@ -1,10 +1,11 @@
 // app/sitemap.js
 
 export default async function sitemap() {
-  const baseUrl = 'https://ugoodly.com';
+  const baseUrl = 'https://ugoodli.com';
   
   // 1. 讀取環境變數
-  // 在 Zeabur Build 階段，SERVICE_TOKEN 必須存在於前端變數中
+  // API_URL: 後端網址 (建議在 Zeabur 設定環境變數，或在此寫死)
+  // SERVICE_TOKEN: 通行證密碼 (必須與後端一致)
   const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
@@ -33,14 +34,15 @@ export default async function sitemap() {
 
   let stockRoutes = [];
   try {
-    // 2. 呼叫 API (🔥 關鍵修改：加入 X-Service-Token Header)
+    // 2. 呼叫 API
     console.log(`[Sitemap] Fetching stocks from ${API_URL}/api/stocks/list`);
     
     const res = await fetch(`${API_URL}/api/stocks/list`, { 
         next: { revalidate: 86400 },
         headers: {
+            // 加入 User-Agent 識別
             'User-Agent': 'Nextjs-Sitemap-Generator',
-            // 👇 加上這行，帶上通行證
+            // 🔥 關鍵修改：加入 Service Token 通行證
             'X-Service-Token': SERVICE_TOKEN 
         }
     });
