@@ -4,7 +4,8 @@ import { Suspense } from "react";
 
 // 資料抓取函式 (加入參數)
 async function getData(searchParams) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
+  const SERVICE_TOKEN = process.env.SERVICE_TOKEN; // 讀取密碼
   const now = new Date();
   
   // 1. 優先使用網址參數，若無則使用當前時間
@@ -17,9 +18,11 @@ async function getData(searchParams) {
     const [dividendRes, stockRes] = await Promise.all([
       // 根據參數抓取特定月份
       fetch(`${API_URL}/api/dividends?year=${year}&month=${month}`, { 
+        headers: { "X-Service-Token": SERVICE_TOKEN },
         next: { revalidate: 3600 } 
       }),
       fetch(`${API_URL}/api/stocks/list`, { 
+        headers: { "X-Service-Token": SERVICE_TOKEN },
         next: { revalidate: 86400 } 
       })
     ]);

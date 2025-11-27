@@ -130,7 +130,6 @@ export default function StockModal({
                 {/* 🔥 新增：跳轉獨立頁面按鈕 */}
                 <Link 
                     href={`/stock/${stockCode}`}
-                    target="_blank"
                     className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition text-white/90 hover:text-white"
                     title="查看完整詳情頁 (新分頁)"
                 >
@@ -225,7 +224,7 @@ export default function StockModal({
                                 className="flex items-center gap-1 px-2 py-1 bg-white border border-emerald-200 rounded text-[10px] text-emerald-700 hover:bg-emerald-100 transition"
                                 title="加入 iOS/Outlook 日曆 (.ics)"
                             >
-                                <Download size={12} /> iOS
+                                <CalendarPlus size={12} /> iOS
                             </button>
                         </div>
                       )}

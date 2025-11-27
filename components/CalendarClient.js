@@ -24,7 +24,11 @@ import WatchlistModal from "./WatchlistModal";
 import YieldListModal from "./YieldListModal";
 import AdUnit from "./AdUnit";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// 原本的 onst API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = "/api/proxy"; // 👈 改成相對路徑，指向 Next.js 自己的 API
+// ... (其他 fetch 程式碼都不用動，因為路徑會自動接上)
+// 例如: axios.get(`${API_URL}/stocks/list`) 
+// 會變成: /api/proxy/stocks/list -> (Nextjs) -> 後端
 const MAX_SUGGESTIONS = 4;
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
