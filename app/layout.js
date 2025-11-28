@@ -1,9 +1,15 @@
 import "./globals.css";
-import { Inter } from "next/font/google";
-import Script from "next/script"; // 1. 引入 Script 組件
+import { M_PLUS_Rounded_1c } from "next/font/google";
+import Script from "next/script"; 
 import Footer from "../components/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+// 設定字體：使用 M PLUS Rounded 1c
+const mainFont = M_PLUS_Rounded_1c({
+  weight: ["400", "500", "700", "800"], 
+  subsets: ["latin"], 
+  preload: false,     
+  display: "swap",    
+});
 
 export const metadata = {
   title: "uGoodly 股利日曆 - 存股族的領錢行事曆",
@@ -13,15 +19,15 @@ export const metadata = {
   },
 };
 
-// 2. 設定您的 GA4 評估 ID
+// 設定您的 GA4 評估 ID
 const GA_MEASUREMENT_ID = 'G-42YJG79QR1'; 
 
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-TW">
-      <body className={`${inter.className} flex flex-col min-h-screen bg-slate-50 text-slate-900`}>
+      <body className={`${mainFont.className} flex flex-col min-h-screen bg-slate-50 text-slate-900`}>
         
-        {/* 3. Google Analytics 腳本 (放在 body 內) */}
+        {/* Google Analytics 腳本 (lazyOnload 優化效能) */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           strategy="lazyOnload" 

@@ -82,33 +82,38 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
   // 2. 網址同步邏輯
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    
-    const today = new Date();
-    const isCurrentMonthDefault = 
-        format(currentDate, "yyyy") === format(today, "yyyy") && 
-        format(currentDate, "M") === format(today, "M");
+      const dateParam = searchParams.get("date");
+      const shouldOpenModal = searchParams.get("openModal") === "true";
 
-    if (isCurrentMonthDefault) {
-        params.delete("year");
-        params.delete("month");
-    } else {
-        params.set("year", format(currentDate, "yyyy"));
-        params.set("month", format(currentDate, "M"));
-    }
-    
-    if (showHighYieldOnly) {
-        params.set("yield", yieldThreshold.toString());
-    } else {
-        params.delete("yield");
-    }
+      if (dateParam && !hasHandledJump.current) {
+          const targetDate = parseISO(dateParam);
+          if (isValid(targetDate)) {
+              // 確保月曆顯示正確月份 (這裡會觸發 currentDate 改變 -> fetchDividends)
+              if (!isSameMonth(targetDate, currentDate)) {
+                  setCurrentDate(targetDate);
+              }
+              
+              // 設定選中日期
+              setSelectedDate(targetDate);
 
-    const queryString = params.toString();
-    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-    
-    router.replace(newUrl, { scroll: false });
-
-  }, [currentDate, yieldThreshold, showHighYieldOnly, pathname, router]);
+              // 如果有 openModal=true，就打開清單 Modal
+              if (shouldOpenModal) {
+                  setDateModalOpen(true);
+                  
+                  // 標記已處理，避免重複跳出
+                  hasHandledJump.current = true; 
+                  
+                  // 清除 openModal 參數，保持網址乾淨 (延遲執行以免與上面的 replace 衝突)
+                  setTimeout(() => {
+                      const newParams = new URLSearchParams(window.location.search);
+                      newParams.delete("openModal");
+                      const newPath = newParams.toString() ? `${pathname}?${newParams.toString()}` : pathname;
+                      router.replace(newPath, { scroll: false });
+                  }, 500);
+              }
+          }
+      }
+  }, [searchParams, currentDate, pathname, router]);
 
   useEffect(() => {
     const savedWatchlist = localStorage.getItem("myWatchlist");

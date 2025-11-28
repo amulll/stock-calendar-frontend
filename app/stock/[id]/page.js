@@ -26,10 +26,14 @@ export async function generateMetadata({ params }) {
 
 // 2. 資料抓取函式
 async function getStockData(id) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
+  const SERVICE_TOKEN = process.env.SERVICE_TOKEN; // 讀取密碼
   try {
     // 這裡使用 fetch 搭配 revalidate，不需 axios
     const res = await fetch(`${API_URL}/api/stock/${id}`, {
+      headers: {
+        "X-Service-Token": SERVICE_TOKEN, // 🔥 關鍵：加入通行證
+      },
       next: { revalidate: 3600 }
     });
     
@@ -167,7 +171,7 @@ export default async function StockPage({ params }) {
                             {/* 🔥 修改：將日期變成連結，點擊回首頁並帶參數 */}
                             {item.pay_date ? (
                                 <Link 
-                                    href={`/?date=${item.pay_date}`}
+                                    href={`/?date=${item.pay_date}&openModal=true`}
                                     className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2"
                                     title="在日曆上查看當天發放清單"
                                 >
@@ -179,7 +183,7 @@ export default async function StockPage({ params }) {
                              {/* 除息日也可以做同樣的處理，看您需求 */}
                              {item.ex_date ? (
                                 <Link 
-                                    href={`/?date=${item.ex_date}`}
+                                    href={`/?date=${item.ex_date}&openModal=true`}
                                     className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2"
                                 >
                                     {item.ex_date}
