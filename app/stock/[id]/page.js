@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote } from "lucide-react";
+import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit"; 
+
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
 
@@ -14,7 +15,9 @@ export async function generateMetadata({ params }) {
     return { title: "查無股票資料" };
   }
 
-  const info = data[0]; // 最新一筆資料
+  // 這裡的 info 只是為了 SEO 標題用，可以直接用第一筆，或者用排序後的最新一筆
+  // 為了跟頁面邏輯一致，我們也可以在這裡做一次簡單的排序
+  const info = data[0]; 
   const year = info.ex_date ? info.ex_date.split("-")[0] : new Date().getFullYear();
 
   return {
@@ -26,15 +29,19 @@ export async function generateMetadata({ params }) {
 
 // 2. 資料抓取函式
 async function getStockData(id) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
-  const SERVICE_TOKEN = process.env.SERVICE_TOKEN; // 讀取密碼
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  
+  // Server Component 需要自行處理後端驗證 Token
+  const SERVICE_TOKEN = process.env.SERVICE_TOKEN; 
+
   try {
     // 這裡使用 fetch 搭配 revalidate，不需 axios
     const res = await fetch(`${API_URL}/api/stock/${id}`, {
+      next: { revalidate: 3600 },
       headers: {
-        "X-Service-Token": SERVICE_TOKEN, // 🔥 關鍵：加入通行證
-      },
-      next: { revalidate: 3600 }
+          // 如果後端有設 SecurityMiddleware，這裡記得要帶 Token
+          "X-Service-Token": SERVICE_TOKEN
+      }
     });
     
     if (!res.ok) return null;
@@ -54,16 +61,36 @@ export default async function StockPage({ params }) {
     return notFound(); // 回傳 404 頁面
   }
 
-  const currentInfo = history[0];
-  
-  // 過濾歷史紀錄 (只顯示今天之前的)
+  // --- 🔥 核心修改：智慧選擇「最新股利」 (與 StockModal 邏輯同步) ---
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const historicalRecords = history.filter(item => {
-      const dateStr = item.pay_date || item.ex_date;
-      if (!dateStr) return false;
-      return new Date(dateStr) < today;
+
+  let currentInfo = null;
+
+  // 1. 資料清洗：優先過濾掉「現金股利為 0」的資料
+  const validHistory = history.filter(item => Number(item.cash_dividend) > 0 || Number(item.stock_dividend) > 0);
+  const sourceList = validHistory.length > 0 ? validHistory : history;
+
+  // 2. 找出所有「未來 (含今日)」的除息場次
+  const futureEvents = sourceList.filter(item => {
+      if (!item.ex_date) return false;
+      return new Date(item.ex_date) >= today;
   });
+
+  if (futureEvents.length > 0) {
+      // 3. 未來場次：由近到遠 (ASC) 排序 -> 取最接近今天的 (index 0)
+      // (注意：這裡要複製一份 array 來 sort，以免影響原本的 history 順序)
+      const sortedFuture = [...futureEvents].sort((a, b) => new Date(a.ex_date) - new Date(b.ex_date));
+      currentInfo = sortedFuture[0];
+  } else {
+      // 4. 歷史場次：由遠到近 (DESC) 排序 -> 取最新的 (index 0)
+      const sortedHistory = [...sourceList].sort((a, b) => new Date(b.ex_date) - new Date(a.ex_date));
+      currentInfo = sortedHistory[0];
+  }
+  // ---------------------------------------------------
+
+  // 歷史紀錄：顯示全部資料 (包含未來與過去)
+  const historicalRecords = history;
 
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 md:px-8">
@@ -163,14 +190,14 @@ export default async function StockPage({ params }) {
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {historicalRecords.length === 0 ? (
-                      <tr><td colSpan="3" className="...">無過去紀錄</td></tr>
+                      <tr><td colSpan="3" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
                     ) : (
                       historicalRecords.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
                           <td className="px-4 py-3 font-medium text-slate-700">
-                            {/* 🔥 修改：將日期變成連結，點擊回首頁並帶參數 */}
                             {item.pay_date ? (
                                 <Link 
+                                    // 🔥 修改：加入 &openModal=true 參數，實現自動跳轉並開啟 Modal
                                     href={`/?date=${item.pay_date}&openModal=true`}
                                     className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2"
                                     title="在日曆上查看當天發放清單"
@@ -180,7 +207,6 @@ export default async function StockPage({ params }) {
                             ) : "未定"}
                           </td>
                           <td className="px-4 py-3 text-slate-500">
-                             {/* 除息日也可以做同樣的處理，看您需求 */}
                              {item.ex_date ? (
                                 <Link 
                                     href={`/?date=${item.ex_date}&openModal=true`}
@@ -201,11 +227,6 @@ export default async function StockPage({ params }) {
               </div>
             </section>
 
-            {/* 廣告版位 (In-Page) 
-            <div className="w-full h-[250px] bg-slate-100 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-slate-400">
-              廣告贊助版位 (響應式)
-            </div>
-            */}
             {/* 🐱 招財貓版位 */}
             <div className="mt-8">
               <AdUnit type="rectangle" />
