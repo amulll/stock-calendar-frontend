@@ -1,5 +1,5 @@
 "use client";
-
+import SeoContent from "./SeoContent";
 import { useState, useEffect, useRef } from "react";
 import { 
   format, 
@@ -628,6 +628,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         threshold={yieldThreshold}
         onStockClick={handleListStockClick}
       />
+      <div className="mt-12">
+        <SeoContent />
+    </div>
     </main>
   );
 }
