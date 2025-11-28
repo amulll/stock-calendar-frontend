@@ -3,7 +3,8 @@ import axios from "axios";
 import Link from "next/link";
 import AdUnit from "./AdUnit"; // 引入招財貓廣告
 import { X, TrendingUp, Calendar, Heart, Banknote, ChevronRight, ExternalLink, Download, CalendarPlus } from "lucide-react";
-import Loading from "./Loading"; // 1. 引入
+import Loading from "./Loading"; // 1. 引入.
+import { startOfDay, parseISO } from "date-fns";
 export default function StockModal({ 
   isOpen, 
   onClose, 
@@ -27,8 +28,7 @@ export default function StockModal({
   }, [isOpen, stockCode, apiUrl]);
 
   if (!isOpen) return null;
-const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = startOfDay(new Date());
   
   let currentInfo = null;
 
@@ -41,7 +41,8 @@ const today = new Date();
       // 2. 找出所有「未來 (含今日)」的除息場次
       const futureEvents = sourceList.filter(item => {
           if (!item.ex_date) return false;
-          return new Date(item.ex_date) >= today;
+          const exDate = parseISO(item.ex_date);
+          return exDate >= today;
       });
 
       if (futureEvents.length > 0) {

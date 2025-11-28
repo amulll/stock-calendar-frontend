@@ -64,8 +64,7 @@ export default async function StockPage({ params }) {
   // --- 🔥 核心修改：智慧選擇「最新股利」 (與 StockModal 邏輯同步) ---
   const today = startOfDay(new Date());
   today.setHours(0, 0, 0, 0);
-  const exDate = parseISO(item.ex_date);
-  return exDate >= today;
+  
   let currentInfo = null;
 
   // 1. 資料清洗：優先過濾掉「現金股利為 0」的資料
@@ -75,7 +74,8 @@ export default async function StockPage({ params }) {
   // 2. 找出所有「未來 (含今日)」的除息場次
   const futureEvents = sourceList.filter(item => {
       if (!item.ex_date) return false;
-      return new Date(item.ex_date) >= today;
+      const exDate = parseISO(item.ex_date);
+      return exDate >= today;
   });
 
   if (futureEvents.length > 0) {
