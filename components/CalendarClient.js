@@ -24,7 +24,7 @@ import StockModal from "./StockModal";
 import WatchlistModal from "./WatchlistModal";
 import YieldListModal from "./YieldListModal";
 import AdUnit from "./AdUnit";
-import Loading from "./Loading"; // 1. 引入 Loading 元件
+import Loading from "./Loading"; 
 
 const API_URL = "/api/proxy"; 
 const MAX_SUGGESTIONS = 4;
@@ -79,8 +79,47 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const isFirstRender = useRef(true);
   const yieldMenuRef = useRef(null); 
   const watchlistMenuRef = useRef(null);
+  
+  const hasHandledJump = useRef(false);
 
   // 2. 網址同步邏輯
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams);
+    
+    const today = new Date();
+    const isCurrentMonthDefault = 
+        format(currentDate, "yyyy") === format(today, "yyyy") && 
+        format(currentDate, "M") === format(today, "M");
+
+    if (isCurrentMonthDefault) {
+        params.delete("year");
+        params.delete("month");
+    } else {
+        params.set("year", format(currentDate, "yyyy"));
+        params.set("month", format(currentDate, "M"));
+    }
+    
+    if (showHighYieldOnly) {
+        params.set("yield", yieldThreshold.toString());
+    } else {
+        params.delete("yield");
+    }
+    
+    // 保留 openModal 參數以免被蓋掉 (如果它是剛被加上去的)
+    if (searchParams.get("openModal")) {
+        params.set("openModal", "true");
+    } else {
+        params.delete("openModal");
+    }
+
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    
+    router.replace(newUrl, { scroll: false });
+
+  }, [currentDate, yieldThreshold, showHighYieldOnly, pathname, router]);
+
+  // 3. 處理來自外部的跳轉 (openModal=true)
   useEffect(() => {
       const dateParam = searchParams.get("date");
       const shouldOpenModal = searchParams.get("openModal") === "true";
@@ -88,22 +127,16 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
       if (dateParam && !hasHandledJump.current) {
           const targetDate = parseISO(dateParam);
           if (isValid(targetDate)) {
-              // 確保月曆顯示正確月份 (這裡會觸發 currentDate 改變 -> fetchDividends)
               if (!isSameMonth(targetDate, currentDate)) {
                   setCurrentDate(targetDate);
               }
               
-              // 設定選中日期
               setSelectedDate(targetDate);
 
-              // 如果有 openModal=true，就打開清單 Modal
               if (shouldOpenModal) {
                   setDateModalOpen(true);
-                  
-                  // 標記已處理，避免重複跳出
                   hasHandledJump.current = true; 
                   
-                  // 清除 openModal 參數，保持網址乾淨 (延遲執行以免與上面的 replace 衝突)
                   setTimeout(() => {
                       const newParams = new URLSearchParams(window.location.search);
                       newParams.delete("openModal");
@@ -320,7 +353,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
       {/* 搜尋與過濾控制區 */}
       <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative items-center"> 
         
-        {/* 搜尋框 */}
         <div className="relative flex-grow">
             <input
             type="text"
@@ -349,9 +381,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             )}
         </div>
 
-        {/* 按鈕群組 */}
         <div className="flex gap-2">
-            {/* 追蹤選單 */}
             <div className="relative" ref={watchlistMenuRef}>
                 <button
                     onClick={() => setWatchlistMenuOpen(!watchlistMenuOpen)}
@@ -391,7 +421,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                 )}
             </div>
             
-            {/* 高殖利率選單 */}
             <div className="relative" ref={yieldMenuRef}>
                 <button
                     onClick={() => setYieldMenuOpen(!yieldMenuOpen)}
@@ -528,10 +557,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         </div>
       </div>
 
-      {/* 2. 這裡替換成您的新 Loading 元件 */}
       {loading && (
         <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <Loading text="正在更新日曆..." />
+          <Loading text="正在更新日曆..." scale={0.5} />
         </div>
       )}
 
