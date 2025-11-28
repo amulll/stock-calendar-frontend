@@ -12,13 +12,13 @@ export default function Loading({ text = "努力載入中..." }) {
     const animate = () => {
       setDogWidth((prev) => {
         let nextWidth = prev;
-        const speed = 2; // 變長的速度
+        const speed = 0.5; // 變長的速度
 
         if (isGrowing) {
           nextWidth += speed;
           if (nextWidth >= 200) setIsGrowing(false); // 最長 200px
         } else {
-          nextWidth -= speed * 2; // 縮回速度快一點
+          nextWidth -= speed * 1; // 縮回速度快一點
           if (nextWidth <= 70) setIsGrowing(true); // 最短 70px
         }
         return nextWidth;
@@ -41,7 +41,7 @@ export default function Loading({ text = "努力載入中..." }) {
           
           {/* 氣球 (顯示進度) */}
           <div className="balloon" style={{ left: `${dogWidth / 2}px` }}>
-            {Math.floor(dogWidth - 70)} km
+            {Math.floor(dogWidth - 70)} cm
           </div>
 
           {/* 前半部 */}

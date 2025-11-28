@@ -25,8 +25,8 @@ body {
 
 /* 🐶 狗狗 Loading 動畫 CSS */
 .dog-container {
-  --color-black: #333;
-  --innu-color: #d24d57; /* 狗狗顏色 (紅色系) */
+  --color-black: #4A3B2A; /* 深褐色 (比純黑柔和，適合搭配金色) */
+  --innu-color: #E1A95F;   /* ✨ 修改這裡：從紅色改為金黃色 */
   --bg-color: #FDFBFD;
   position: relative;
   width: 100%;
@@ -127,7 +127,7 @@ body {
 }
 
 .dog__front-body {
-  animation: dog-face-anim 0.3s linear alternate-reverse infinite;
+  animation: dog-face-anim 0.4s linear alternate-reverse infinite;
 }
 
 .dog__back {
@@ -174,7 +174,7 @@ body {
 /* 腳的動畫狀態 */
 .dog__foot.active {
   transition: 0.8s;
-  animation: dog-foot-anim 0.3s linear alternate-reverse infinite;
+  animation: dog-foot-anim 0.4s linear alternate-reverse infinite;
 }
 
 /* 第二隻腳 */
@@ -185,7 +185,7 @@ body {
   content: none;
 }
 .dog__foot + .dog__foot.active {
-  animation: dog-foot-2-anim 0.3s linear alternate-reverse infinite;
+  animation: dog-foot-2-anim 0.4s linear alternate-reverse infinite;
 }
 
 /* 前腳位置調整 */
@@ -205,7 +205,7 @@ body {
   border-radius: 50%;
   transform: rotate(-45deg);
   transform-origin: bottom center;
-  animation: dog-tail-anim 0.3s linear alternate-reverse infinite;
+  animation: dog-tail-anim 0.4s linear alternate-reverse infinite;
 }
 
 .balloon {
