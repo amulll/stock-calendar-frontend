@@ -11,9 +11,18 @@ async function getData(searchParams) {
   
   // 1. 優先使用網址參數，若無則使用當前時間
   // 注意：searchParams 傳進來通常是字串
-  const year = searchParams?.year || format(now, "yyyy");
-  const month = searchParams?.month || format(now, "M");
+  // 🔥 修改這裡：優先判斷 date 參數，讓伺服器直接抓對月份
+  let targetDate = now;
+  if (searchParams?.date) {
+    const parsed = new Date(searchParams.date);
+    if (!isNaN(parsed.getTime())) {
+      targetDate = parsed;
+    }
+  }
 
+  // 如果網址有 year/month 就用網址的，否則就用 targetDate (可能是今天，也可能是 date 參數那天)
+  const year = searchParams?.year || format(targetDate, "yyyy");
+  const month = searchParams?.month || format(targetDate, "M");
   try {
     // 平行發送請求
     const [dividendRes, stockRes] = await Promise.all([
