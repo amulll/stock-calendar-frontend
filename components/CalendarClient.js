@@ -456,7 +456,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                     title="殖利率篩選"
                 >
                     <TrendingUp size={20} />
-                    <span className="font-bold text-sm">&gt;{yieldThreshold}%</span>
+                    <span className="font-bold text-sm">&gt;{localYield}%</span>
                 </button>
 
                 {yieldMenuOpen && (
@@ -473,7 +473,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                         <div className="mb-4">
                             <div className="flex justify-between text-xs text-slate-500 mb-2">
                                 <span>門檻值</span>
-                                <span className="font-bold text-amber-600">{yieldThreshold}%</span>
+                                <span className="font-bold text-amber-600">{localYield}%</span>
                             </div>
                             <input 
                                 type="range" min="1" max="20" step="0.5"
