@@ -7,7 +7,7 @@ import Footer from "../components/Footer";
 const mainFont = M_PLUS_Rounded_1c({
   weight: ["400", "500", "700", "800"], 
   subsets: ["latin"], 
-  preload: false,     
+  preload: true,     
   display: "swap",    
 });
 
