@@ -27,13 +27,30 @@ export default function StockModal({
   }, [isOpen, stockCode, apiUrl]);
 
   if (!isOpen) return null;
+const today = new Date();
+  today.setHours(0, 0, 0, 0); // 歸零，只比對日期
 
-  const currentInfo = history.length > 0 ? history[0] : null;
+  let currentInfo = null;
 
-  // 過濾掉未來的紀錄 (只顯示歷史)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  if (history.length > 0) {
+      // 1. 找出所有「未來 (含今日)」的除息場次
+      // 注意：history 預設是由新到舊 (DESC) 排序 [2025-12, 2025-06, 2025-01]
+      const futureEvents = history.filter(item => {
+          if (!item.ex_date) return false;
+          return new Date(item.ex_date) >= today;
+      });
 
+      if (futureEvents.length > 0) {
+          // 2. 如果有未來場次，我們要找「離今天最近」的那一筆
+          // 因為陣列是 DESC (遠 -> 近)，所以「最後一個」就是離今天最近的
+          // 例如：[D+4, D+2] -> 取 D+2
+          currentInfo = futureEvents[futureEvents.length - 1];
+      } else {
+          // 3. 如果沒有未來場次，就顯示最新的一筆歷史紀錄
+          currentInfo = history[0];
+      }
+  }
+// 歷史紀錄過濾 (只顯示今天之前的)
   const historicalRecords = history.filter(item => {
       const dateStr = item.pay_date || item.ex_date;
       if (!dateStr) return false;
