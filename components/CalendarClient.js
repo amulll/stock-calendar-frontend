@@ -36,14 +36,22 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
   // 1. 初始化狀態
   const [currentDate, setCurrentDate] = useState(() => {
-    const y = searchParams.get("year");
-    const m = searchParams.get("month");
-    if (y && m) {
-        const date = new Date(parseInt(y), parseInt(m) - 1); 
-        if (isValid(date)) return date;
-    }
-    return new Date();
-  });
+  const y = searchParams.get("year");
+  const m = searchParams.get("month");
+  // 新增：優先檢查是否有指定 date 參數
+  const d = searchParams.get("date");
+  
+  if (d) {
+    const targetDate = new Date(d);
+    if (!isNaN(targetDate.getTime())) return targetDate;
+  }
+
+  if (y && m) {
+      const date = new Date(parseInt(y), parseInt(m) - 1); 
+      if (isValid(date)) return date;
+  }
+  return new Date();
+});
   
   const [dividends, setDividends] = useState(initialDividends || []);
   const [allStocks, setAllStocks] = useState(initialAllStocks || []);
@@ -115,7 +123,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     const queryString = params.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
     
-    router.replace(newUrl, { scroll: false });
+    router.push(newUrl, { scroll: false });
 
   }, [currentDate, yieldThreshold, showHighYieldOnly, pathname, router]);
 

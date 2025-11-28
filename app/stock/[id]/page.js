@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote, ExternalLink } from "lucide-react";
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit"; 
-
+import { startOfDay, parseISO } from "date-fns";
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
 
@@ -62,9 +62,10 @@ export default async function StockPage({ params }) {
   }
 
   // --- 🔥 核心修改：智慧選擇「最新股利」 (與 StockModal 邏輯同步) ---
-  const today = new Date();
+  const today = startOfDay(new Date());
   today.setHours(0, 0, 0, 0);
-
+  const exDate = parseISO(item.ex_date);
+  return exDate >= today;
   let currentInfo = null;
 
   // 1. 資料清洗：優先過濾掉「現金股利為 0」的資料
