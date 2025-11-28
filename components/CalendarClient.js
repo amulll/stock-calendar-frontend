@@ -119,7 +119,11 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     } else {
         params.delete("openModal");
     }
-
+    // date 只是為了「初始定位」，一旦定位完成或開始切換月份，
+    // 網址就應該由 year/month 來接手管理。
+    if (params.has("date")) {
+        params.delete("date");
+    }
     const queryString = params.toString();
     const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
     
