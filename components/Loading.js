@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+// 👇 1. 引入剛剛建立的 CSS Module
+import styles from "./Loading.module.css";
 
 export default function Loading({ text = "努力載入中..." }) {
   const [dogWidth, setDogWidth] = useState(70);
@@ -34,33 +36,34 @@ export default function Loading({ text = "努力載入中..." }) {
     <div className="flex flex-col items-center justify-center w-full h-full min-h-[300px] bg-slate-50 overflow-hidden">
       
       {/* 🐶 臘腸狗動畫區塊 */}
-      <div className="dog-container">
+      {/* 👇 2. 修改所有的 className，改成使用 styles[...] */}
+      <div className={styles['dog-container']}>
         
         {/* 身體 (寬度會動態改變) */}
-        <div className="dog" style={{ width: `${dogWidth}px` }}>
+        <div className={styles.dog} style={{ width: `${dogWidth}px` }}>
           
           {/* 氣球 (顯示進度) */}
-          <div className="balloon" style={{ left: `${dogWidth / 2}px` }}>
+          <div className={styles.balloon} style={{ left: `${dogWidth / 2}px` }}>
             {Math.floor(dogWidth - 70)} cm
           </div>
 
           {/* 前半部 */}
-          <div className="dog__front">
-            <div className="dog__front-body">
-              <div className="dog__face" />
-              <div className="dog__eye" />
+          <div className={styles['dog__front']}>
+            <div className={styles['dog__front-body']}>
+              <div className={styles['dog__face']} />
+              <div className={styles['dog__eye']} />
             </div>
-            {/* 腳 (永遠是 active 狀態，因為它一直在跑) */}
-            <div className="dog__foot active" />
-            <div className="dog__foot active" />
+            {/* 腳 (永遠是 active 狀態) */}
+            <div className={`${styles['dog__foot']} ${styles.active}`} />
+            <div className={`${styles['dog__foot']} ${styles.active}`} />
           </div>
 
           {/* 後半部 */}
-          <div className="dog__back">
-            <div className="dog__back-body" />
-            <div className="dog__foot active" />
-            <div className="dog__foot active" />
-            <div className="dog__tail" />
+          <div className={styles['dog__back']}>
+            <div className={styles['dog__back-body']} />
+            <div className={`${styles['dog__foot']} ${styles.active}`} />
+            <div className={`${styles['dog__foot']} ${styles.active}`} />
+            <div className={styles['dog__tail']} />
           </div>
         
         </div>

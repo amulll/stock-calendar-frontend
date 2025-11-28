@@ -18,7 +18,7 @@ const GA_MEASUREMENT_ID = 'G-42YJG79QR1';
 export default function RootLayout({ children }) {
   return (
     <html lang="zh-TW">
-      <body className={`${notoSansTC.className} flex flex-col min-h-screen bg-slate-50 text-slate-900`}>
+      <body >
         
         {/* Google Analytics 腳本 (lazyOnload 優化效能) */}
         <Script
