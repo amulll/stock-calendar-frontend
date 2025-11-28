@@ -28,26 +28,33 @@ export default function StockModal({
 
   if (!isOpen) return null;
 const today = new Date();
-  today.setHours(0, 0, 0, 0); // 歸零，只比對日期
-
+  today.setHours(0, 0, 0, 0);
+  
   let currentInfo = null;
 
   if (history.length > 0) {
-      // 1. 找出所有「未來 (含今日)」的除息場次
-      // 注意：history 預設是由新到舊 (DESC) 排序 [2025-12, 2025-06, 2025-01]
-      const futureEvents = history.filter(item => {
+      // 1. 資料清洗：優先過濾掉「現金股利為 0」的資料 (避免抓到空的預告)
+      // 如果過濾完變空的(例如該股真的沒發錢)，就還是用原始列表，以免壞掉
+      const validHistory = history.filter(item => Number(item.cash_dividend) > 0 || Number(item.stock_dividend) > 0);
+      const sourceList = validHistory.length > 0 ? validHistory : history;
+
+      // 2. 找出所有「未來 (含今日)」的除息場次
+      const futureEvents = sourceList.filter(item => {
           if (!item.ex_date) return false;
           return new Date(item.ex_date) >= today;
       });
 
       if (futureEvents.length > 0) {
-          // 2. 如果有未來場次，我們要找「離今天最近」的那一筆
-          // 因為陣列是 DESC (遠 -> 近)，所以「最後一個」就是離今天最近的
-          // 例如：[D+4, D+2] -> 取 D+2
-          currentInfo = futureEvents[futureEvents.length - 1];
+          // 3. 如果有未來場次，【強制重新排序】：由近到遠 (ASC)
+          // 這樣 index 0 就會是「離今天最近」的那一筆 (D+2)
+          // 例如：[11月, 12月] -> 取 11月
+          futureEvents.sort((a, b) => new Date(a.ex_date) - new Date(b.ex_date));
+          currentInfo = futureEvents[0];
       } else {
-          // 3. 如果沒有未來場次，就顯示最新的一筆歷史紀錄
-          currentInfo = history[0];
+          // 4. 如果沒有未來場次，就顯示「最新」的一筆歷史紀錄 (DESC 排序的第一筆)
+          // 為了保險，我們也重新排一下：由遠到近 (DESC)
+          const sortedHistory = [...sourceList].sort((a, b) => new Date(b.ex_date) - new Date(a.ex_date));
+          currentInfo = sortedHistory[0];
       }
   }
 // 歷史紀錄過濾 (只顯示今天之前的)

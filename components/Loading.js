@@ -1,53 +1,73 @@
-export default function Loading({ text = "努力搬運中...", scale = 1 }) {
-  // 根據傳入的 scale 計算 style，用於縮放狗狗
-  const containerStyle = {
-    transform: `scale(${scale})`,
-    transformOrigin: "center",
-  };
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+
+export default function Loading({ text = "努力載入中..." }) {
+  const [dogWidth, setDogWidth] = useState(70);
+  const [isGrowing, setIsGrowing] = useState(true);
+  const animationRef = useRef(null);
+
+  // 自動動畫邏輯
+  useEffect(() => {
+    const animate = () => {
+      setDogWidth((prev) => {
+        let nextWidth = prev;
+        const speed = 2; // 變長的速度
+
+        if (isGrowing) {
+          nextWidth += speed;
+          if (nextWidth >= 200) setIsGrowing(false); // 最長 200px
+        } else {
+          nextWidth -= speed * 2; // 縮回速度快一點
+          if (nextWidth <= 70) setIsGrowing(true); // 最短 70px
+        }
+        return nextWidth;
+      });
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animationRef.current = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationRef.current);
+  }, [isGrowing]);
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full min-h-[200px] overflow-hidden">
-      {/* 🐶 CSS 狗狗動畫 */}
-      <div className="dog-loader" style={containerStyle}>
-        <div className="dog">
-          <div className="dog__paws">
-            <div className="dog__bl-leg leg">
-              <div className="dog__bl-paw paw"></div>
-              <div className="dog__bl-top top"></div>
-            </div>
-            <div className="dog__fl-leg leg">
-              <div className="dog__fl-paw paw"></div>
-              <div className="dog__fl-top top"></div>
-            </div>
-            <div className="dog__fr-leg leg">
-              <div className="dog__fr-paw paw"></div>
-              <div className="dog__fr-top top"></div>
-            </div>
-          </div>
+    <div className="flex flex-col items-center justify-center w-full h-full min-h-[300px] bg-slate-50 overflow-hidden">
+      
+      {/* 🐶 臘腸狗動畫區塊 */}
+      <div className="dog-container">
+        
+        {/* 身體 (寬度會動態改變) */}
+        <div className="dog" style={{ width: `${dogWidth}px` }}>
           
-          <div className="dog__body">
-            <div className="dog__tail"></div>
+          {/* 氣球 (顯示進度) */}
+          <div className="balloon" style={{ left: `${dogWidth / 2}px` }}>
+            {Math.floor(dogWidth - 70)} km
           </div>
-          
-          <div className="dog__head">
-            <div className="dog__snout">
-              <div className="dog__nose"></div>
-              <div className="dog__eyes">
-                <div className="dog__eye-l"></div>
-                <div className="dog__eye-r"></div>
-              </div>
+
+          {/* 前半部 */}
+          <div className="dog__front">
+            <div className="dog__front-body">
+              <div className="dog__face" />
+              <div className="dog__eye" />
             </div>
+            {/* 腳 (永遠是 active 狀態，因為它一直在跑) */}
+            <div className="dog__foot active" />
+            <div className="dog__foot active" />
           </div>
-          
-          <div className="dog__head-c">
-            <div className="dog__ear-l"></div>
-            <div className="dog__ear-r"></div>
+
+          {/* 後半部 */}
+          <div className="dog__back">
+            <div className="dog__back-body" />
+            <div className="dog__foot active" />
+            <div className="dog__foot active" />
+            <div className="dog__tail" />
           </div>
+        
         </div>
       </div>
 
-      {/* 文字提示 (位置往上調一點，避免離狗狗太遠) */}
-      <p className="relative -top-8 text-slate-500 font-medium text-sm tracking-wider animate-pulse bg-white/80 px-5 py-2 rounded-full border border-slate-200 shadow-sm z-10">
+      {/* 文字提示 */}
+      <p className="relative -top-10 text-slate-500 font-medium text-sm tracking-wider animate-pulse bg-white/80 px-5 py-2 rounded-full border border-slate-200 shadow-sm z-10">
         {text}
       </p>
     </div>
