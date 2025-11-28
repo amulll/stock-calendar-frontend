@@ -68,15 +68,26 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false); 
 
   // 高殖利率篩選
+  // 1. 這個狀態負責「網址同步」與「API 請求」(Commit Value)
   const [yieldThreshold, setYieldThreshold] = useState(() => {
       const y = searchParams.get("yield");
       return y ? Number(y) : 5;
   });
+
+  // 2. 這個狀態負責「UI 滑桿顯示」與「即時列表過濾」(Local Value)
+  // 這樣拖曳時列表會變，但網址不會變
+  const [localYield, setLocalYield] = useState(yieldThreshold);
+
+  // 當外部網址改變導致 yieldThreshold 變動時，同步更新 localYield
+  useEffect(() => {
+    setLocalYield(yieldThreshold);
+  }, [yieldThreshold]);
+
   const [showHighYieldOnly, setShowHighYieldOnly] = useState(() => {
       return searchParams.has("yield"); 
   });
   const [yieldMenuOpen, setYieldMenuOpen] = useState(false);         
-  const [yieldListOpen, setYieldListOpen] = useState(false);         
+  const [yieldListOpen, setYieldListOpen] = useState(false);   
   
   // Modal States
   const [selectedDate, setSelectedDate] = useState(null);
@@ -291,7 +302,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
 
     if (showHighYieldOnly) {
-        result = result.filter(d => d.yield_rate && d.yield_rate >= yieldThreshold);
+        result = result.filter(d => d.yield_rate && d.yield_rate >= localYield);
     }
 
     if (filterText) {
@@ -466,10 +477,19 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                             </div>
                             <input 
                                 type="range" min="1" max="20" step="0.5"
-                                value={yieldThreshold} 
+                                value={localYield} // 綁定到 UI 狀態
                                 onChange={(e) => {
-                                    setYieldThreshold(Number(e.target.value));
-                                    setShowHighYieldOnly(true); 
+                                    // 1. 拖曳時只更新 UI 狀態 (列表即時過濾，網址不變)
+                                    setLocalYield(Number(e.target.value));
+                                    if (!showHighYieldOnly) setShowHighYieldOnly(true);
+                                }}
+                                onMouseUp={() => {
+                                    // 2. 放開滑鼠時，才更新 Commit 狀態 (觸發網址更新)
+                                    setYieldThreshold(localYield);
+                                }}
+                                onTouchEnd={() => {
+                                    // 2. 手機版放開手指時
+                                    setYieldThreshold(localYield);
                                 }}
                                 className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
                             />
@@ -551,7 +571,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                         {div.stock_code} {div.stock_name}
                       </div>
                       {div.yield_rate > 0 && (
-                        <span className={`text-[10px] ml-1 ${div.yield_rate >= yieldThreshold ? "text-amber-600 font-bold" : "text-slate-400"}`}>
+                        <span className={`text-[10px] ml-1 ${div.yield_rate >= localYield ? "text-amber-600 font-bold" : "text-slate-400"}`}>
                             {div.yield_rate}%
                         </span>
                       )}
