@@ -63,7 +63,6 @@ export default async function StockPage({ params }) {
 
   // --- 🔥 核心修改：智慧選擇「最新股利」 (與 StockModal 邏輯同步) ---
   const today = startOfDay(new Date());
-  today.setHours(0, 0, 0, 0);
   
   let currentInfo = null;
 
@@ -197,24 +196,24 @@ export default async function StockPage({ params }) {
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
                           <td className="px-4 py-3 font-medium text-slate-700">
                             {item.pay_date ? (
-                                <Link 
+                                <a 
                                     // 🔥 修改：加入 &openModal=true 參數，實現自動跳轉並開啟 Modal
                                     href={`/?date=${item.pay_date}&openModal=true`}
                                     className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2"
                                     title="在日曆上查看當天發放清單"
                                 >
                                     {item.pay_date}
-                                </Link>
+                                </a>
                             ) : "未定"}
                           </td>
                           <td className="px-4 py-3 text-slate-500">
                              {item.ex_date ? (
-                                <Link 
-                                    href={`/?date=${item.ex_date}&openModal=true`}
+                                <a 
+                                    href={`/?date=${item.pay_date}&openModal=true`}
                                     className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2"
                                 >
                                     {item.ex_date}
-                                </Link>
+                                </a>
                              ) : "-"}
                           </td>
                           <td className="px-4 py-3 text-right font-bold text-slate-800">
