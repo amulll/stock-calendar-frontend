@@ -8,7 +8,12 @@ export default function Footer() {
           
           {/* 品牌與版權 */}
           <div className="text-center md:text-left">
-            <h3 className="font-bold text-slate-700">uGoodly 股利日曆</h3>
+            <h3 className="font-bold text-slate-700">
+              {/* 👇 修改這裡：加上 Link 元件，並設定 hover 效果 */}
+              <Link href="/" className="hover:text-blue-600 transition duration-200">
+                uGoodly 股利日曆
+              </Link>
+            </h3>
             <p className="text-xs text-slate-500 mt-1">
               © {new Date().getFullYear()} uGoodly. All rights reserved.
             </p>
@@ -31,7 +36,7 @@ export default function Footer() {
           </div>
         </div>
         
-        {/* 警語區塊 (SEO & 信任感加分) */}
+        {/* 警語區塊 */}
         <div className="mt-6 pt-6 border-t border-slate-200 text-[10px] text-slate-400 text-center md:text-left leading-relaxed">
           本網站提供之數據資料（除權息日、發放日、殖利率等）僅供參考，實際資訊請以台灣證券交易所與公開資訊觀測站公告為準。
           本網站不進行任何投資建議，使用者應自行承擔投資風險。
