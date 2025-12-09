@@ -10,7 +10,31 @@ export default function SeoContent() {
             <h3 className="text-lg font-bold text-slate-700 mb-2">什麼是股利日曆？存股族必備的領錢行事曆</h3>
             <p>
               對於長期投資台股的存股族來說，最快樂的時刻莫過於「股利發放日」。然而，券商軟體通常只顯示「除息日」，
-              對於實際現金入帳的「發放日」往往資訊破碎。uGoodly 股利日曆整合了台灣證券交易所、櫃買中心以及公開資訊觀測站 (MOPS) 的最新數據，
+              對於實際現金入帳的「發放日」往往資訊破碎。uGoodly 股利日曆整合了<a 
+                href="https://www.twse.com.tw" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:underline mx-1"
+              >
+                台灣證券交易所
+              </a>、
+              <a 
+                href="https://www.tpex.org.tw" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:underline mx-1"
+              >
+                櫃買中心
+              </a>
+              以及
+              <a 
+                href="https://mops.twse.com.tw" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:underline mx-1"
+              >
+                公開資訊觀測站 (MOPS)
+              </a> 的最新數據，
               將繁雜的除權息公告轉化為直覺的月曆視圖。無論您持有的是台積電、金融股，或是 0050、0056、00878 等熱門 ETF，
               都能在這裡快速查詢現金股利何時入帳。
             </p>
@@ -37,8 +61,36 @@ export default function SeoContent() {
           <div>
             <h3 className="text-lg font-bold text-slate-700 mb-2">資料來源與更新頻率</h3>
             <p>
-              本網站的除權息預告資料來自「台灣證券交易所 (TWSE)」與「證券櫃檯買賣中心 (TPEX)」的 Open API，
-              現金股利發放日則透過「公開資訊觀測站 (MOPS)」與「ETF e添富」網頁資訊進行補強。
+              本網站的除權息預告資料來自「<a 
+                href="https://www.twse.com.tw" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:underline mx-1"
+              >
+                台灣證券交易所
+              </a> (TWSE)」與「<a 
+                href="https://www.tpex.org.tw" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:underline mx-1"
+              >
+                證券櫃檯買賣中心
+              </a> (TPEX)」的 Open API，
+              現金股利發放日則透過「<a 
+                href="https://mops.twse.com.tw" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:underline mx-1"
+              >
+                公開資訊觀測站 (MOPS)
+              </a>」與「<a 
+                href="https://www.twse.com.tw/zh/ETFortune/index" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-blue-600 hover:underline mx-1"
+              >
+                ETF e添富
+              </a>」網頁資訊進行補強。
               系統會於每日晚上 20:00 更新，確保您掌握最新的配息動態與殖利率資訊。
               (註：預估殖利率係以最近一日收盤價計算，僅供參考，實際報酬率請以個人持有成本為準。)
             </p>
