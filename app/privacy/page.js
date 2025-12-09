@@ -1,5 +1,9 @@
+// app/privacy/page.js
+
 export const metadata = {
   title: "隱私權政策 - uGoodly 股利日曆",
+  // 👇 修改這裡：更精簡的描述
+  description: "查看 uGoodly 股利日曆隱私權政策。說明我們如何收集與保護您的個人資料，以及關於 Cookie 與第三方服務的使用規範。",
 };
 
 export default function PrivacyPage() {

@@ -1,5 +1,9 @@
+// app/disclaimer/page.js
+
 export const metadata = {
   title: "免責聲明 - uGoodly 股利日曆",
+  // 👇 這個長度 (65字) 其實 OK，維持原樣或微調皆可
+  description: "閱讀 uGoodly 股利日曆的免責聲明。本網站提供之除權息與殖利率數據僅供參考，不構成投資建議，使用者應自行審慎評估風險。",
 };
 
 export default function DisclaimerPage() {

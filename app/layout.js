@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
   title: "uGoodly 股利日曆 - 存股族的領錢行事曆",
-  description: "...",
+  description: "uGoodly 專為台股存股族打造的股利行事曆。快速查詢最新除權息日、現金股利發放日，提供個股與ETF殖利率計算、高殖利率篩選及追蹤清單，輕鬆掌握領息時間。",
   icons: {
     // 舊的 ico 留著給舊瀏覽器用
     icon: [
