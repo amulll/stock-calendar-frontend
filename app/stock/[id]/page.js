@@ -237,10 +237,10 @@ export default async function StockPage({ params }) {
                       <th className="px-4 py-3">發放日</th>
                       <th className="px-4 py-3">除息日</th>
                       {/* 👇 新增這兩欄表頭 */}
-                      <th className="px-4 py-3 text-right">除息前股價</th>
-                      <th className="px-4 py-3 text-right">殖利率</th>
+                      <th className="px-4 py-3">除息前股價</th>
+                      <th className="px-4 py-3">殖利率</th>
                       {/* 👆 新增結束 */}
-                      <th className="px-4 py-3 text-right">現金股利</th>
+                      <th className="px-4 py-3">現金股利</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -272,10 +272,10 @@ export default async function StockPage({ params }) {
                           </td>
                           
                           {/* 👇 新增這兩欄內容 */}
-                          <td className="px-4 py-3 text-right text-slate-600">
+                          <td className="px-4 py-3 text-slate-600">
                             {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
                           </td>
-                          <td className="px-4 py-3 text-right font-medium">
+                          <td className="px-4 py-3 font-medium">
                             {item.yield_rate > 0 ? (
                                 <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
                                     {item.yield_rate}%
@@ -284,7 +284,7 @@ export default async function StockPage({ params }) {
                           </td>
                           {/* 👆 新增結束 */}
 
-                          <td className="px-4 py-3 text-right font-bold text-emerald-600"> {/* 把這裡改成綠色更顯眼 */}
+                          <td className="px-4 py-3 font-bold text-emerald-600"> {/* 把這裡改成綠色更顯眼 */}
                             {Number(item.cash_dividend).toFixed(4)}
                           </td>
                         </tr>
