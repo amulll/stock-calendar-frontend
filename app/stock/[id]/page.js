@@ -3,7 +3,7 @@ import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote, ExternalLink, In
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit"; 
 import { startOfDay, parseISO } from "date-fns";
-import DividendCalculator from "../../../components/DividendCalculator"; // 👈 1. 引入試算機
+import DividendCalculator from "../../../components/DividendCalculator"; 
 
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
@@ -17,21 +17,20 @@ export async function generateMetadata({ params }) {
     return { title: "查無股票資料" };
   }
 
-  // 這裡的 info 只是為了 SEO 標題用，可以直接用第一筆，或者用排序後的最新一筆
-  // 為了跟頁面邏輯一致，我們也可以在這裡做一次簡單的排序
   const info = data[0]; 
   const year = info.ex_date ? info.ex_date.split("-")[0] : new Date().getFullYear();
 
   return {
-    title: `${info.stock_name} (${id}) ${year} 股利發放日、除息日與殖利率查詢 - uGoodly`,
-    description: `查詢 ${info.stock_name} (${id}) 最新現金股利發放日、除權息日期與歷史配息紀錄。依據目前股價 ${info.stock_price || '-'} 元計算，預估殖利率為 ${info.yield_rate || '-'}%。`,
-    keywords: [info.stock_name, id, "股利", "發放日", "除息日", "殖利率", "存股"],
+    title: `${info.stock_name} (${id}) ${year} 股利發放日、殖利率計算與股利計算 - uGoodly`,
+    description: `免費使用股利計算機，查詢 ${info.stock_name} (${id}) 最新現金股利發放日、除權息日期與配息紀錄、線上試算存股投報率。查詢 ${year} 最新除權息日、現金股利發放日，並提供即時股價換算殖利率與歷史配息紀錄。`,
+    keywords: [info.stock_name, id, "股利計算", "存股試算", "殖利率計算機", "股息試算", 
+      "股利", "發放日", "除息日", "殖利率", "存股"],
   };
 }
-// 🔥 2. 新增：自動產生 SEO 描述文字的函式
+
+// 🔥 2. 自動產生 SEO 描述文字的函式
 function generateSeoArticle(info, historicalRecords) {
     const { stock_name, stock_code, yield_rate, cash_dividend, pay_date, ex_date, stock_price } = info;
-    const year = new Date().getFullYear();
     
     // 計算平均配息 (如果有歷史資料)
     const avgDividend = historicalRecords.length > 0 
@@ -58,6 +57,18 @@ function generateSeoArticle(info, historicalRecords) {
                     </span>
                 )}
             </p>
+            
+            <h3 className="text-lg font-bold text-slate-700 mt-6 mb-2">
+                如何使用 {stock_name} 股利計算機？
+            </h3>
+            <p className="text-slate-600 leading-relaxed mb-4">
+                不想手動按計算機嗎？使用上方的<strong>「{stock_name} 股利試算機」</strong>，
+                您只需輸入預計持有的張數（例如 10 張 = 10,000 股），系統即會根據最新現金股利 
+                <strong>{cash_dividend} 元</strong>，自動計算出您可領取的總股利金額。
+                此外，您也可以輸入預計投入的資金（例如 100 萬元），系統會依據目前股價 
+                <strong>{stock_price} 元</strong>，反推您可以買進的股數與預估回報。
+            </p>
+
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-slate-700">
                 <p>
                     <strong>💡 投資小撇步：</strong>
@@ -68,19 +79,16 @@ function generateSeoArticle(info, historicalRecords) {
         </article>
     );
 }
-// 2. 資料抓取函式
+
+// 資料抓取函式
 async function getStockData(id) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-  
-  // Server Component 需要自行處理後端驗證 Token
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN; 
 
   try {
-    // 這裡使用 fetch 搭配 revalidate，不需 axios
     const res = await fetch(`${API_URL}/api/stock/${id}`, {
       next: { revalidate: 3600 },
       headers: {
-          // 如果後端有設 SecurityMiddleware，這裡記得要帶 Token
           "X-Service-Token": SERVICE_TOKEN
       }
     });
@@ -99,19 +107,15 @@ export default async function StockPage({ params }) {
   const history = await getStockData(id);
 
   if (!history || history.length === 0) {
-    return notFound(); // 回傳 404 頁面
+    return notFound(); 
   }
 
-  // --- 🔥 核心修改：智慧選擇「最新股利」 (與 StockModal 邏輯同步) ---
   const today = startOfDay(new Date());
-  
   let currentInfo = null;
 
-  // 1. 資料清洗：優先過濾掉「現金股利為 0」的資料
   const validHistory = history.filter(item => Number(item.cash_dividend) > 0 || Number(item.stock_dividend) > 0);
   const sourceList = validHistory.length > 0 ? validHistory : history;
 
-  // 2. 找出所有「未來 (含今日)」的除息場次
   const futureEvents = sourceList.filter(item => {
       if (!item.ex_date) return false;
       const exDate = parseISO(item.ex_date);
@@ -119,22 +123,38 @@ export default async function StockPage({ params }) {
   });
 
   if (futureEvents.length > 0) {
-      // 3. 未來場次：由近到遠 (ASC) 排序 -> 取最接近今天的 (index 0)
-      // (注意：這裡要複製一份 array 來 sort，以免影響原本的 history 順序)
       const sortedFuture = [...futureEvents].sort((a, b) => new Date(a.ex_date) - new Date(b.ex_date));
       currentInfo = sortedFuture[0];
   } else {
-      // 4. 歷史場次：由遠到近 (DESC) 排序 -> 取最新的 (index 0)
       const sortedHistory = [...sourceList].sort((a, b) => new Date(b.ex_date) - new Date(a.ex_date));
       currentInfo = sortedHistory[0];
   }
-  // ---------------------------------------------------
 
-  // 歷史紀錄：顯示全部資料 (包含未來與過去)
   const historicalRecords = history;
+  
+  // 準備結構化資料
+  const jsonLd = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": `${currentInfo.stock_name} 股利計算機`,
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "TWD"
+      },
+      "featureList": "股票股利試算, 殖利率換算, 投入成本計算",
+      "description": `線上免費試算 ${currentInfo.stock_name} (${id}) 現金股利與殖利率投報率。`
+  };
 
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 md:px-8">
+      {/* 👇 插入 JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-3xl mx-auto">
         
         {/* 導航列 */}
@@ -215,7 +235,7 @@ export default async function StockPage({ params }) {
               </div>
             </section>
 
-            {/* 🔥 新增：股利試算機 (插入在這裡) */}
+            {/* 股利試算機 */}
             <section>
                 <DividendCalculator 
                     stockName={currentInfo.stock_name}
@@ -230,15 +250,14 @@ export default async function StockPage({ params }) {
                 <Calendar className="text-blue-600" /> 歷史發放紀錄
               </h2>
               <div className="overflow-hidden rounded-xl border border-slate-200">
+                {/* 🌟 修改重點：已移除所有 text-right 類別，使表格預設靠左對齊 */}
                 <table className="w-full text-sm text-left">
                   <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                     <tr>
                       <th className="px-4 py-3">發放日</th>
                       <th className="px-4 py-3">除息日</th>
-                      {/* 👇 新增這兩欄表頭 */}
                       <th className="px-4 py-3">除息前股價</th>
                       <th className="px-4 py-3">殖利率</th>
-                      {/* 👆 新增結束 */}
                       <th className="px-4 py-3">現金股利</th>
                     </tr>
                   </thead>
@@ -270,7 +289,6 @@ export default async function StockPage({ params }) {
                              ) : "-"}
                           </td>
                           
-                          {/* 👇 新增這兩欄內容 */}
                           <td className="px-4 py-3 text-slate-600">
                             {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
                           </td>
@@ -281,9 +299,8 @@ export default async function StockPage({ params }) {
                                 </span>
                             ) : "-"}
                           </td>
-                          {/* 👆 新增結束 */}
 
-                          <td className="px-4 py-3 font-bold text-emerald-600"> {/* 把這裡改成綠色更顯眼 */}
+                          <td className="px-4 py-3 font-bold text-emerald-600">
                             {Number(item.cash_dividend).toFixed(4)}
                           </td>
                         </tr>
@@ -293,12 +310,13 @@ export default async function StockPage({ params }) {
                 </table>
               </div>
             </section>
-            {/* 🔥 新增：SEO 描述文章 (插入在表格下方) */}
+            
+            {/* SEO 描述文章 */}
             <section className="bg-slate-50/80 rounded-2xl p-6 border border-slate-100">
                 {generateSeoArticle(currentInfo, historicalRecords)}
             </section>            
 
-            {/* 🐱 招財貓版位 */}
+            {/* 招財貓版位 */}
             <div className="mt-8">
               <AdUnit type="rectangle" />
             </div>
