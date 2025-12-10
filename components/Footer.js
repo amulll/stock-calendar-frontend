@@ -28,7 +28,9 @@ export default function Footer() {
               隱私權政策
             </Link>
             <a 
-              href="mailto:contact@ugoodli.com" 
+              href="https://forms.gle/kiUcMifnNQ6M92sKA" // 換成您的 Google 表單網址
+              target="_blank"
+              rel="noopener noreferrer"
               className="hover:text-blue-600 transition"
             >
               聯絡我們

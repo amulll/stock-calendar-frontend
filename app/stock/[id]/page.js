@@ -54,8 +54,7 @@ function generateSeoArticle(info, historicalRecords) {
                 並預計於 <strong>{pay_date || "尚未公告"}</strong> 發放現金股利。
                 {historicalRecords.length > 1 && (
                     <span>
-                        回顧過去紀錄，{stock_name} 的歷史平均配息金額約為 {avgDividend} 元，
-                        展現了其在配息政策上的{avgDividend > 1 ? "穩健" : "表現"}。
+                        回顧過去紀錄，{stock_name} 的歷史平均配息金額約為 {avgDividend} 元。
                     </span>
                 )}
             </p>
