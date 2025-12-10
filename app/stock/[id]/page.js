@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote, ExternalLink } from "lucide-react";
+import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote, ExternalLink, Info } from "lucide-react";
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit"; 
 import { startOfDay, parseISO } from "date-fns";
