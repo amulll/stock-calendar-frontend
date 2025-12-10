@@ -3,6 +3,8 @@ import { ArrowLeft, Calendar, TrendingUp, DollarSign, Banknote, ExternalLink } f
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit"; 
 import { startOfDay, parseISO } from "date-fns";
+import DividendCalculator from "../../../components/DividendCalculator"; // 👈 1. 引入試算機
+
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
 
@@ -26,7 +28,47 @@ export async function generateMetadata({ params }) {
     keywords: [info.stock_name, id, "股利", "發放日", "除息日", "殖利率", "存股"],
   };
 }
+// 🔥 2. 新增：自動產生 SEO 描述文字的函式
+function generateSeoArticle(info, historicalRecords) {
+    const { stock_name, stock_code, yield_rate, cash_dividend, pay_date, ex_date, stock_price } = info;
+    const year = new Date().getFullYear();
+    
+    // 計算平均配息 (如果有歷史資料)
+    const avgDividend = historicalRecords.length > 0 
+        ? (historicalRecords.reduce((acc, cur) => acc + (cur.cash_dividend || 0), 0) / historicalRecords.length).toFixed(2)
+        : 0;
 
+    return (
+        <article className="prose prose-slate max-w-none">
+            <h3 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
+                <Info size={20} className="text-blue-500"/>
+                關於 {stock_name} ({stock_code}) 的配息概況
+            </h3>
+            <p className="text-slate-600 leading-relaxed mb-4">
+                <strong>{stock_name} ({stock_code})</strong> 是台股受關注的標的之一。
+                根據最新資料，該公司最新一期的現金股利為 <strong>{cash_dividend} 元</strong>。
+                以目前的參考股價 {stock_price} 元計算，其單次殖利率約為 <span className="text-amber-600 font-bold">{yield_rate}%</span>。
+            </p>
+            <p className="text-slate-600 leading-relaxed mb-4">
+                投資人若有意參與本次除權息，須注意<strong>除息交易日為 {ex_date}</strong>，
+                並預計於 <strong>{pay_date || "尚未公告"}</strong> 發放現金股利。
+                {historicalRecords.length > 1 && (
+                    <span>
+                        回顧過去紀錄，{stock_name} 的歷史平均配息金額約為 {avgDividend} 元，
+                        展現了其在配息政策上的{avgDividend > 1 ? "穩健" : "表現"}。
+                    </span>
+                )}
+            </p>
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-slate-700">
+                <p>
+                    <strong>💡 投資小撇步：</strong>
+                    想要領取 {stock_name} 的股利，必須在除息日 ({ex_date}) 的<strong>前一個交易日</strong>買進並持有。
+                    除息日當天買進的股票，將無法獲得該次配息權利。
+                </p>
+            </div>
+        </article>
+    );
+}
 // 2. 資料抓取函式
 async function getStockData(id) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -174,6 +216,15 @@ export default async function StockPage({ params }) {
               </div>
             </section>
 
+            {/* 🔥 新增：股利試算機 (插入在這裡) */}
+            <section>
+                <DividendCalculator 
+                    stockName={currentInfo.stock_name}
+                    cashDividend={currentInfo.cash_dividend}
+                    stockPrice={currentInfo.stock_price}
+                />
+            </section>
+
             {/* 歷史紀錄區塊 */}
             <section>
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">
@@ -185,19 +236,22 @@ export default async function StockPage({ params }) {
                     <tr>
                       <th className="px-4 py-3">發放日</th>
                       <th className="px-4 py-3">除息日</th>
+                      {/* 👇 新增這兩欄表頭 */}
+                      <th className="px-4 py-3 text-right">除息前股價</th>
+                      <th className="px-4 py-3 text-right">殖利率</th>
+                      {/* 👆 新增結束 */}
                       <th className="px-4 py-3 text-right">現金股利</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {historicalRecords.length === 0 ? (
-                      <tr><td colSpan="3" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
+                      <tr><td colSpan="5" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
                     ) : (
                       historicalRecords.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
                           <td className="px-4 py-3 font-medium text-slate-700">
                             {item.pay_date ? (
                                 <a 
-                                    // 🔥 修改：加入 &openModal=true 參數，實現自動跳轉並開啟 Modal
                                     href={`/?date=${item.pay_date}&openModal=true`}
                                     className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2"
                                     title="在日曆上查看當天發放清單"
@@ -216,7 +270,21 @@ export default async function StockPage({ params }) {
                                 </a>
                              ) : "-"}
                           </td>
-                          <td className="px-4 py-3 text-right font-bold text-slate-800">
+                          
+                          {/* 👇 新增這兩欄內容 */}
+                          <td className="px-4 py-3 text-right text-slate-600">
+                            {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium">
+                            {item.yield_rate > 0 ? (
+                                <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                                    {item.yield_rate}%
+                                </span>
+                            ) : "-"}
+                          </td>
+                          {/* 👆 新增結束 */}
+
+                          <td className="px-4 py-3 text-right font-bold text-emerald-600"> {/* 把這裡改成綠色更顯眼 */}
                             {Number(item.cash_dividend).toFixed(4)}
                           </td>
                         </tr>
@@ -226,6 +294,10 @@ export default async function StockPage({ params }) {
                 </table>
               </div>
             </section>
+            {/* 🔥 新增：SEO 描述文章 (插入在表格下方) */}
+            <section className="bg-slate-50/80 rounded-2xl p-6 border border-slate-100">
+                {generateSeoArticle(currentInfo, historicalRecords)}
+            </section>            
 
             {/* 🐱 招財貓版位 */}
             <div className="mt-8">
