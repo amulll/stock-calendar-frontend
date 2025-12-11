@@ -62,7 +62,7 @@ function generateSeoArticle(info, historicalRecords) {
                 如何使用 {stock_name} 股利計算機？
             </h3>
             <p className="text-slate-600 leading-relaxed mb-4">
-                不想手動按計算機嗎？使用上方的<strong>「{stock_name} 股利試算機」</strong>，
+                不想手動按計算機嗎？使用上方的<strong>「{stock_name} 股利計算機」</strong>，
                 您只需輸入預計持有的張數（例如 10 張 = 10,000 股），系統即會根據最新現金股利 
                 <strong>{cash_dividend} 元</strong>，自動計算出您可領取的總股利金額。
                 此外，您也可以輸入預計投入的資金（例如 100 萬元），系統會依據目前股價 
@@ -249,16 +249,16 @@ export default async function StockPage({ params }) {
               <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2 mb-4">
                 <Calendar className="text-blue-600" /> 歷史發放紀錄
               </h2>
-              <div className="overflow-hidden rounded-xl border border-slate-200">
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
                 {/* 🌟 修改重點：已移除所有 text-right 類別，使表格預設靠左對齊 */}
-                <table className="w-full text-sm text-left">
+                <table className="w-full text-sm text-left min-w-[600px]">
                   <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3">發放日</th>
-                      <th className="px-4 py-3">除息日</th>
-                      <th className="px-4 py-3">除息前股價</th>
-                      <th className="px-4 py-3">殖利率</th>
-                      <th className="px-4 py-3">現金股利</th>
+                      <th className="px-4 py-3 whitespace-nowrap">發放日</th>
+                      <th className="px-4 py-3 whitespace-nowrap">除息日</th>
+                      <th className="px-4 py-3 whitespace-nowrap">除息前股價</th>
+                      <th className="px-4 py-3 whitespace-nowrap">殖利率</th>
+                      <th className="px-4 py-3 whitespace-nowrap">現金股利</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">

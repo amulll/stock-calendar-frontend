@@ -189,10 +189,16 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
       <div className="bg-gradient-to-r from-violet-500 to-purple-500 p-4 text-white flex items-center justify-between">
         <h3 className="font-bold flex items-center gap-2">
-          <Calculator size={20} /> 
-          {stockName} 股利試算機
+          <Calculator size={20} className="flex-shrink-0" /> 
+          <div className="flex flex-col md:flex-row md:items-center md:gap-2 leading-tight md:leading-normal">
+            <span>{stockName}</span>
+            <span>股利計算機</span>
+          </div>
         </h3>
-        <span className="text-xs bg-white/20 px-2 py-1 rounded">現金股利: {cashDividend} 元</span>
+        {/* 右側標籤 (建議加上 whitespace-nowrap 防止換行太醜) */}
+        <span className="text-xs bg-white/20 px-2 py-1 rounded whitespace-nowrap ml-2">
+            現金股利: {cashDividend} 元
+        </span>
       </div>
       
       <div className="p-6 grid md:grid-cols-2 gap-8">
