@@ -19,6 +19,12 @@ export default async function sitemap() {
       priority: 1.0,
     },
     {
+      url: `${baseUrl}/knowledge`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7, // 給予較高的權重
+    },
+    {
       url: `${baseUrl}/privacy`,
       lastModified: new Date(),
       changeFrequency: 'yearly',

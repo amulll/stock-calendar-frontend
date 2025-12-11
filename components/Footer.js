@@ -21,6 +21,9 @@ export default function Footer() {
 
           {/* 連結選單 */}
           <div className="flex gap-6 text-sm text-slate-600">
+            <Link href="/knowledge" className="hover:text-blue-600 transition">
+              股市小教室
+            </Link>
             <Link href="/disclaimer" className="hover:text-blue-600 transition">
               免責聲明
             </Link>
