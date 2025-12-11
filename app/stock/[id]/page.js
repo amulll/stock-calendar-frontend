@@ -254,11 +254,12 @@ export default async function StockPage({ params }) {
                 <table className="w-full text-sm text-left min-w-[600px]">
                   <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                     <tr>
+                      {/* 👇 修改 3: 加入 whitespace-nowrap 防止換行 */}
                       <th className="px-4 py-3 whitespace-nowrap">發放日</th>
                       <th className="px-4 py-3 whitespace-nowrap">除息日</th>
-                      <th className="px-4 py-3 whitespace-nowrap">除息前股價</th>
-                      <th className="px-4 py-3 whitespace-nowrap">殖利率</th>
                       <th className="px-4 py-3 whitespace-nowrap">現金股利</th>
+                      <th className="px-4 py-3 whitespace-nowrap">殖利率</th>
+                      <th className="px-4 py-3 whitespace-nowrap">除息前股價</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -267,7 +268,9 @@ export default async function StockPage({ params }) {
                     ) : (
                       historicalRecords.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                          <td className="px-4 py-3 font-medium text-slate-700">
+                          
+                          {/* 1. 發放日 */}
+                          <td className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">
                             {item.pay_date ? (
                                 <a 
                                     href={`/?date=${item.pay_date}&openModal=true`}
@@ -278,7 +281,9 @@ export default async function StockPage({ params }) {
                                 </a>
                             ) : "未定"}
                           </td>
-                          <td className="px-4 py-3 text-slate-500">
+
+                          {/* 2. 除息日 */}
+                          <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
                              {item.ex_date ? (
                                 <a 
                                     href={`/?date=${item.pay_date}&openModal=true`}
@@ -288,11 +293,14 @@ export default async function StockPage({ params }) {
                                 </a>
                              ) : "-"}
                           </td>
-                          
-                          <td className="px-4 py-3 text-slate-600">
-                            {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
+
+                          {/* 3. 現金股利 (移到這裡) */}
+                          <td className="px-4 py-3 font-bold text-emerald-600 whitespace-nowrap">
+                            {Number(item.cash_dividend).toFixed(4)}
                           </td>
-                          <td className="px-4 py-3 font-medium">
+                          
+                          {/* 4. 殖利率 (移到這裡) */}
+                          <td className="px-4 py-3 font-medium whitespace-nowrap">
                             {item.yield_rate > 0 ? (
                                 <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
                                     {item.yield_rate}%
@@ -300,9 +308,11 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
 
-                          <td className="px-4 py-3 font-bold text-emerald-600">
-                            {Number(item.cash_dividend).toFixed(4)}
+                          {/* 5. 除息前股價 (移到最後) */}
+                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                            {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
                           </td>
+
                         </tr>
                       ))
                     )}
