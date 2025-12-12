@@ -237,7 +237,7 @@ export default async function StockPage({ params }) {
               {/* 股價與殖利率儀表板 */}
               <div className="grid grid-cols-2 gap-4 mt-6">
                 <div className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20">
-                  <div className="text-blue-100 text-xs mb-1">參考收盤價</div>
+                  <div className="text-blue-100 text-xs mb-1">收盤價(前一營業日)</div>
                   <div className="text-2xl font-bold">
                     {currentInfo.stock_price ? `$${currentInfo.stock_price}` : "--"}
                   </div>
@@ -245,7 +245,7 @@ export default async function StockPage({ params }) {
                 <div className={`p-4 rounded-2xl border backdrop-blur-md
                     ${currentInfo.yield_rate > 5 ? "bg-amber-500/20 border-amber-400/50 text-amber-100" : "bg-white/10 border-white/20 text-blue-100"}
                 `}>
-                  <div className="text-xs mb-1 opacity-80">預估殖利率</div>
+                  <div className="text-xs mb-1 opacity-80">殖利率(最新一期)</div>
                   <div className="text-2xl font-bold flex items-center gap-2">
                     {currentInfo.yield_rate ? `${currentInfo.yield_rate}%` : "--"}
                     {currentInfo.yield_rate > 5 && <span className="text-sm">🔥</span>}
@@ -312,8 +312,8 @@ export default async function StockPage({ params }) {
                       <th className="px-4 py-3 whitespace-nowrap">發放日</th>
                       <th className="px-4 py-3 whitespace-nowrap">除息日</th>
                       <th className="px-4 py-3 whitespace-nowrap">現金股利</th>
-                      <th className="px-4 py-3 whitespace-nowrap">填息天數</th>
                       <th className="px-4 py-3 whitespace-nowrap">殖利率</th>
+                      <th className="px-4 py-3 whitespace-nowrap">填息天數</th>
                       <th className="px-4 py-3 whitespace-nowrap">除息前股價</th>
                     </tr>
                   </thead>
@@ -321,33 +321,57 @@ export default async function StockPage({ params }) {
                     {historicalRecords.length === 0 ? (
                       <tr><td colSpan="7" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
                     ) : (
-                      historicalRecords.map((item) => {
-                        // 1. 決定這一列的「主年度」
-                        // 邏輯：優先抓發放日年份，沒有發放日才抓除息日年份
-                        const getYear = (dateStr) => dateStr ? dateStr.split("-")[0] : "";
-                        const rowYear = getYear(item.pay_date) || getYear(item.ex_date);
+                      historicalRecords.map((item, index) => {
+                        
+                        // 1. 取得年份
+                        const getYear = (record) => {
+                            if (record.pay_date) return record.pay_date.split("-")[0];
+                            if (record.ex_date) return record.ex_date.split("-")[0];
+                            return "-";
+                        };
 
-                        // 2. 智慧日期格式化函式
-                        // 如果日期的年份跟主年度一樣 -> 顯示 MM/DD
-                        // 如果不一樣 (跨年度) -> 顯示 YYYY/MM/DD
+                        const currentYear = getYear(item);
+                        
+                        // 2. 判斷是否為該年度第一筆 (rowSpan)
+                        const prevYear = index > 0 ? getYear(historicalRecords[index - 1]) : null;
+                        const isFirstOfGroup = currentYear !== prevYear;
+
+                        // 3. 計算 rowSpan 數量
+                        let rowSpanCount = 1;
+                        if (isFirstOfGroup) {
+                            for (let i = index + 1; i < historicalRecords.length; i++) {
+                                if (getYear(historicalRecords[i]) === currentYear) {
+                                    rowSpanCount++;
+                                } else {
+                                    break;
+                                }
+                            }
+                        }
+
+                        // 4. 智慧日期格式化
                         const formatSmartDate = (dateStr) => {
                             if (!dateStr) return null;
                             const [y, m, d] = dateStr.split("-");
-                            if (y === rowYear) {
-                                return `${m}/${d}`; // 同一年，簡寫
+                            if (y === currentYear) {
+                                return `${m}/${d}`; 
                             }
-                            return `${y}/${m}/${d}`; // 跨年了，顯示完整以示區別
+                            return `${y}/${m}/${d}`; 
                         };
 
                         return (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
                           
-                          {/* 1. 年度 */}
-                          <td className="px-4 py-3 text-slate-500 font-medium whitespace-nowrap">
-                            {rowYear || "-"}
-                          </td>
+                          {/* 1. 年度 (維持垂直置中與左側標題感) */}
+                          {isFirstOfGroup && (
+                              <td 
+                                rowSpan={rowSpanCount} 
+                                className="px-4 py-3 text-slate-500 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-white shadow-[1px_0_0_0_rgba(0,0,0,0.02)]"
+                              >
+                                {currentYear}
+                              </td>
+                          )}
 
-                          {/* 2. 發放日 (套用智慧格式) */}
+                          {/* 2. 發放日 */}
                           <td className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">
                             {item.pay_date ? (
                                 <a 
@@ -360,7 +384,7 @@ export default async function StockPage({ params }) {
                             ) : "未定"}
                           </td>
 
-                          {/* 3. 除息日 (套用智慧格式) */}
+                          {/* 3. 除息日 */}
                           <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
                              {item.ex_date ? (
                                 <a 
@@ -377,16 +401,20 @@ export default async function StockPage({ params }) {
                             {Number(item.cash_dividend).toFixed(4)}
                           </td>
 
-                          {/* 5. 填息天數 */}
-                          <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
-                            {item.days_to_fill ? `${item.days_to_fill} 天` : "-"}
-                          </td>
-                          
-                          {/* 6. 殖利率 */}
+                          {/* 5. 殖利率 (移到這裡) */}
                           <td className="px-4 py-3 font-medium whitespace-nowrap">
                             {item.yield_rate > 0 ? (
                                 <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
                                     {item.yield_rate}%
+                                </span>
+                            ) : "-"}
+                          </td>
+
+                          {/* 6. 填息天數 (移到這裡) */}
+                          <td className="px-4 py-3 text-slate-400 whitespace-nowrap text-center">
+                            {item.days_to_fill ? (
+                                <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                                    {item.days_to_fill} 天
                                 </span>
                             ) : "-"}
                           </td>
