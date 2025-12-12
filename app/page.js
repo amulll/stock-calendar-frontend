@@ -64,9 +64,59 @@ function CalendarFallback() {
 // 2. Page 接收 props.searchParams (Next.js 預設功能)
 export default async function Page({ searchParams }) {
   const data = await getData(searchParams);
-
+  const jsonLd = [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "uGoodly 股利日曆",
+      "url": "https://ugoodly.com",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://ugoodly.com/?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "uGoodly 台股除權息日曆",
+      "applicationCategory": "FinanceApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "TWD"
+      },
+      "description": "最直覺的台股除權息行事曆。查詢發放日、殖利率試算，不錯過每一筆股息。",
+      "featureList": "除息日查詢, 股利發放日行事曆, 殖利率試算"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "uGoodly",
+      "url": "https://ugoodly.com",
+      "logo": "https://ugoodly.com/icon.png",
+      "sameAs": [
+        // 如果有粉專可以放這裡，沒有先留空或移除 sameAs 欄位
+        // "https://www.facebook.com/ugoodly",
+        // "https://www.instagram.com/ugoodly"
+      ],
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "contact@ugoodly.com",
+        "contactType": "customer service"
+      }
+    }
+  ];
   return (
     <Suspense fallback={<CalendarFallback />}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <CalendarClient 
         initialDividends={data.initialDividends} 
         initialAllStocks={data.initialAllStocks} 

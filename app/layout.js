@@ -6,8 +6,9 @@ import Footer from "../components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
+  metadataBase: new URL('https://ugoodly.com'),
   title: "uGoodly 股利日曆｜台股除權息與現金股利發放日行事曆",
-  description: "uGoodly 專為台股存股族打造的股利行事曆。快速查詢最新除權息日、現金股利發放日，提供個股與ETF殖利率計算、高殖利率篩選及追蹤清單，輕鬆掌握領息時間。",
+  description: "uGoodly 最直覺的台股除權息行事曆。查詢發放日、殖利率試算，不錯過每一筆股息，提供個股與ETF殖利率計算、高殖利率篩選及建立自已的追蹤清單，輕鬆掌握領息時間。",
   icons: {
     // 舊的 ico 留著給舊瀏覽器用
     icon: [
@@ -21,8 +22,8 @@ export const metadata = {
     ],
   },
   openGraph: {
-    title: "uGoodly 股利日曆 - 存股族的領錢行事曆",
-    description: "最直覺的台股除權息行事曆。查詢發放日、殖利率試算，不錯過每一筆股息。",
+    title: "uGoodly 股利日曆｜台股除權息與現金股利發放日行事曆",
+    description: "最直覺的台股除權息行事曆。查詢發放日、殖利率試算，不錯過每一筆股息，提供個股與ETF殖利率計算、高殖利率篩選及建立自已的追蹤清單，輕鬆掌握領息時間。",
     url: "https://ugoodly.com",
     siteName: "uGoodly 股利日曆",
     locale: "zh_TW",
@@ -38,7 +39,7 @@ export const metadata = {
   },
   twitter: {
     card: 'summary_large_image', // 或 'summary_large_image' (大圖版，效果較好)
-    title: "uGoodly 股利日曆 - 存股族的領錢行事曆",
+    title: "uGoodly 股利日曆｜台股除權息與現金股利發放日行事曆",
     description: "最直覺的台股除權息行事曆。查詢發放日、殖利率試算，不錯過每一筆股息。",
     images: ['https://ugoodly.com/ugoodly_1200x630.png'], // 與 OG 使用同一張圖即可
   },

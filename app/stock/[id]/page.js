@@ -25,6 +25,9 @@ export async function generateMetadata({ params }) {
     description: `免費使用股利計算機，查詢 ${info.stock_name} (${id}) 最新現金股利發放日、除權息日期與配息紀錄、線上試算存股投報率。查詢 ${year} 最新除權息日、現金股利發放日，並提供即時股價換算殖利率與歷史配息紀錄。`,
     keywords: [info.stock_name, id, "股利計算", "存股試算", "殖利率計算機", "股息試算", 
       "股利", "發放日", "除息日", "殖利率", "存股"],
+    alternates: {
+      canonical: `https://ugoodly.com/stock/${id}`,
+    },
     openGraph: {
       title: `${info.stock_name} (${id}) 股利發放日與試算`,
       description: `查詢 ${info.stock_name} 最新現金股利與殖利率，使用線上計算機試算存股回報。`,
@@ -171,7 +174,24 @@ export default async function StockPage({ params }) {
       "featureList": "股票股利試算, 殖利率換算, 投入成本計算",
       "description": `線上免費試算 ${currentInfo.stock_name} (${id}) 現金股利與殖利率投報率。`
   };
-
+  const breadcrumbLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "首頁",
+      "item": "https://ugoodly.com"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": `${currentInfo.stock_name} (${id})`,
+      "item": `https://ugoodly.com/stock/${id}`
+    }
+  ]
+};
   return (
     <main className="min-h-screen bg-slate-50 py-8 px-4 md:px-8">
       {/* 👇 插入 JSON-LD */}
@@ -179,6 +199,10 @@ export default async function StockPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+    />
       <div className="max-w-3xl mx-auto">
         
         {/* 導航列 */}

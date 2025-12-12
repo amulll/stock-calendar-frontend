@@ -7,6 +7,6 @@ export default function robots() {
       allow: '/',
       disallow: '/private/',
     },
-    sitemap: 'https://ugoodli.com/sitemap.xml',
+    sitemap: 'https://ugoodly.com/sitemap.xml',
   }
 }
