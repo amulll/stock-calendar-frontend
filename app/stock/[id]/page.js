@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit"; 
 import { startOfDay, parseISO } from "date-fns";
 import DividendCalculator from "../../../components/DividendCalculator"; 
+import DividendChart from "../../../components/DividendChart"; // 👈 新增這行
 
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 3600;
@@ -290,6 +291,10 @@ export default async function StockPage({ params }) {
                     cashDividend={currentInfo.cash_dividend}
                     stockPrice={currentInfo.stock_price}
                 />
+            </section>
+            {/* 🔥 新增：歷年股利圖表 (插入在這裡) */}
+            <section>
+                <DividendChart history={historicalRecords} />
             </section>
 
             {/* 歷史紀錄區塊 */}
