@@ -1,73 +1,67 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Calculator } from "lucide-react";
 
 export default function DividendCalculator({ stockName, cashDividend, stockPrice }) {
-  // --- 1. 狀態管理 (全部使用字串以支援逗號與小數點輸入) ---
+  // 1. 狀態管理 (全部儲存為「帶逗號的字串」)
   const [priceStr, setPriceStr] = useState("");
   const [sharesStr, setSharesStr] = useState("1,000");
   const [investStr, setInvestStr] = useState("");
 
-  // 綁定 DOM 元素以處理滾輪事件
+  // 綁定 DOM 元素
   const priceRef = useRef(null);
   const sharesRef = useRef(null);
   const investRef = useRef(null);
 
-  // --- 2. 初始化與同步 ---
+  // 游標位置紀錄 (用於解決游標跳動問題)
+  const cursorRef = useRef(null);
+
+  // 2. 初始化：當外部 props 更新時，重置計算
   useEffect(() => {
     if (stockPrice) {
-      const pStr = formatNumber(stockPrice); // 預設保留原樣 (含小數)
+      const pStr = formatValue(stockPrice); 
       setPriceStr(pStr);
       
-      // 計算預設投入 (1000股)
       const defaultShares = 1000;
       const total = defaultShares * stockPrice;
       
-      setSharesStr(formatNumber(defaultShares, 0)); // 股數不含小數
-      setInvestStr(formatNumber(Math.floor(total), 0)); // 金額取整
+      setSharesStr(formatValue(defaultShares)); 
+      setInvestStr(formatValue(Math.floor(total))); 
     }
   }, [stockPrice]);
 
   // --- 3. 核心工具函式 ---
 
-  // 字串轉數字 (移除逗號)
-  const parseVal = (str) => {
-    if (!str) return 0;
-    // 移除逗號後轉浮點數
-    const cleanStr = str.toString().replace(/,/g, "");
-    return parseFloat(cleanStr);
-  };
-
-  // 數字轉千分位字串
-  // decimals: 指定小數位數，undefined 代表不處理(保留原樣), 0 代表整數
-  const formatNumber = (val, decimals) => {
-    if (val === "" || val === undefined || isNaN(val)) return "";
+  // 數值 -> 帶逗號字串 (支援小數)
+  const formatValue = (val) => {
+    if (val === "" || val === undefined || isNaN(Number(val))) return "";
     
-    let num = Number(val);
-    if (decimals !== undefined) {
-        // 如果有指定位數 (例如金額 0)，就四捨五入
-        // 但為了輸入體驗，通常我們只在計算結果輸出時強制位數
-        // 輸入時我們只加逗號
-        if (decimals === 0) num = Math.floor(num);
-    }
-
-    // 轉字串並加逗號
-    // 注意：這裡使用簡單的正則，不更動小數點
-    const parts = num.toString().split(".");
+    const str = val.toString();
+    const parts = str.split(".");
+    // 整數部分加逗號
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     return parts.join(".");
   };
 
-  // 處理輸入格式化 (允許輸入 "1,000.")
+  // 帶逗號字串 -> 純數字
+  const parseVal = (str) => {
+    if (!str) return 0;
+    const cleanStr = str.toString().replace(/,/g, "");
+    return parseFloat(cleanStr);
+  };
+
+  // 輸入格式化：允許輸入過程中的小數點，並即時加逗號
   const formatInput = (raw) => {
-    // 1. 移除舊逗號
+    // 移除舊逗號
     const val = raw.replace(/,/g, "");
     if (val === "") return "";
-    if (isNaN(Number(val)) && val !== "." && val !== "-") return raw; // 非數字不處理 (除了正在打小數點)
+    
+    // 允許輸入小數點或負號 (雖然這裡不應該有負號)
+    if (isNaN(Number(val)) && val !== "." && !val.endsWith(".")) return raw;
 
-    // 2. 加上逗號 (保留小數點)
     const parts = val.split(".");
+    // 限制整數部分長度 (避免爆掉) & 加逗號
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     
     // 限制只能有一個小數點
@@ -76,67 +70,105 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
     return parts.join(".");
   };
 
-  // --- 4. 輸入變更處理 (雙向連動) ---
+  // --- 4. 游標管理 Hook (核心魔法 🪄) ---
+  // 在 DOM 更新後，立即計算並恢復游標位置
+  useLayoutEffect(() => {
+    if (cursorRef.current && cursorRef.current.element) {
+        const { element, start, lengthBefore } = cursorRef.current;
+        const lengthAfter = element.value.length;
+        
+        // 算法：新位置 = 舊位置 + (新字串長度 - 舊字串長度)
+        // 這樣當逗號增加或減少時，游標會跟著移動，不會被擠到後面
+        const newPos = Math.max(0, start + (lengthAfter - lengthBefore));
+        
+        element.setSelectionRange(newPos, newPos);
+        cursorRef.current = null; // 重置
+    }
+  }, [priceStr, sharesStr, investStr]);
 
-  // A. 改股價 -> 變更 金額 (股數不變)
+  // 通用變更處理器 (包裝了游標記錄邏輯)
+  const handleChangeWithCursor = (e, setValue, callback) => {
+    const element = e.target;
+    // 1. 記錄變更前的游標與長度
+    cursorRef.current = {
+        element,
+        start: element.selectionStart,
+        lengthBefore: element.value.length
+    };
+
+    // 2. 格式化新值
+    const newStr = formatInput(e.target.value);
+    
+    // 3. 更新狀態 (這會觸發 re-render -> useLayoutEffect)
+    setValue(newStr);
+    
+    // 4. 執行連動計算
+    if (callback) callback(newStr);
+  };
+
+  // --- 5. 輸入邏輯 (雙向連動) ---
+
   const handlePriceChange = (e) => {
-    const newStr = formatInput(e.target.value);
-    setPriceStr(newStr);
-    
-    const p = parseVal(newStr);
-    const s = parseVal(sharesStr);
-    
-    if (!isNaN(p) && !isNaN(s)) {
-        setInvestStr(formatNumber(Math.floor(p * s), 0));
-    }
+    handleChangeWithCursor(e, setPriceStr, (newStr) => {
+        const p = parseVal(newStr);
+        const s = parseVal(sharesStr);
+        if (!isNaN(p) && !isNaN(s)) {
+            // 連動計算金額 (取整數)
+            setInvestStr(formatValue(Math.floor(p * s)));
+        }
+    });
   };
 
-  // B. 改股數 -> 變更 金額 (股價不變)
-  const handleSharesChange = (e) => { // 這裡 e 可能是 event 或直接數值
-    let val = e.target ? e.target.value : e;
-    const newStr = formatInput(String(val));
-    setSharesStr(newStr);
-
-    const s = parseVal(newStr);
-    const p = parseVal(priceStr);
-
-    if (!isNaN(s) && !isNaN(p)) {
-        setInvestStr(formatNumber(Math.floor(s * p), 0));
+  const handleSharesChange = (e) => { 
+    // 如果是快速按鈕 (直接傳數值)，不需處理游標
+    if (!e.target) {
+        const val = String(e);
+        const newStr = formatValue(val);
+        setSharesStr(newStr);
+        const s = parseVal(newStr);
+        const p = parseVal(priceStr);
+        if (!isNaN(s) && !isNaN(p)) {
+            setInvestStr(formatValue(Math.floor(s * p)));
+        }
+        return;
     }
+
+    handleChangeWithCursor(e, setSharesStr, (newStr) => {
+        const s = parseVal(newStr);
+        const p = parseVal(priceStr);
+        if (!isNaN(s) && !isNaN(p)) {
+            setInvestStr(formatValue(Math.floor(s * p)));
+        }
+    });
   };
 
-  // C. 改金額 -> 變更 股數 (股價不變)
   const handleInvestChange = (e) => {
-    const newStr = formatInput(e.target.value);
-    setInvestStr(newStr);
-
-    const i = parseVal(newStr);
-    const p = parseVal(priceStr);
-
-    if (!isNaN(i) && p > 0) {
-        const newShares = Math.floor(i / p);
-        setSharesStr(formatNumber(newShares, 0));
-    }
+    handleChangeWithCursor(e, setInvestStr, (newStr) => {
+        const i = parseVal(newStr);
+        const p = parseVal(priceStr);
+        if (!isNaN(i) && p > 0) {
+            // 連動計算股數 (取整數)
+            setSharesStr(formatValue(Math.floor(i / p)));
+        }
+    });
   };
 
-  // --- 5. 滾輪事件處理 (防止頁面捲動) ---
-  
-  // 我們使用 useEffect 直接綁定原生事件，因為 React 的 onWheel 無法將 passive 設為 false
+  // --- 6. 滾輪邏輯 (防滾動 + 數值微調) ---
   useEffect(() => {
     const handleNativeWheel = (e, type) => {
-        // 只有當元素是 focus 狀態時才觸發
+        // 只有在 focus 時才觸發
         if (document.activeElement === e.target) {
-            e.preventDefault(); // 🛑 這是關鍵：阻止瀏覽器預設的滾動行為
+            e.preventDefault(); // 🛑 阻止頁面捲動
 
-            const delta = e.deltaY > 0 ? -1 : 1; // 往上滾(+), 往下滾(-)
+            const delta = e.deltaY > 0 ? -1 : 1; 
 
             if (type === 'price') {
                 const current = parseVal(priceRef.current.value);
                 const step = 0.5;
                 const next = Math.max(0, current + delta * step);
                 
-                // 模擬 Event 呼叫 handler
-                handlePriceChange({ target: { value: next.toFixed(1) } }); // 格式化為小數
+                // 模擬 Event 呼叫 handler (toFixed 避免浮點數誤差)
+                handlePriceChange({ target: { value: next.toFixed(1) } });
 
             } else if (type === 'shares') {
                 const current = parseVal(sharesRef.current.value);
@@ -155,11 +187,11 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
         }
     };
 
-    // 分別綁定三個輸入框
     const pNode = priceRef.current;
     const sNode = sharesRef.current;
     const iNode = investRef.current;
 
+    // 使用 passive: false 才能 preventDefault
     const pHandler = (e) => handleNativeWheel(e, 'price');
     const sHandler = (e) => handleNativeWheel(e, 'shares');
     const iHandler = (e) => handleNativeWheel(e, 'invest');
@@ -173,9 +205,9 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
         if (sNode) sNode.removeEventListener('wheel', sHandler);
         if (iNode) iNode.removeEventListener('wheel', iHandler);
     };
-  }, [priceStr, sharesStr, investStr]); // 依賴變數，確保 handler 拿到最新值
+  }, [priceStr, sharesStr, investStr]); 
 
-  // --- 6. 計算顯示結果 ---
+  // --- 7. 計算最終結果 ---
   const currentPrice = parseVal(priceStr);
   const currentShares = parseVal(sharesStr);
   
@@ -195,7 +227,6 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
             <span>股利計算機</span>
           </div>
         </h3>
-        {/* 右側標籤 (建議加上 whitespace-nowrap 防止換行太醜) */}
         <span className="text-xs bg-white/20 px-2 py-1 rounded whitespace-nowrap ml-2">
             現金股利: {cashDividend} 元
         </span>
@@ -223,11 +254,10 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
             <div className="flex gap-2 mt-1 justify-end">
                 <button 
                     onClick={() => {
-                        // 重置按鈕
-                        const pStr = formatNumber(stockPrice);
+                        const pStr = formatValue(stockPrice);
                         setPriceStr(pStr);
                         const s = parseVal(sharesStr);
-                        setInvestStr(formatNumber(Math.floor(s * stockPrice), 0));
+                        setInvestStr(formatValue(Math.floor(s * stockPrice)));
                     }} 
                     className="text-[10px] text-violet-600 hover:underline flex items-center gap-1"
                 >
@@ -283,7 +313,6 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
         {/* 結果區 */}
         <div className="bg-slate-50 rounded-xl p-5 flex flex-col justify-center space-y-6 border border-slate-100">
             
-            {/* 試算殖利率 (隨股價變動) */}
             <div className="text-center">
                 <div className="text-xs text-slate-500 mb-1">試算殖利率</div>
                 <div className="text-4xl font-extrabold text-amber-500 tracking-tight">
@@ -300,14 +329,14 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
                 <div className="flex justify-between items-center">
                     <div className="text-sm text-slate-500">預估領取股利</div>
                     <div className="text-2xl font-bold text-emerald-600">
-                        ${formatNumber(Math.round(totalDividend), 0)}
+                        ${formatValue(Math.round(totalDividend))}
                     </div>
                 </div>
                 
                 <div className="flex justify-between items-center">
                     <div className="text-sm text-slate-500">持有成本市值</div>
                     <div className="text-xl font-bold text-slate-700">
-                        ${formatNumber(Math.round(totalMarketValue), 0)}
+                        ${formatValue(Math.round(totalMarketValue))}
                     </div>
                 </div>
             </div>
