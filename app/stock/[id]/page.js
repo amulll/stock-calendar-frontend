@@ -410,9 +410,9 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
 
-                          {/* 6. 填息天數 (移到這裡) */}
+                          {/* 6. 填息天數 */}
                           <td className="px-4 py-3 text-slate-400 whitespace-nowrap text-center">
-                            {item.days_to_fill ? (
+                            {item.days_to_fill && item.days_to_fill > 0 ? ( // 👈 多加這個判斷 > 0
                                 <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
                                     {item.days_to_fill} 天
                                 </span>
