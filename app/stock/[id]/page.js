@@ -22,16 +22,16 @@ export async function generateMetadata({ params }) {
   const year = info.ex_date ? info.ex_date.split("-")[0] : new Date().getFullYear();
   const ogImageUrl = `https://ugoodly.com/ugoodly_1200x630.png`;
   return {
-    title: `${info.stock_name} (${id}) ${year} 股利發放日、殖利率計算與股利計算 - uGoodly`,
+    title: `${info.stock_name} (${id}) ${year} 股利配息日、殖利率與股利計算 - uGoodly`,
     description: `免費使用股利計算機，查詢 ${info.stock_name} (${id}) 最新現金股利發放日、除權息日期與配息紀錄、線上試算存股投報率。查詢 ${year} 最新除權息日、現金股利發放日，並提供即時股價換算殖利率與歷史配息紀錄。`,
     keywords: [info.stock_name, id, "股利計算", "存股試算", "殖利率計算機", "股息試算", 
-      "股利", "發放日", "除息日", "殖利率", "存股"],
+      "股利", "發放日", "除息日", "殖利率", "存股","配息日"],
     alternates: {
       canonical: `https://ugoodly.com/stock/${id}`,
     },
     openGraph: {
       title: `${info.stock_name} (${id}) 股利發放日與試算`,
-      description: `查詢 ${info.stock_name} 最新現金股利與殖利率，使用線上計算機試算存股回報。`,
+      description: `查詢 ${info.stock_name} 最新現金股利與殖利率，使用免費股利計算機試算存股回報。`,
       url: `https://ugoodly.com/stock/${id}`,
       siteName: 'uGoodly 股利日曆',
       locale: 'zh_TW',
@@ -308,21 +308,46 @@ export default async function StockPage({ params }) {
                   <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                     <tr>
                       {/* 👇 修改 3: 加入 whitespace-nowrap 防止換行 */}
+                      <th className="px-4 py-3 whitespace-nowrap">年度</th>
                       <th className="px-4 py-3 whitespace-nowrap">發放日</th>
                       <th className="px-4 py-3 whitespace-nowrap">除息日</th>
                       <th className="px-4 py-3 whitespace-nowrap">現金股利</th>
+                      <th className="px-4 py-3 whitespace-nowrap">填息天數</th>
                       <th className="px-4 py-3 whitespace-nowrap">殖利率</th>
                       <th className="px-4 py-3 whitespace-nowrap">除息前股價</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {historicalRecords.length === 0 ? (
-                      <tr><td colSpan="5" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
+                      <tr><td colSpan="7" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
                     ) : (
-                      historicalRecords.map((item) => (
+                      historicalRecords.map((item) => {
+                        // 1. 決定這一列的「主年度」
+                        // 邏輯：優先抓發放日年份，沒有發放日才抓除息日年份
+                        const getYear = (dateStr) => dateStr ? dateStr.split("-")[0] : "";
+                        const rowYear = getYear(item.pay_date) || getYear(item.ex_date);
+
+                        // 2. 智慧日期格式化函式
+                        // 如果日期的年份跟主年度一樣 -> 顯示 MM/DD
+                        // 如果不一樣 (跨年度) -> 顯示 YYYY/MM/DD
+                        const formatSmartDate = (dateStr) => {
+                            if (!dateStr) return null;
+                            const [y, m, d] = dateStr.split("-");
+                            if (y === rowYear) {
+                                return `${m}/${d}`; // 同一年，簡寫
+                            }
+                            return `${y}/${m}/${d}`; // 跨年了，顯示完整以示區別
+                        };
+
+                        return (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
                           
-                          {/* 1. 發放日 */}
+                          {/* 1. 年度 */}
+                          <td className="px-4 py-3 text-slate-500 font-medium whitespace-nowrap">
+                            {rowYear || "-"}
+                          </td>
+
+                          {/* 2. 發放日 (套用智慧格式) */}
                           <td className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">
                             {item.pay_date ? (
                                 <a 
@@ -330,29 +355,34 @@ export default async function StockPage({ params }) {
                                     className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2"
                                     title="在日曆上查看當天發放清單"
                                 >
-                                    {item.pay_date}
+                                    {formatSmartDate(item.pay_date)}
                                 </a>
                             ) : "未定"}
                           </td>
 
-                          {/* 2. 除息日 */}
+                          {/* 3. 除息日 (套用智慧格式) */}
                           <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
                              {item.ex_date ? (
                                 <a 
                                     href={`/?date=${item.pay_date}&openModal=true`}
                                     className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2"
                                 >
-                                    {item.ex_date}
+                                    {formatSmartDate(item.ex_date)}
                                 </a>
                              ) : "-"}
                           </td>
 
-                          {/* 3. 現金股利 (移到這裡) */}
+                          {/* 4. 現金股利 */}
                           <td className="px-4 py-3 font-bold text-emerald-600 whitespace-nowrap">
                             {Number(item.cash_dividend).toFixed(4)}
                           </td>
+
+                          {/* 5. 填息天數 */}
+                          <td className="px-4 py-3 text-slate-400 whitespace-nowrap">
+                            {item.days_to_fill ? `${item.days_to_fill} 天` : "-"}
+                          </td>
                           
-                          {/* 4. 殖利率 (移到這裡) */}
+                          {/* 6. 殖利率 */}
                           <td className="px-4 py-3 font-medium whitespace-nowrap">
                             {item.yield_rate > 0 ? (
                                 <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
@@ -361,13 +391,13 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
 
-                          {/* 5. 除息前股價 (移到最後) */}
+                          {/* 7. 除息前股價 */}
                           <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                             {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
                           </td>
 
                         </tr>
-                      ))
+                      )})
                     )}
                   </tbody>
                 </table>
