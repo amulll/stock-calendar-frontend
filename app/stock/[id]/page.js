@@ -64,7 +64,13 @@ function generateSeoArticle(info, historicalRecords) {
     const avgDividend = historicalRecords.length > 0 
         ? (historicalRecords.reduce((acc, cur) => acc + (cur.cash_dividend || 0), 0) / historicalRecords.length).toFixed(2)
         : 0;
-
+    //  🔥 新增：計算平均填息天數
+    // 過濾出有效的填息紀錄 (排除 null, undefined, 和 -1 錯誤碼)
+    const validFillRecords = historicalRecords.filter(r => 
+        r.days_to_fill !== null && 
+        r.days_to_fill !== undefined && 
+        r.days_to_fill >= 0
+    );
     return (
         <article className="prose prose-slate max-w-none">
             <h3 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
@@ -72,16 +78,23 @@ function generateSeoArticle(info, historicalRecords) {
                 關於 {stock_name} ({stock_code}) 的配息概況
             </h3>
             <p className="text-slate-600 leading-relaxed mb-4">
-                <strong>{stock_name} ({stock_code})</strong> 是台股受關注的標的之一。
+                <strong>{stock_name} ({stock_code})</strong> 
                 根據最新資料，該公司最新一期的現金股利為 <strong>{cash_dividend} 元</strong>。
-                以目前的參考股價 {stock_price} 元計算，其單次殖利率約為 <span className="text-amber-600 font-bold">{yield_rate}%</span>。
+                以目前的參考股價 {stock_price} 元計算，其單次殖利率為 <span className="text-amber-600 font-bold">{yield_rate}%</span>。
             </p>
             <p className="text-slate-600 leading-relaxed mb-4">
                 投資人若有意參與本次除權息，須注意<strong>除息交易日為 {ex_date}</strong>，
                 並預計於 <strong>{pay_date || "尚未公告"}</strong> 發放現金股利。
                 {historicalRecords.length > 1 && (
                     <span>
-                        回顧過去紀錄，{stock_name} 的歷史平均配息金額約為 {avgDividend} 元。
+                        回顧過去紀錄，{stock_name} 的歷史平均配息金額約為 {avgDividend} 元
+                        {avgFillDays ? (
+                            <>
+                                ，平均填息天數約為 <strong className="text-slate-700">{avgFillDays} 天</strong>。
+                            </>
+                        ) : (
+                            <>。</>
+                        )}
                     </span>
                 )}
             </p>
