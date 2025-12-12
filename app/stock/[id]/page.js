@@ -19,12 +19,36 @@ export async function generateMetadata({ params }) {
 
   const info = data[0]; 
   const year = info.ex_date ? info.ex_date.split("-")[0] : new Date().getFullYear();
-
+  const ogImageUrl = `https://ugoodly.com/ugoodly_1200x630.png`;
   return {
     title: `${info.stock_name} (${id}) ${year} 股利發放日、殖利率計算與股利計算 - uGoodly`,
     description: `免費使用股利計算機，查詢 ${info.stock_name} (${id}) 最新現金股利發放日、除權息日期與配息紀錄、線上試算存股投報率。查詢 ${year} 最新除權息日、現金股利發放日，並提供即時股價換算殖利率與歷史配息紀錄。`,
     keywords: [info.stock_name, id, "股利計算", "存股試算", "殖利率計算機", "股息試算", 
       "股利", "發放日", "除息日", "殖利率", "存股"],
+    openGraph: {
+      title: `${info.stock_name} (${id}) 股利發放日與試算`,
+      description: `查詢 ${info.stock_name} 最新現金股利與殖利率，使用線上計算機試算存股回報。`,
+      url: `https://ugoodly.com/stock/${id}`,
+      siteName: 'uGoodly 股利日曆',
+      locale: 'zh_TW',
+      type: 'website',
+      images: [
+        {
+          url: ogImageUrl, // 指定圖片網址
+          width: 192,      // icon.png 的寬度
+          height: 192,     // icon.png 的高度
+          alt: 'uGoodly Logo',
+        },
+      ],
+    },
+    
+    // 👇 建議同時加上 Twitter Card 設定 (雖然台灣少用，但對 SEO 完整性有幫助)
+    twitter: {
+      card: 'summary_large_image',
+      title: `${info.stock_name} (${id}) 股利日曆`,
+      description: `查詢 ${info.stock_name} 殖利率與除息日`,
+      images: [ogImageUrl],
+    },
   };
 }
 
