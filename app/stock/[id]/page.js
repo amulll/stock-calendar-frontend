@@ -71,6 +71,9 @@ function generateSeoArticle(info, historicalRecords) {
         r.days_to_fill !== undefined && 
         r.days_to_fill >= 0
     );
+    const avgFillDays = validFillRecords.length > 0
+        ? (validFillRecords.reduce((acc, cur) => acc + cur.days_to_fill, 0) / validFillRecords.length).toFixed(1) // 取小數點一位
+        : null;
     return (
         <article className="prose prose-slate max-w-none">
             <h3 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
