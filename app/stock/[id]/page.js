@@ -175,7 +175,14 @@ export default async function StockPage({ params }) {
   }
 
   const historicalRecords = history;
-  
+  const formatDividend = (val) => {
+        const num = Number(val || 0);
+        // 使用 toLocaleString: 最少 2 位小數，最多允許 8 位 (呈現完整精度)
+        return num.toLocaleString('en-US', { 
+            minimumFractionDigits: 2, 
+            maximumFractionDigits: 8 
+        });
+    };
   // 準備結構化資料
   const jsonLd = {
       "@context": "https://schema.org",
@@ -323,21 +330,28 @@ export default async function StockPage({ params }) {
                 <table className="w-full text-sm text-left min-w-[600px]">
                   <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 whitespace-nowrap">年度</th>
-                      {/* 👇 新增這一行：單次股利 */}
-                      <th className="px-4 py-3 whitespace-nowrap text-emerald-600">單次股利</th>
-                      <th className="px-4 py-3 whitespace-nowrap">發放日</th>
-                      <th className="px-4 py-3 whitespace-nowrap">除息日</th>
-                      {/* 為了區別，原本的標題我稍微改了一下名稱，讓使用者知道這是加總 */}
-                      <th className="px-4 py-3 whitespace-nowrap">年度總股利</th>
-                      <th className="px-4 py-3 whitespace-nowrap">年度總殖利率</th>
-                      <th className="px-4 py-3 whitespace-nowrap">填息天數</th>
-                      <th className="px-4 py-3 whitespace-nowrap">除息前股價</th>
+                      {/* 👇 修改: padding 改小 (px-2 py-2) */}
+                      <th className="px-2 py-2 whitespace-nowrap">年度</th>
+                      
+                      {/* 👇 修改: 名稱改為「股利」 */}
+                      <th className="px-2 py-2 whitespace-nowrap text-emerald-600">股利</th>
+                      
+                      <th className="px-2 py-2 whitespace-nowrap">發放日</th>
+                      <th className="px-2 py-2 whitespace-nowrap">除息日</th>
+                      
+                      {/* 👇 修改: 名稱改為「股利(年)」 */}
+                      <th className="px-2 py-2 whitespace-nowrap">股利(年)</th>
+                      
+                      {/* 👇 修改: 名稱改為「殖利率(年)」 */}
+                      <th className="px-2 py-2 whitespace-nowrap">殖利率(年)</th>
+                      
+                      <th className="px-2 py-2 whitespace-nowrap">填息天數</th>
+                      <th className="px-2 py-2 whitespace-nowrap">除息前股價</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {historicalRecords.length === 0 ? (
-                      <tr><td colSpan="8" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
+                      <tr><td colSpan="8" className="px-2 py-8 text-center text-slate-400">無過去紀錄</td></tr>
                     ) : (
                       historicalRecords.map((item, index) => {
                         
@@ -356,8 +370,8 @@ export default async function StockPage({ params }) {
 
                         // 3. 計算 rowSpan 數量 與 年度加總
                         let rowSpanCount = 1;
-                        let totalCash = 0;  // 該年度總現金股利
-                        let totalYield = 0; // 該年度總殖利率
+                        let totalCash = 0;  
+                        let totalYield = 0; 
 
                         if (isFirstOfGroup) {
                             totalCash += Number(item.cash_dividend || 0);
@@ -387,23 +401,23 @@ export default async function StockPage({ params }) {
                         return (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
                           
-                          {/* 1. 年度 (合併顯示) */}
+                          {/* 1. 年度 (px-2 py-2) */}
                           {isFirstOfGroup && (
                               <td 
                                 rowSpan={rowSpanCount} 
-                                className="px-4 py-3 text-slate-500 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-white"
+                                className="px-2 py-2 text-slate-500 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-white"
                               >
                                 {currentYear}
                               </td>
                           )}
 
-                          {/* 2. 🔥 新增：單次股利 (不合併，顯示每一筆) */}
-                          <td className="px-4 py-3 font-bold text-emerald-600/80 whitespace-nowrap">
-                            {Number(item.cash_dividend).toFixed(4)}
+                          {/* 2. 股利 (單次) - 使用 formatDividend */}
+                          <td className="px-2 py-2 font-bold text-emerald-600/80 whitespace-nowrap">
+                            {formatDividend(item.cash_dividend)}
                           </td>
 
                           {/* 3. 發放日 */}
-                          <td className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">
+                          <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">
                             {item.pay_date ? (
                                 <a 
                                     href={`/?date=${item.pay_date}&openModal=true`}
@@ -415,7 +429,7 @@ export default async function StockPage({ params }) {
                           </td>
 
                           {/* 4. 除息日 */}
-                          <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
+                          <td className="px-2 py-2 text-slate-500 whitespace-nowrap">
                             {item.ex_date ? (
                                 <a 
                                     href={`/?date=${item.pay_date}&openModal=true`}
@@ -426,27 +440,27 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
 
-                          {/* 5. 年度總股利 (合併顯示) */}
+                          {/* 5. 股利(年) - 使用 formatDividend */}
                           {isFirstOfGroup && (
                             <td 
                               rowSpan={rowSpanCount} 
-                              className="px-4 py-3 font-bold text-emerald-600 whitespace-nowrap text-center align-middle bg-white/50 border-l border-slate-100"
+                              className="px-2 py-2 font-bold text-emerald-600 whitespace-nowrap text-center align-middle bg-white/50 border-l border-slate-100"
                             >
-                              {totalCash.toFixed(2)}
+                              {formatDividend(totalCash)}
                               {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 block font-normal">(合計)</span>}
                             </td>
                           )}
 
-                          {/* 6. 年度總殖利率 (合併顯示) */}
+                          {/* 6. 殖利率(年) */}
                           {isFirstOfGroup && (
                             <td 
                               rowSpan={rowSpanCount} 
-                              className="px-4 py-3 font-medium whitespace-nowrap text-center align-middle bg-white/50"
+                              className="px-2 py-2 font-medium whitespace-nowrap text-center align-middle bg-white/50"
                             >
                               {totalYield > 0 ? (
                                   <div className="flex flex-col items-center">
                                     <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-                                        {totalYield.toFixed(2)}%
+                                        {formatDividend(totalYield)}%
                                     </span>
                                     {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 mt-0.5">(合計)</span>}
                                   </div>
@@ -455,7 +469,7 @@ export default async function StockPage({ params }) {
                           )}
 
                           {/* 7. 填息天數 */}
-                          <td className="px-4 py-3 text-slate-400 whitespace-nowrap text-center">
+                          <td className="px-2 py-2 text-slate-400 whitespace-nowrap text-center">
                             {item.days_to_fill && item.days_to_fill > 0 ? (
                                 <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
                                     {item.days_to_fill} 天
@@ -464,7 +478,7 @@ export default async function StockPage({ params }) {
                           </td>
 
                           {/* 8. 除息前股價 */}
-                          <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                          <td className="px-2 py-2 text-slate-600 whitespace-nowrap">
                             {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
                           </td>
 
