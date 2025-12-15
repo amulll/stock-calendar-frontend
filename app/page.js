@@ -3,6 +3,12 @@ import Loading from "../components/Loading"; // 1. 引入
 import { format } from "date-fns";
 import { Suspense } from "react";
 
+// 👇👇👇 新增這段：首頁專屬的標準網址設定
+export const metadata = {
+  alternates: {
+    canonical: 'https://ugoodly.com',
+  },
+};
 // 資料抓取函式 (加入參數)
 async function getData(searchParams) {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
