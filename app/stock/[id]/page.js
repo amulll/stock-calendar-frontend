@@ -323,19 +323,21 @@ export default async function StockPage({ params }) {
                 <table className="w-full text-sm text-left min-w-[600px]">
                   <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                     <tr>
-                      {/* 👇 修改 3: 加入 whitespace-nowrap 防止換行 */}
                       <th className="px-4 py-3 whitespace-nowrap">年度</th>
+                      {/* 👇 新增這一行：單次股利 */}
+                      <th className="px-4 py-3 whitespace-nowrap text-emerald-600">單次股利</th>
                       <th className="px-4 py-3 whitespace-nowrap">發放日</th>
                       <th className="px-4 py-3 whitespace-nowrap">除息日</th>
-                      <th className="px-4 py-3 whitespace-nowrap">現金股利</th>
-                      <th className="px-4 py-3 whitespace-nowrap">殖利率</th>
+                      {/* 為了區別，原本的標題我稍微改了一下名稱，讓使用者知道這是加總 */}
+                      <th className="px-4 py-3 whitespace-nowrap">年度總股利</th>
+                      <th className="px-4 py-3 whitespace-nowrap">年度總殖利率</th>
                       <th className="px-4 py-3 whitespace-nowrap">填息天數</th>
                       <th className="px-4 py-3 whitespace-nowrap">除息前股價</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {historicalRecords.length === 0 ? (
-                      <tr><td colSpan="7" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
+                      <tr><td colSpan="8" className="px-4 py-8 text-center text-slate-400">無過去紀錄</td></tr>
                     ) : (
                       historicalRecords.map((item, index) => {
                         
@@ -352,17 +354,15 @@ export default async function StockPage({ params }) {
                         const prevYear = index > 0 ? getYear(historicalRecords[index - 1]) : null;
                         const isFirstOfGroup = currentYear !== prevYear;
 
-                        // 3. 計算 rowSpan 數量 與 年度加總 (🔥 新增邏輯)
+                        // 3. 計算 rowSpan 數量 與 年度加總
                         let rowSpanCount = 1;
                         let totalCash = 0;  // 該年度總現金股利
                         let totalYield = 0; // 該年度總殖利率
 
                         if (isFirstOfGroup) {
-                            // 先把當前這筆加入
                             totalCash += Number(item.cash_dividend || 0);
                             totalYield += Number(item.yield_rate || 0);
 
-                            // 往後檢查同年度的資料並累加
                             for (let i = index + 1; i < historicalRecords.length; i++) {
                                 if (getYear(historicalRecords[i]) === currentYear) {
                                     rowSpanCount++;
@@ -387,7 +387,7 @@ export default async function StockPage({ params }) {
                         return (
                         <tr key={item.id} className="hover:bg-slate-50/80 transition">
                           
-                          {/* 1. 年度 (維持垂直置中) */}
+                          {/* 1. 年度 (合併顯示) */}
                           {isFirstOfGroup && (
                               <td 
                                 rowSpan={rowSpanCount} 
@@ -397,43 +397,47 @@ export default async function StockPage({ params }) {
                               </td>
                           )}
 
-                          {/* 2. 發放日 (個別顯示) */}
+                          {/* 2. 🔥 新增：單次股利 (不合併，顯示每一筆) */}
+                          <td className="px-4 py-3 font-bold text-emerald-600/80 whitespace-nowrap">
+                            {Number(item.cash_dividend).toFixed(4)}
+                          </td>
+
+                          {/* 3. 發放日 */}
                           <td className="px-4 py-3 font-medium text-slate-700 whitespace-nowrap">
                             {item.pay_date ? (
                                 <a 
                                     href={`/?date=${item.pay_date}&openModal=true`}
                                     className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2"
-                                    title="在日曆上查看當天發放清單"
                                 >
                                     {formatSmartDate(item.pay_date)}
                                 </a>
                             ) : "未定"}
                           </td>
 
-                          {/* 3. 除息日 (個別顯示) */}
+                          {/* 4. 除息日 */}
                           <td className="px-4 py-3 text-slate-500 whitespace-nowrap">
-                              {item.ex_date ? (
+                            {item.ex_date ? (
                                 <a 
                                     href={`/?date=${item.pay_date}&openModal=true`}
                                     className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2"
                                 >
                                     {formatSmartDate(item.ex_date)}
                                 </a>
-                              ) : "-"}
+                            ) : "-"}
                           </td>
 
-                          {/* 4. 現金股利 (🔥 改為合併顯示該年度總和) */}
+                          {/* 5. 年度總股利 (合併顯示) */}
                           {isFirstOfGroup && (
                             <td 
                               rowSpan={rowSpanCount} 
-                              className="px-4 py-3 font-bold text-emerald-600 whitespace-nowrap text-center align-middle bg-white/50"
+                              className="px-4 py-3 font-bold text-emerald-600 whitespace-nowrap text-center align-middle bg-white/50 border-l border-slate-100"
                             >
                               {totalCash.toFixed(2)}
                               {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 block font-normal">(合計)</span>}
                             </td>
                           )}
 
-                          {/* 5. 殖利率 (🔥 改為合併顯示該年度總和) */}
+                          {/* 6. 年度總殖利率 (合併顯示) */}
                           {isFirstOfGroup && (
                             <td 
                               rowSpan={rowSpanCount} 
@@ -450,7 +454,7 @@ export default async function StockPage({ params }) {
                             </td>
                           )}
 
-                          {/* 6. 填息天數 (個別顯示) */}
+                          {/* 7. 填息天數 */}
                           <td className="px-4 py-3 text-slate-400 whitespace-nowrap text-center">
                             {item.days_to_fill && item.days_to_fill > 0 ? (
                                 <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
@@ -459,7 +463,7 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
 
-                          {/* 7. 除息前股價 (個別顯示) */}
+                          {/* 8. 除息前股價 */}
                           <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
                             {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
                           </td>
