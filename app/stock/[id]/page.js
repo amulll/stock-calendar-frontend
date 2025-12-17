@@ -78,7 +78,7 @@ function generateSeoArticle(info, historicalRecords) {
         <article className="prose prose-slate max-w-none">
             <h3 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
                 <Info size={20} className="text-blue-500"/>
-                關於 {stock_name} ({stock_code}) 的配息概況
+                關於{stock_name} ({stock_code})配息概況
             </h3>
             <p className="text-slate-600 leading-relaxed mb-4">
                 <strong>{stock_name} ({stock_code})</strong> 
@@ -87,7 +87,7 @@ function generateSeoArticle(info, historicalRecords) {
             </p>
             <p className="text-slate-600 leading-relaxed mb-4">
                 投資人若有意參與本次除權息，須注意<strong>除息交易日為 {ex_date}</strong>，
-                並預計於 <strong>{pay_date || "尚未公告"}</strong> 發放現金股利。
+                配息日:<strong>{pay_date || "尚未公告"}</strong>，只要在除息日前持有，就可以關注{stock_name} ({stock_code})配息日。
                 {historicalRecords.length > 1 && (
                     <span>
                         回顧過去紀錄，{stock_name} 的歷史平均配息金額約為 {avgDividend} 元
@@ -116,7 +116,7 @@ function generateSeoArticle(info, historicalRecords) {
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 text-sm text-slate-700">
                 <p>
                     <strong>💡 投資小撇步：</strong>
-                    想要領取 {stock_name} 的股利，必須在除息日 ({ex_date}) 的<strong>前一個交易日</strong>買進並持有。
+                    想要領取 {stock_name} 的股利，必須在除息日 ({ex_date}) 的<strong>前一個交易日</strong>持有。
                     除息日當天買進的股票，將無法獲得該次配息權利。
                 </p>
             </div>
