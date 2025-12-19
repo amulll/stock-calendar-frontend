@@ -155,7 +155,7 @@ export default function StockModal({
   const displayYield = (currentEvent && info?.daily_price) 
     ? ((currentEvent.cash_dividend / info.daily_price) * 100).toFixed(2)
     : "--";
-
+  const displayMarket = (info?.market_type === "TPEX" || info?.market_type === "上櫃") ? "上櫃" : "上市";
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
@@ -184,7 +184,7 @@ export default function StockModal({
               <div className="flex items-center gap-2 text-blue-100">
                 <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
                 {/* 🔥 修改：使用 info.market_type */}
-                <span className="text-sm">{info?.market_type || "TWSE"}</span>
+                <span className="text-sm">{displayMarket}</span>
               </div>
             </div>
 

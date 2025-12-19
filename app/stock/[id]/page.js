@@ -166,7 +166,7 @@ export default async function StockPage({ params }) {
 
   // 🔥 修改：解構 info 與 history
   const { info, history } = data;
-
+  const displayMarket = (info.market_type === "TPEX" || info.market_type === "上櫃") ? "上櫃" : "上市";
   const today = startOfDay(new Date());
 
   // 找出「最新一期」配息 (用於顯示 Header 的殖利率與股利)
@@ -258,7 +258,7 @@ export default async function StockPage({ params }) {
                   {id}
                 </span>
                 <span className="text-blue-100 text-sm border border-blue-400/30 px-2 py-0.5 rounded">
-                  {info.market_type || "TWSE"}
+                  {displayMarket}
                 </span>
               </div>
               <h1 className="text-4xl font-bold mb-4">{info.stock_name}</h1>
