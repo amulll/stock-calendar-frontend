@@ -89,9 +89,9 @@ function generateSeoArticle(info, latestDividend, historicalRecords) {
         realtimeYield = ((cash_dividend / daily_price) * 100).toFixed(2);
     }
     
-    // 計算平均配息
+    // 計算平均配息 (🔥 修改：小數點後 3 位)
     const avgDividend = historicalRecords.length > 0 
-        ? (historicalRecords.reduce((acc, cur) => acc + (cur.cash_dividend || 0), 0) / historicalRecords.length).toFixed(2)
+        ? (historicalRecords.reduce((acc, cur) => acc + (cur.cash_dividend || 0), 0) / historicalRecords.length).toFixed(3)
         : 0;
 
     // 計算平均填息天數
@@ -112,7 +112,7 @@ function generateSeoArticle(info, latestDividend, historicalRecords) {
             </h3>
             <p className="text-slate-600 leading-relaxed mb-4">
                 <strong>{stock_name} ({stock_code})</strong> 
-                根據最新資料，該公司最新一期的現金股利為 <strong>{Number(cash_dividend).toFixed(2)} 元</strong>。
+                根據最新資料，該公司最新一期的現金股利為 <strong>{Number(cash_dividend).toFixed(3)} 元</strong>。 {/* 🔥 修改：小數點後 3 位 */}
                 以目前的最新收盤價 <strong>{daily_price || "--"} 元</strong> 計算，
                 其預估單次殖利率約為 <span className="text-amber-600 font-bold">{realtimeYield}%</span>。
             </p>
@@ -139,7 +139,7 @@ function generateSeoArticle(info, latestDividend, historicalRecords) {
             <p className="text-slate-600 leading-relaxed mb-4">
                 不想手動按計算機嗎？使用上方的<strong>「{stock_name} 股利計算機」</strong>，
                 您只需輸入預計持有的張數（例如 10 張 = 10,000 股），系統即會根據最新現金股利 
-                <strong>{Number(cash_dividend).toFixed(2)} 元</strong>，自動計算出您可領取的總股利金額。
+                <strong>{Number(cash_dividend).toFixed(3)} 元</strong>，自動計算出您可領取的總股利金額。 {/* 🔥 修改：小數點後 3 位 */}
                 此外，您也可以輸入預計投入的資金，系統會依據目前股價 
                 <strong>{daily_price || "--"} 元</strong>，反推您可以買進的股數與預估回報。
             </p>
@@ -195,8 +195,9 @@ export default async function StockPage({ params }) {
       currentYieldRate = ((latestEvent.cash_dividend / info.daily_price) * 100).toFixed(2);
   }
 
+  // 🔥 修改：統一格式化函式，強制顯示 3 位小數
   const formatDividend = (val) => {
-      return Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 });
+      return Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
   };
 
   // 準備結構化資料 (使用 info)
@@ -297,7 +298,8 @@ export default async function StockPage({ params }) {
                 <div>
                   <div className="text-sm text-emerald-600 mb-1">現金股利</div>
                   <div className="text-3xl font-bold text-emerald-700">
-                    {Number(latestEvent.cash_dividend).toFixed(4)} <span className="text-base font-normal text-emerald-600">元</span>
+                    {/* 🔥 修改：小數點後 3 位 */}
+                    {Number(latestEvent.cash_dividend).toFixed(3)} <span className="text-base font-normal text-emerald-600">元</span>
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -394,6 +396,7 @@ export default async function StockPage({ params }) {
                               </td>
                           )}
                           <td className="px-2 py-2 font-bold text-emerald-600/80 whitespace-nowrap">
+                            {/* 🔥 使用新的 formatDividend (3位小數) */}
                             {formatDividend(item.cash_dividend)}
                           </td>
                           <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">
@@ -412,6 +415,7 @@ export default async function StockPage({ params }) {
                           </td>
                           {isFirstOfGroup && (
                             <td rowSpan={rowSpanCount} className="px-2 py-2 font-bold text-emerald-600 whitespace-nowrap text-center align-middle bg-white/50 border-l border-slate-100">
+                              {/* 🔥 使用新的 formatDividend (3位小數) */}
                               {formatDividend(totalCash)}
                               {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 block font-normal">(合計)</span>}
                             </td>
