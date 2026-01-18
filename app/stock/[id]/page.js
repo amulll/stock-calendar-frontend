@@ -7,7 +7,7 @@ import DividendCalculator from "../../../components/DividendCalculator";
 import DividendChart from "../../../components/DividendChart";
 
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
-export const revalidate = 3600;
+export const revalidate = 0;
 
 // 資料抓取函式
 async function getStockData(id) {
@@ -16,7 +16,7 @@ async function getStockData(id) {
 
   try {
     const res = await fetch(`${API_URL}/api/stock/${id}`, {
-      next: { revalidate: 3600 },
+      cache: 'no-store',
       headers: {
           "X-Service-Token": SERVICE_TOKEN
       }
