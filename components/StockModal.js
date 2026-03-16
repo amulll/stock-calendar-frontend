@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
 import AdUnit from "./AdUnit"; 
-import { X, Heart, Banknote, ChevronRight, ExternalLink, Download, CalendarPlus, Calendar } from "lucide-react";
+import { X, Heart, Banknote, ChevronRight, ExternalLink, CalendarPlus, Calendar } from "lucide-react";
 import Loading from "./Loading"; 
 import { startOfDay, parseISO } from "date-fns";
 
@@ -72,44 +72,6 @@ export default function StockModal({
       return new Date(dateStr) < today;
   });
 
-  // --- 邏輯處理：動態生成描述文字 ---
-  // 需同時使用 info (股價/名稱) 和 currentEvent (股利/日期)
-  const generateDescription = () => {
-    if (!info || !currentEvent) return "";
-    
-    const { stock_code, stock_name, daily_price } = info;
-    const { cash_dividend, ex_date, pay_date } = currentEvent;
-    
-    // 即時計算殖利率
-    let yieldRate = 0;
-    if (cash_dividend && daily_price > 0) {
-        yieldRate = ((cash_dividend / daily_price) * 100).toFixed(2);
-    }
-    
-    let desc = `<strong>${stock_name} (${stock_code})</strong> `;
-    
-    if (cash_dividend > 0) {
-        desc += `最新一期配發現金股利 <strong>${Number(cash_dividend).toFixed(2)}</strong> 元。`;
-    }
-    
-    if (ex_date) {
-        desc += `除權息交易日為 ${ex_date}，`;
-    }
-    
-    if (pay_date) {
-        desc += `現金股利發放日預計為 <strong>${pay_date}</strong>。`;
-    } else {
-        desc += `現金股利發放日尚未公告。`;
-    }
-    
-    // 使用即時計算的殖利率
-    if (yieldRate > 0) {
-        desc += ` 依據最新收盤價 ${daily_price} 元計算，預估現金殖利率約為 <span class="text-amber-600 font-bold">${yieldRate}%</span>。`;
-    }
-    
-    return desc;
-  };
-
   // 📅 1. 加入 Google Calendar
   const addToGoogleCalendar = () => {
     if (!currentEvent?.pay_date || !info) return;
@@ -156,6 +118,39 @@ export default function StockModal({
     ? ((currentEvent.cash_dividend / info.daily_price) * 100).toFixed(2)
     : "--";
   const displayMarket = (info?.market_type === "TPEX" || info?.market_type === "上櫃") ? "上櫃" : "上市";
+
+  const renderSummary = () => {
+    if (!info || !currentEvent) return null;
+
+    const { stock_code, stock_name, daily_price } = info;
+    const { cash_dividend, ex_date, pay_date } = currentEvent;
+    const yieldRate =
+      cash_dividend && daily_price > 0
+        ? ((cash_dividend / daily_price) * 100).toFixed(2)
+        : null;
+
+    return (
+      <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+        <p>
+          <strong>{stock_name} ({stock_code})</strong>
+          {" "}最新一期配發現金股利
+          <strong> {Number(cash_dividend || 0).toFixed(2)} 元</strong>。
+        </p>
+        <p>
+          除權息交易日為 <strong>{ex_date || "尚未公告"}</strong>，
+          現金股利發放日
+          <strong> {pay_date || "尚未公告"}</strong>。
+        </p>
+        {yieldRate && (
+          <p>
+            依據最新收盤價 <strong>{daily_price}</strong> 元估算，
+            預估現金殖利率約為 <strong className="text-amber-600">{yieldRate}%</strong>。
+          </p>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
@@ -211,12 +206,7 @@ export default function StockModal({
             <div className="space-y-6">
 
               {/* 動態生成的文字 (Info Box) */}
-              {currentEvent && (
-                <div 
-                    className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100"
-                    dangerouslySetInnerHTML={{ __html: generateDescription() }}
-                />
-              )}
+              {renderSummary()}
 
               {/* 股價與殖利率儀表板 */}
               <div className="grid grid-cols-2 gap-4 mb-2">

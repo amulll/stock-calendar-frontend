@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { X, ExternalLink, TrendingUp, Loader2, ArrowUpDown } from "lucide-react";
-import axios from "axios";
+import { X, TrendingUp, Loader2, ArrowUpDown } from "lucide-react";
+
+import { proxyGet } from "../lib/proxy-client";
 
 export default function YieldListModal({ 
   isOpen, 
@@ -11,6 +12,7 @@ export default function YieldListModal({
 }) {
   const [dividends, setDividends] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [sortAsc, setSortAsc] = useState(true); // 預設由低到高 (3%, 4%, 5%...)
 
   // 當 Modal 開啟或門檻改變時，去後端抓全域資料
@@ -22,18 +24,16 @@ export default function YieldListModal({
 
   const fetchHighYieldStocks = async () => {
     setLoading(true);
+    setError("");
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      // 呼叫新做的後端 API
-      const res = await axios.get(`${API_URL}/api/dividends/high-yield`, {
-        params: {
-          threshold: threshold,
-          year: new Date().getFullYear() // 只看今年的
-        }
+      const data = await proxyGet("api/dividends/high-yield", {
+        threshold,
+        year: new Date().getFullYear(),
       });
-      setDividends(res.data);
+      setDividends(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Fetch high yield failed", error);
+      setDividends([]);
+      setError(error.message || "載入高殖利率清單失敗");
     } finally {
       setLoading(false);
     }
@@ -86,6 +86,11 @@ export default function YieldListModal({
           {loading ? (
             <div className="flex justify-center items-center py-12 text-slate-400">
                 <Loader2 className="animate-spin mr-2" /> 載入中...
+            </div>
+          ) : error ? (
+            <div className="text-center text-rose-500 py-12 flex flex-col items-center">
+                <TrendingUp size={48} className="mb-3 opacity-30" />
+                <p className="font-medium">{error}</p>
             </div>
           ) : sortedList.length === 0 ? (
             <div className="text-center text-slate-400 py-12 flex flex-col items-center">
