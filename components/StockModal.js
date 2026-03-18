@@ -17,6 +17,10 @@ import {
 import Loading from "./Loading";
 import { startOfDay, parseISO } from "date-fns";
 import { useToast } from "../hooks/useToast";
+import {
+  getCachedStockDetail,
+  setCachedStockDetail,
+} from "../lib/cache";
 
 const GOOGLE_CALENDAR_URL = "https://calendar.google.com/calendar/render";
 
@@ -40,14 +44,26 @@ export default function StockModal({
 
     let cancelled = false;
     const fetchStock = async () => {
+      const cached = getCachedStockDetail(stockCode);
+      if (cached) {
+        setInfo(cached.info);
+        setHistory(cached.history);
+        return;
+      }
+
       setLoading(true);
       setInfo(null);
       setHistory([]);
       try {
         const res = await axios.get(`${apiUrl}/api/stock/${stockCode}`);
         if (cancelled) return;
-        setInfo(res.data.info);
-        setHistory(Array.isArray(res.data.history) ? res.data.history : []);
+        const payload = {
+          info: res.data.info,
+          history: Array.isArray(res.data.history) ? res.data.history : [],
+        };
+        setInfo(payload.info);
+        setHistory(payload.history);
+        setCachedStockDetail(stockCode, payload);
       } catch (error) {
         if (cancelled) return;
         console.error("Failed to fetch stock modal data", error);

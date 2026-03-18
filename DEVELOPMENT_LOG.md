@@ -1,12 +1,17 @@
 # Technical Development Log
 
+## 2026-03-18 – Cache Policy Adjustment (Performance)
+- **延長前端快取 TTL (Performance)**  
+  *Why*: 月份與個股視圖在 5 分鐘內常被重複開啟，依舊會頻繁打到 proxy。  
+  *Impact*: 將 in-memory cache TTL 自 5 分鐘延長到 10 分鐘，搭配 StockModal 詳細資料快取後，可顯著降低 `/api/dividends` 與 `/api/stock/:code` 的重複請求；代價是若後端在 10 分鐘內更新資料，使用者需重新整理才能即時看到最新值。
+
 ## 2026-03-18 – Accessibility & Feedback Hardening
 - **FilterBar 語意補強 (UX/UI)**  
-  *Why*: 建議清單缺乏完整的 combobox 語意，螢幕閱讀器無法感知目前焦點與結果數量。  
-  *Impact*: 以 `role="combobox"`、`aria-activedescendant`、`aria-live` 等語意描述輸入狀態，並為 watchlist / high-yield 控制加入可操作的 aria 屬性，讓鍵盤與輔助工具都能安全操作。
+  *Why*: 建議清單缺乏完整的 combobox 語意，螢幕閱讀器無法感知焦點與結果數。  
+  *Impact*: 以 `role="combobox"`、`aria-activedescendant`、`aria-live` 等語意描述輸入狀態，並為 Watchlist / High-Yield 控制加入 aria 屬性，讓鍵盤與輔助工具都能安全操作。  
 - **StockModal 錯誤提示一致化 (UX/Reliability)**  
-  *Why*: 先前 axios 錯誤僅寫入 `console.error`，若後端 403/500 使用者完全沒有回饋。  
-  *Impact*: 將資料請求改成可取消的 async 流程並統一導入 `ToastProvider`，即時顯示「無法載入個股資料」等訊息，同時避免 race condition 造成的閃爍。
+  *Why*: axios 錯誤僅寫入 `console.error`，後端 403/500 時使用者看不到回饋。  
+  *Impact*: 將資料請求改成可取消的 async 流程並統一導入 `ToastProvider`，即時顯示「無法載入個股資料」等訊息，同時避免 race condition 造成閃爍。
 
 ## 2026-03-18 – Modal UX & Error Handling
 - **Modal Accessibility Upgrade (UX/UI)**  
@@ -18,7 +23,7 @@
 
 ## 2026-03-17 – Calendar Performance & Architecture
 - **Client-side Cache + Debounced Search (Performance)**  
-  *Why*: 月份切換與股票跳轉會頻繁觸發 API，造成延遲與後端壓力。  
+  *Why*: 月份切換與股票跳轉頻繁觸發 API，造成延遲與後端壓力。  
   *Impact*: 5 分鐘 TTL 的 in-memory cache（`lib/cache.js`）加上 250 ms debounce，減少重複請求並讓搜尋輸入更順暢。
 - **CalendarClient 拆分與 Memoization (Architecture)**  
   *Why*: 巨型 `CalendarClient` 不利維護，URL 同步與 render 成本過高。  
@@ -27,7 +32,7 @@
 ## 2026-03-16 – Security & Data Accuracy
 - **Proxy Layer Hardening (Security)**  
   *Why*: 需要統一的 service token 邊界並防止 proxy 被濫用。  
-  *Impact*: `/api/proxy` 只允許 `api/dividends|stocks|stock` 前綴並注入 `X-Service-Token`，`lib/proxy-client.js` 讓前端維持單一出口。
+  *Impact*: `/api/proxy` 只允許 `api/dividends|stocks|stock` 前綴並注入 `X-Service-Token`；`lib/proxy-client.js` 讓前端維持單一出口。
 - **Ex-Date Link 修復 (UX/Accuracy)**  
   *Why*: 個股頁的除息日連結指到發放日，誤導使用者。  
   *Impact*: 改成直接帶入 `ex_date` 參數，讓日曆定位正確日期。  
