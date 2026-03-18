@@ -1,21 +1,18 @@
 "use client";
+
 import SeoContent from "./SeoContent";
-import { useState, useEffect, useRef } from "react";
-import { 
-  format, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  eachDayOfInterval, 
-  addMonths, 
-  subMonths, 
-  isSameMonth, 
-  isSameDay, 
+import { useState, useEffect, useMemo, useRef } from "react";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  addMonths,
+  subMonths,
   parseISO,
-  isValid
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Search, Heart, List, TrendingUp } from "lucide-react";
 import axios from "axios";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
@@ -24,195 +21,114 @@ import StockModal from "./StockModal";
 import WatchlistModal from "./WatchlistModal";
 import YieldListModal from "./YieldListModal";
 import AdUnit from "./AdUnit";
-import Loading from "./Loading"; 
+import Loading from "./Loading";
+import FilterBar from "./FilterBar";
+import CalendarGrid from "./CalendarGrid";
+import { useCalendarQueryState } from "../hooks/useCalendarQueryState";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import {
+  getCachedDividends,
+  setCachedDividends,
+  getCachedStockLatest,
+  setCachedStockLatest,
+} from "../lib/cache";
+import { useToast } from "../hooks/useToast";
 
-const API_URL = "/api/proxy"; 
-const MAX_SUGGESTIONS = 4;
+const API_URL = "/api/proxy";
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParamsString = searchParams.toString();
 
-  // 1. 初始化狀態
-  const [currentDate, setCurrentDate] = useState(() => {
-  const y = searchParams.get("year");
-  const m = searchParams.get("month");
-  // 新增：優先檢查是否有指定 date 參數
-  const d = searchParams.get("date");
-  
-  if (d) {
-    const targetDate = new Date(d);
-    if (!isNaN(targetDate.getTime())) return targetDate;
-  }
+  const {
+    currentDate,
+    setCurrentDate,
+    yieldThreshold,
+    setYieldThreshold,
+    showHighYieldOnly,
+    setShowHighYieldOnly,
+  } = useCalendarQueryState({ searchParams, router, pathname });
 
-  if (y && m) {
-      const date = new Date(parseInt(y), parseInt(m) - 1); 
-      if (isValid(date)) return date;
-  }
-  return new Date();
-});
-  
   const [dividends, setDividends] = useState(initialDividends || []);
   const [allStocks, setAllStocks] = useState(initialAllStocks || []);
   const [loading, setLoading] = useState(false);
-  
-  // 搜尋
-  const [filterText, setFilterText] = useState(''); 
-  const [suggestions, setSuggestions] = useState([]);
-
-  // 追蹤清單
+  const [filterText, setFilterText] = useState("");
   const [watchlist, setWatchlist] = useState([]);
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
-  const [watchlistMenuOpen, setWatchlistMenuOpen] = useState(false); 
-  const [watchlistModalOpen, setWatchlistModalOpen] = useState(false); 
-
-  // 高殖利率篩選
-  // 1. 這個狀態負責「網址同步」與「API 請求」(Commit Value)
-  const [yieldThreshold, setYieldThreshold] = useState(() => {
-      const y = searchParams.get("yield");
-      return y ? Number(y) : 5;
-  });
-
-  // 2. 這個狀態負責「UI 滑桿顯示」與「即時列表過濾」(Local Value)
-  // 這樣拖曳時列表會變，但網址不會變
+  const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
+  const [yieldListOpen, setYieldListOpen] = useState(false);
   const [localYield, setLocalYield] = useState(yieldThreshold);
-
-  // 當外部網址改變導致 yieldThreshold 變動時，同步更新 localYield
-  useEffect(() => {
-    setLocalYield(yieldThreshold);
-  }, [yieldThreshold]);
-
-  const [showHighYieldOnly, setShowHighYieldOnly] = useState(() => {
-      return searchParams.has("yield"); 
-  });
-  const [yieldMenuOpen, setYieldMenuOpen] = useState(false);         
-  const [yieldListOpen, setYieldListOpen] = useState(false);   
-  
-  // Modal States
   const [selectedDate, setSelectedDate] = useState(null);
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
-
   const isFirstRender = useRef(true);
-  const yieldMenuRef = useRef(null); 
-  const watchlistMenuRef = useRef(null);
-  
   const hasHandledJump = useRef(false);
+  const debouncedFilter = useDebouncedValue(filterText, 250);
+  const { addToast } = useToast();
 
-  // 2. 網址同步邏輯
   useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    
-    const today = new Date();
-    const isCurrentMonthDefault = 
-        format(currentDate, "yyyy") === format(today, "yyyy") && 
-        format(currentDate, "M") === format(today, "M");
-
-    if (isCurrentMonthDefault) {
-        params.delete("year");
-        params.delete("month");
-    } else {
-        params.set("year", format(currentDate, "yyyy"));
-        params.set("month", format(currentDate, "M"));
-    }
-    
-    if (showHighYieldOnly) {
-        params.set("yield", yieldThreshold.toString());
-    } else {
-        params.delete("yield");
-    }
-    
-    // 保留 openModal 參數以免被蓋掉 (如果它是剛被加上去的)
-    if (searchParams.get("openModal")) {
-        params.set("openModal", "true");
-    } else {
-        params.delete("openModal");
-    }
-    // date 只是為了「初始定位」，一旦定位完成或開始切換月份，
-    // 網址就應該由 year/month 來接手管理。
-    if (params.has("date")) {
-        params.delete("date");
-    }
-    const queryString = params.toString();
-    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
-    
-    router.push(newUrl, { scroll: false });
-
-  }, [currentDate, yieldThreshold, showHighYieldOnly, pathname, router]);
-
-  // 3. 處理來自外部的跳轉 (openModal=true)
-  useEffect(() => {
-      const dateParam = searchParams.get("date");
-      const shouldOpenModal = searchParams.get("openModal") === "true";
-
-      if (dateParam && !hasHandledJump.current) {
-          const targetDate = parseISO(dateParam);
-          if (isValid(targetDate)) {
-              if (!isSameMonth(targetDate, currentDate)) {
-                  setCurrentDate(targetDate);
-              }
-              
-              setSelectedDate(targetDate);
-
-              if (shouldOpenModal) {
-                  setDateModalOpen(true);
-                  hasHandledJump.current = true; 
-                  
-                  setTimeout(() => {
-                      const newParams = new URLSearchParams(window.location.search);
-                      newParams.delete("openModal");
-                      const newPath = newParams.toString() ? `${pathname}?${newParams.toString()}` : pathname;
-                      router.replace(newPath, { scroll: false });
-                  }, 500);
-              }
-          }
-      }
-  }, [searchParams, currentDate, pathname, router]);
+    setLocalYield(yieldThreshold);
+  }, [yieldThreshold]);
 
   useEffect(() => {
     const savedWatchlist = localStorage.getItem("myWatchlist");
     if (savedWatchlist) {
-        try {
-            setWatchlist(JSON.parse(savedWatchlist));
-        } catch (e) {
-            console.error("Failed to parse watchlist", e);
-        }
-    }
-
-    function handleClickOutside(event) {
-      if (yieldMenuRef.current && !yieldMenuRef.current.contains(event.target)) {
-        setYieldMenuOpen(false);
-      }
-      if (watchlistMenuRef.current && !watchlistMenuRef.current.contains(event.target)) {
-        setWatchlistMenuOpen(false);
+      try {
+        setWatchlist(JSON.parse(savedWatchlist));
+      } catch (err) {
+        console.error("Failed to parse watchlist", err);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleWatchlist = (code) => {
-    let newWatchlist;
-    if (watchlist.includes(code)) {
-        newWatchlist = watchlist.filter(c => c !== code);
-    } else {
-        newWatchlist = [...watchlist, code];
+  useEffect(() => {
+    const dateParam = searchParams.get("date");
+    const shouldOpenModal = searchParams.get("openModal") === "true";
+
+    if (dateParam && !hasHandledJump.current) {
+      const target = parseISO(dateParam);
+      if (!Number.isNaN(target.getTime())) {
+        setCurrentDate(target);
+        setSelectedDate(target);
+
+        if (shouldOpenModal) {
+          setDateModalOpen(true);
+          hasHandledJump.current = true;
+          setTimeout(() => {
+            const params = new URLSearchParams(window.location.search);
+            params.delete("openModal");
+            const nextPath = params.toString()
+              ? `${pathname}?${params.toString()}`
+              : pathname;
+            router.replace(nextPath, { scroll: false });
+          }, 500);
+        }
+      }
     }
-    setWatchlist(newWatchlist);
-    localStorage.setItem("myWatchlist", JSON.stringify(newWatchlist));
-  };
+  }, [searchParamsString, searchParams, setCurrentDate, pathname, router]);
 
   const fetchDividends = async (date) => {
+    const year = format(date, "yyyy");
+    const month = format(date, "M");
+    const cacheKey = `${year}-${month}`;
+    const cached = getCachedDividends(cacheKey);
+    if (cached) {
+      setDividends(cached);
+      return;
+    }
+
     setLoading(true);
     try {
-      const year = format(date, "yyyy");
-      const month = format(date, "M");
-      const res = await axios.get(`${API_URL}/api/dividends?year=${year}&month=${month}`);
+      const res = await axios.get(
+        `${API_URL}/api/dividends?year=${year}&month=${month}`
+      );
       setDividends(res.data);
+      setCachedDividends(cacheKey, res.data);
     } catch (error) {
-      console.error("Fetch error:", error);
+      addToast("股利資料載入失敗，請稍後再試。", "error");
     } finally {
       setLoading(false);
     }
@@ -221,119 +137,66 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      if (initialDividends.length === 0) {
-          fetchDividends(currentDate);
+      if (!initialDividends || initialDividends.length === 0) {
+        fetchDividends(currentDate);
       }
       return;
     }
     fetchDividends(currentDate);
   }, [currentDate]);
 
-  const handleFilterChange = (text) => {
-    setFilterText(text);
-    if (text.length < 1) {
-        setSuggestions([]);
-        return;
-    }
-    const lowerCaseText = text.toLowerCase();
-    const filteredSuggestions = allStocks.filter(stock => 
-        stock.stock_code.toLowerCase().startsWith(lowerCaseText) || 
-        stock.stock_name.toLowerCase().includes(lowerCaseText)
-    );
-    filteredSuggestions.sort((a, b) => a.stock_code.localeCompare(b.stock_code));
-    setSuggestions(filteredSuggestions.slice(0, MAX_SUGGESTIONS));
+  const fetchStockLatest = async (code) => {
+    const cached = getCachedStockLatest(code);
+    if (cached) return cached;
+    const res = await axios.get(`${API_URL}/api/stock/${code}/latest`);
+    setCachedStockLatest(code, res.data);
+    return res.data;
   };
-  
+
   const handleSuggestionClick = async (stock) => {
     setFilterText(stock.stock_code);
-    setSuggestions([]);
     setLoading(true);
     try {
-        const res = await axios.get(`${API_URL}/api/stock/${stock.stock_code}/latest`);
-        if (res.data && (res.data.pay_date || res.data.ex_date)) {
-            const targetDateStr = res.data.pay_date || res.data.ex_date;
-            const targetDate = parseISO(targetDateStr);
-            if (!isSameMonth(targetDate, currentDate)) {
-                setCurrentDate(targetDate);
-            }
-        } else {
-            alert("查無該股票近期股利資料");
+      const latest = await fetchStockLatest(stock.stock_code);
+      if (latest && (latest.pay_date || latest.ex_date)) {
+        const targetDate = parseISO(latest.pay_date || latest.ex_date);
+        if (!Number.isNaN(targetDate.getTime())) {
+          setCurrentDate(targetDate);
         }
+      } else {
+        addToast("查無該股票近期股利資料", "info");
+      }
     } catch (error) {
-        console.error("Jump error:", error);
+      addToast("切換股票時發生錯誤，稍後再試。", "error");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
   const handleHistoryDateClick = (dateStr) => {
     if (!dateStr) return;
     const targetDate = parseISO(dateStr);
-    if (!isSameMonth(targetDate, currentDate)) {
-        setCurrentDate(targetDate);
+    if (!Number.isNaN(targetDate.getTime())) {
+      setCurrentDate(targetDate);
+      setSelectedDate(targetDate);
+      setDateModalOpen(true);
+      setStockModalOpen(false);
     }
-    setSelectedDate(targetDate);
-    setDateModalOpen(true);
-    setStockModalOpen(false);
   };
 
   const handleListStockClick = async (code) => {
     setSelectedStockCode(code);
     setStockModalOpen(true);
     try {
-        const res = await axios.get(`${API_URL}/api/stock/${code}/latest`);
-        if (res.data && (res.data.pay_date || res.data.ex_date)) {
-            const targetDateStr = res.data.pay_date || res.data.ex_date;
-            const targetDate = parseISO(targetDateStr);
-            if (!isSameMonth(targetDate, currentDate)) {
-                setCurrentDate(targetDate);
-            }
+      const latest = await fetchStockLatest(code);
+      if (latest && (latest.pay_date || latest.ex_date)) {
+        const targetDate = parseISO(latest.pay_date || latest.ex_date);
+        if (!Number.isNaN(targetDate.getTime())) {
+          setCurrentDate(targetDate);
         }
+      }
     } catch (error) {
-        console.error("List jump error:", error);
-    }
-  };
-
-  const getFilteredDividends = () => {
-    let result = dividends;
-
-    if (showWatchlistOnly) {
-        result = result.filter(d => watchlist.includes(d.stock_code));
-    }
-
-    if (showHighYieldOnly) {
-        result = result.filter(d => d.yield_rate && d.yield_rate >= localYield);
-    }
-
-    if (filterText) {
-        const lowerCaseFilter = filterText.toLowerCase();
-        result = result.filter(d => 
-          (d.stock_code && d.stock_code.toLowerCase().includes(lowerCaseFilter)) ||
-          (d.stock_name && d.stock_name.toLowerCase().includes(lowerCaseFilter))
-        );
-    }
-    return result;
-  };
-  
-  const finalDividends = getFilteredDividends(); 
-
-  const monthStart = startOfMonth(currentDate);
-  const monthEnd = endOfMonth(monthStart);
-  const startDate = startOfWeek(monthStart);
-  const endDate = endOfWeek(monthEnd);
-  const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
-
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-
-  const getDividendsForDay = (day, sourceList) => {
-    return sourceList.filter(d => d.pay_date && isSameDay(parseISO(d.pay_date), day));
-  };
-
-  const handleDateClick = (day, dayDividends) => {
-    if (dayDividends.length > 0) {
-      setSelectedDate(day);
-      setDateModalOpen(true);
+      addToast("開啟股票資訊失敗，稍後再試。", "error");
     }
   };
 
@@ -342,252 +205,152 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     setStockModalOpen(true);
   };
 
-  const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+  const toggleWatchlist = (code) => {
+    const exists = watchlist.includes(code);
+    const updated = exists
+      ? watchlist.filter((item) => item !== code)
+      : [...watchlist, code];
+    setWatchlist(updated);
+    localStorage.setItem("myWatchlist", JSON.stringify(updated));
+  };
+
+  const watchlistSet = useMemo(() => new Set(watchlist), [watchlist]);
+
+  const suggestions = useMemo(() => {
+    if (!debouncedFilter) return [];
+    const query = debouncedFilter.toLowerCase();
+    return allStocks
+      .filter(
+        (stock) =>
+          stock.stock_code.toLowerCase().startsWith(query) ||
+          stock.stock_name.toLowerCase().includes(query)
+      )
+      .sort((a, b) => a.stock_code.localeCompare(b.stock_code));
+  }, [debouncedFilter, allStocks]);
+
+  const filteredDividends = useMemo(() => {
+    return dividends.filter((div) => {
+      if (showWatchlistOnly && !watchlistSet.has(div.stock_code)) return false;
+      if (showHighYieldOnly && !(div.yield_rate >= localYield)) return false;
+      if (debouncedFilter) {
+        const query = debouncedFilter.toLowerCase();
+        return (
+          (div.stock_code &&
+            div.stock_code.toLowerCase().includes(query)) ||
+          (div.stock_name && div.stock_name.toLowerCase().includes(query))
+        );
+      }
+      return true;
+    });
+  }, [
+    dividends,
+    showWatchlistOnly,
+    watchlistSet,
+    showHighYieldOnly,
+    localYield,
+    debouncedFilter,
+  ]);
+
+  const dividendsByDate = useMemo(() => {
+    const map = new Map();
+    filteredDividends.forEach((div) => {
+      if (!div.pay_date) return;
+      const list = map.get(div.pay_date) || [];
+      list.push(div);
+      map.set(div.pay_date, list);
+    });
+    return map;
+  }, [filteredDividends]);
+
+  const monthStart = useMemo(() => startOfMonth(currentDate), [currentDate]);
+  const calendarDays = useMemo(() => {
+    const monthEnd = endOfMonth(monthStart);
+    return eachDayOfInterval({
+      start: startOfWeek(monthStart),
+      end: endOfWeek(monthEnd),
+    });
+  }, [monthStart]);
+
+  const selectedDividends = useMemo(() => {
+    if (!selectedDate) return [];
+    const key = format(selectedDate, "yyyy-MM-dd");
+    return dividendsByDate.get(key) || [];
+  }, [selectedDate, dividendsByDate]);
+
+  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
 
   return (
-    <main className="min-h-screen p-2 md:p-8 max-w-7xl mx-auto"> 
-      
+    <main className="min-h-screen p-2 md:p-8 max-w-7xl mx-auto">
       <div className="mb-4 w-full flex justify-center">
         <AdUnit type="horizontal" />
       </div>
 
-      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 md:mb-8 bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-100">
         <div className="flex items-center gap-3 mb-2 md:mb-0">
           <div className="p-2 md:p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <CalendarIcon size={20} className="md:w-6 md:h-6" /> 
+            <span role="img" aria-label="calendar">
+              📅
+            </span>
           </div>
-          <h1 className="text-xl font-bold text-slate-800 md:text-2xl">uGoodly 股利日曆</h1>
+          <h1 className="text-xl font-bold text-slate-800 md:text-2xl">
+            uGoodly 股利日曆
+          </h1>
         </div>
-        
+
         <div className="flex items-center gap-4 md:gap-6">
-          <button onClick={prevMonth} className="p-1 md:p-2 hover:bg-slate-100 rounded-full transition text-slate-600">
-            <ChevronLeft size={20} />
+          <button
+            onClick={prevMonth}
+            className="p-1 md:p-2 hover:bg-slate-100 rounded-full transition text-slate-600"
+            aria-label="上一個月"
+          >
+            ‹
           </button>
           <span className="text-lg font-semibold text-slate-700 min-w-[120px] text-center md:text-xl md:min-w-[140px]">
             {format(currentDate, "yyyy年 M月")}
           </span>
-          <button onClick={nextMonth} className="p-1 md:p-2 hover:bg-slate-100 rounded-full transition text-slate-600">
-            <ChevronRight size={20} />
+          <button
+            onClick={nextMonth}
+            className="p-1 md:p-2 hover:bg-slate-100 rounded-full transition text-slate-600"
+            aria-label="下一個月"
+          >
+            ›
           </button>
         </div>
       </div>
 
-      {/* 搜尋與過濾控制區 */}
-      <div className="sticky top-2 md:top-6 z-20 mb-4 flex gap-2 relative items-center"> 
-        
-        <div className="relative flex-grow">
-            <input
-            type="text"
-            value={filterText}
-            onChange={(e) => handleFilterChange(e.target.value)}
-            placeholder="🔍 搜尋代號..."
-            className="w-full p-3 pl-10 border border-blue-200 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white"
-            />
-            <Search className="absolute left-3 top-3.5 text-slate-400" size={18} />
-            {filterText && (
-                <button onClick={() => {setFilterText(''); setSuggestions([]);}} className="absolute right-3 top-3.5 text-slate-400 hover:text-slate-600">✕</button>
-            )}
-            {suggestions.length > 0 && (
-            <ul className="absolute z-30 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
-                {suggestions.map(stock => (
-                <li 
-                    key={stock.stock_code}
-                    onMouseDown={() => handleSuggestionClick(stock)} 
-                    className="p-3 cursor-pointer hover:bg-blue-50/50 transition duration-100 flex justify-between items-center text-sm border-b border-slate-50 last:border-0"
-                >
-                    <span className="font-bold text-slate-800 font-mono text-base">{stock.stock_code}</span>
-                    <span className="text-slate-600 truncate ml-2">{stock.stock_name}</span>
-                </li>
-                ))}
-            </ul>
-            )}
-        </div>
+      <FilterBar
+        filterText={filterText}
+        onFilterChange={setFilterText}
+        suggestions={suggestions}
+        onSuggestionClick={handleSuggestionClick}
+        showWatchlistOnly={showWatchlistOnly}
+        onToggleWatchlistOnly={() => setShowWatchlistOnly((prev) => !prev)}
+        onOpenWatchlistModal={() => setWatchlistModalOpen(true)}
+        showHighYieldOnly={showHighYieldOnly}
+        onToggleHighYieldOnly={() => setShowHighYieldOnly((prev) => !prev)}
+        localYield={localYield}
+        onLocalYieldChange={(value) => {
+          setLocalYield(value);
+          if (!showHighYieldOnly) setShowHighYieldOnly(true);
+        }}
+        onCommitYield={setYieldThreshold}
+        onOpenYieldList={() => setYieldListOpen(true)}
+        onClearFilter={() => setFilterText("")}
+      />
 
-        <div className="flex gap-2">
-            <div className="relative" ref={watchlistMenuRef}>
-                <button
-                    onClick={() => setWatchlistMenuOpen(!watchlistMenuOpen)}
-                    className={`
-                        p-3 rounded-xl shadow-sm transition flex items-center justify-center gap-1 min-w-[3.5rem]
-                        ${showWatchlistOnly 
-                            ? "bg-rose-500 text-white shadow-rose-200 ring-2 ring-rose-300" 
-                            : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
-                    `}
-                    title="我的追蹤"
-                >
-                    <Heart size={20} className={showWatchlistOnly ? "fill-white" : ""} />
-                </button>
-
-                {watchlistMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-4 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-sm font-bold text-slate-700">只顯示追蹤</span>
-                            <button 
-                                onClick={() => setShowWatchlistOnly(!showWatchlistOnly)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showWatchlistOnly ? 'bg-rose-500' : 'bg-slate-200'}`}
-                            >
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${showWatchlistOnly ? 'translate-x-6' : 'translate-x-1'}`} />
-                            </button>
-                        </div>
-                        <button
-                            onClick={() => {
-                                setWatchlistModalOpen(true);
-                                setWatchlistMenuOpen(false);
-                            }}
-                            className="w-full py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2"
-                        >
-                            <List size={16} />
-                            管理我的清單
-                        </button>
-                    </div>
-                )}
-            </div>
-            
-            <div className="relative" ref={yieldMenuRef}>
-                <button
-                    onClick={() => setYieldMenuOpen(!yieldMenuOpen)}
-                    className={`
-                        p-3 rounded-xl shadow-sm transition flex items-center justify-center gap-1 min-w-[4.5rem]
-                        ${showHighYieldOnly 
-                            ? "bg-amber-500 text-white shadow-amber-200 ring-2 ring-amber-300" 
-                            : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"}
-                    `}
-                    title="殖利率篩選"
-                >
-                    <TrendingUp size={20} />
-                    <span className="font-bold text-sm">&gt;{localYield}%</span>
-                </button>
-
-                {yieldMenuOpen && (
-                    <div className="absolute right-0 top-full mt-2 w-64 bg-white border border-slate-200 rounded-xl shadow-xl z-30 p-4 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-sm font-bold text-slate-700">殖利率篩選</span>
-                            <button 
-                                onClick={() => setShowHighYieldOnly(!showHighYieldOnly)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${showHighYieldOnly ? 'bg-amber-500' : 'bg-slate-200'}`}
-                            >
-                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${showHighYieldOnly ? 'translate-x-6' : 'translate-x-1'}`} />
-                            </button>
-                        </div>
-                        <div className="mb-4">
-                            <div className="flex justify-between text-xs text-slate-500 mb-2">
-                                <span>門檻值</span>
-                                <span className="font-bold text-amber-600">{localYield}%</span>
-                            </div>
-                            <input 
-                                type="range" min="1" max="20" step="0.5"
-                                value={localYield} // 綁定到 UI 狀態
-                                onChange={(e) => {
-                                    // 1. 拖曳時只更新 UI 狀態 (列表即時過濾，網址不變)
-                                    setLocalYield(Number(e.target.value));
-                                    if (!showHighYieldOnly) setShowHighYieldOnly(true);
-                                }}
-                                onMouseUp={() => {
-                                    // 2. 放開滑鼠時，才更新 Commit 狀態 (觸發網址更新)
-                                    setYieldThreshold(localYield);
-                                }}
-                                onTouchEnd={() => {
-                                    // 2. 手機版放開手指時
-                                    setYieldThreshold(localYield);
-                                }}
-                                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                            />
-                            <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                                <span>1%</span>
-                                <span>20%</span>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => {
-                                setYieldListOpen(true);
-                                setYieldMenuOpen(false);
-                            }}
-                            className="w-full py-2 bg-slate-100 text-slate-600 hover:bg-slate-200 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2"
-                        >
-                            <List size={16} />
-                            查看符合清單
-                        </button>
-                    </div>
-                )}
-            </div>
-        </div>
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-        <div className="grid grid-cols-7 border-b border-slate-100 bg-slate-50">
-          {weekdays.map((day) => (
-            <div key={day} className="py-2 md:py-4 text-center text-xs md:text-sm font-medium text-slate-500">
-              {day}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-7 auto-rows-fr">
-          {calendarDays.map((day, idx) => {
-            const isCurrentMonth = isSameMonth(day, monthStart);
-            const dayDividends = getDividendsForDay(day, finalDividends); 
-            const isToday = isSameDay(day, new Date());
-            
-            const hasTrackedStock = dayDividends.some(div => watchlist.includes(div.stock_code));
-            
-            return (
-              <div 
-                key={day.toString()} 
-                onClick={() => handleDateClick(day, dayDividends)}
-                className={`
-                  min-h-[80px] md:min-h-[120px] p-1 md:p-2 border-b border-r border-slate-100 transition-all relative
-                  ${!isCurrentMonth ? "bg-slate-50 text-slate-400" : "bg-white"}
-                  ${dayDividends.length > 0 ? "cursor-pointer hover:bg-blue-50/50" : ""}
-                `}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <span className={`
-                    text-xs md:text-sm font-medium w-6 h-6 md:w-7 md:h-7 flex items-center justify-center rounded-full
-                    ${isToday ? "bg-blue-600 text-white" : "text-slate-700"}
-                  `}>
-                    {format(day, "d")}
-                  </span>
-                  
-                  <div className="flex items-center gap-1">
-                    {hasTrackedStock && (
-                        <Heart size={14} className="fill-rose-500 text-rose-500" />
-                    )}
-                    {dayDividends.length > 0 && (
-                        <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-1 md:px-2 py-0.5 rounded-full">
-                        <span className="hidden md:inline">{dayDividends.length} 家</span>
-                        <span className="inline md:hidden">●</span> 
-                        </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="hidden md:block space-y-1"> 
-                  {dayDividends.slice(0, 3).map((div) => (
-                    <div key={div.id} className="text-xs truncate text-slate-600 bg-slate-100/80 px-1.5 py-0.5 rounded border border-slate-200/50 flex justify-between items-center">
-                      <div className="flex items-center">
-                        {watchlist.includes(div.stock_code) && <span className="text-rose-500 mr-1 text-[10px]">♥</span>}
-                        {div.stock_code} {div.stock_name}
-                      </div>
-                      {div.yield_rate > 0 && (
-                        <span className={`text-[10px] ml-1 ${div.yield_rate >= localYield ? "text-amber-600 font-bold" : "text-slate-400"}`}>
-                            {div.yield_rate}%
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                  {dayDividends.length > 3 && (
-                    <div className="text-xs text-slate-400 pl-1">
-                      還有 {dayDividends.length - 3} 家...
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      <CalendarGrid
+        calendarDays={calendarDays}
+        monthStart={monthStart}
+        watchlistSet={watchlistSet}
+        dividendsByDate={dividendsByDate}
+        localYield={localYield}
+        onDateSelect={(day) => {
+          setSelectedDate(day);
+          setDateModalOpen(true);
+        }}
+        onStockSelect={handleStockClick}
+      />
 
       {loading && (
         <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -595,11 +358,11 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         </div>
       )}
 
-      <DividendModal 
-        isOpen={dateModalOpen} 
-        onClose={() => setDateModalOpen(false)} 
+      <DividendModal
+        isOpen={dateModalOpen}
+        onClose={() => setDateModalOpen(false)}
         date={selectedDate}
-        dividends={selectedDate ? getDividendsForDay(selectedDate, finalDividends) : []} 
+        dividends={selectedDividends}
         onStockClick={handleStockClick}
       />
 
@@ -610,7 +373,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         apiUrl={API_URL}
         isTracked={watchlist.includes(selectedStockCode)}
         onToggleTrack={toggleWatchlist}
-        onHistoryDateClick={handleHistoryDateClick} 
+        onHistoryDateClick={handleHistoryDateClick}
       />
 
       <WatchlistModal
@@ -628,9 +391,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         threshold={yieldThreshold}
         onStockClick={handleListStockClick}
       />
+
       <div className="mt-12">
         <SeoContent />
-    </div>
+      </div>
     </main>
   );
 }

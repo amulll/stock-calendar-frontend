@@ -1,7 +1,8 @@
 import "./globals.css";
 import { Inter } from "next/font/google";
-import Script from "next/script"; // 1. 引入 Script 組件
+import Script from "next/script";
 import Footer from "../components/Footer";
+import ToastProvider from "../components/ToastProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -53,8 +54,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="zh-TW">
       <body className={`${inter.className} flex flex-col min-h-screen bg-slate-50 text-slate-900`}>
-        
-        {/* 3. Google Analytics 腳本 (放在 body 內) */}
+
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
           strategy="lazyOnload" 
@@ -69,10 +69,12 @@ export default function RootLayout({ children }) {
           `}
         </Script>
 
-        <div className="flex-grow">
-          {children}
-        </div>
-        <Footer /> 
+        <ToastProvider>
+          <div className="flex-grow">
+            {children}
+          </div>
+          <Footer />
+        </ToastProvider>
       </body>
     </html>
   );
