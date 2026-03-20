@@ -408,7 +408,7 @@ export default async function StockPage({ params }) {
                           </td>
                           <td className="px-2 py-2 text-slate-500 whitespace-nowrap">
                             {item.ex_date ? (
-                                <a href={`/?date=${item.pay_date}&openModal=true`} className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2">
+                                <a href={`/?date=${item.ex_date}`} className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2">
                                     {formatSmartDate(item.ex_date)}
                                 </a>
                             ) : "-"}

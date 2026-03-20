@@ -1,245 +1,361 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-import AdUnit from "./AdUnit"; 
-import { X, Heart, Banknote, ChevronRight, ExternalLink, Download, CalendarPlus, Calendar } from "lucide-react";
-import Loading from "./Loading"; 
+import AdUnit from "./AdUnit";
+import ModalContainer from "./ModalContainer";
+import {
+  X,
+  Heart,
+  Banknote,
+  ChevronRight,
+  ExternalLink,
+  CalendarPlus,
+  Calendar,
+} from "lucide-react";
+import Loading from "./Loading";
 import { startOfDay, parseISO } from "date-fns";
+import { useToast } from "../hooks/useToast";
+import {
+  getCachedStockDetail,
+  setCachedStockDetail,
+} from "../lib/cache";
 
-export default function StockModal({ 
-  isOpen, 
-  onClose, 
-  stockCode, 
+const GOOGLE_CALENDAR_URL = "https://calendar.google.com/calendar/render";
+
+export default function StockModal({
+  isOpen,
+  onClose,
+  stockCode,
   apiUrl,
   isTracked,
   onToggleTrack,
-  onHistoryDateClick 
+  onHistoryDateClick,
 }) {
-  const [history, setHistory] = useState([]); // 存配息紀錄
-  const [info, setInfo] = useState(null);     // 🔥 新增：存基本資料 (含最新股價)
+  const [history, setHistory] = useState([]);
+  const [info, setInfo] = useState(null);
   const [loading, setLoading] = useState(false);
+  const { addToast } = useToast();
+  const today = useMemo(() => startOfDay(new Date()), []);
 
   useEffect(() => {
-    if (isOpen && stockCode) {
-      setLoading(true);
-      setInfo(null); // 重置
-      setHistory([]);
+    if (!isOpen || !stockCode) return;
 
-      axios.get(`${apiUrl}/api/stock/${stockCode}`)
-        .then(res => {
-            // 🔥 修改：分別從 API 回傳物件中取出 info 和 history
-            setInfo(res.data.info);
-            setHistory(res.data.history);
-        })
-        .catch(err => console.error(err))
-        .finally(() => setLoading(false));
-    }
-  }, [isOpen, stockCode, apiUrl]);
-
-  if (!isOpen) return null;
-  const today = startOfDay(new Date());
-  
-  // --- 邏輯處理：找出「最新/未來」的配息事件 ---
-  let currentEvent = null;
-
-  if (history.length > 0) {
-      // 1. 資料清洗
-      const validHistory = history.filter(item => Number(item.cash_dividend) > 0 || Number(item.stock_dividend) > 0);
-      const sourceList = validHistory.length > 0 ? validHistory : history;
-
-      // 2. 找出未來場次
-      const futureEvents = sourceList.filter(item => {
-          if (!item.ex_date) return false;
-          const exDate = parseISO(item.ex_date);
-          return exDate >= today;
-      });
-
-      if (futureEvents.length > 0) {
-          // 有未來：取日期最近的 (ASC)
-          futureEvents.sort((a, b) => new Date(a.ex_date) - new Date(b.ex_date));
-          currentEvent = futureEvents[0];
-      } else {
-          // 沒未來：取歷史最新的 (DESC)
-          const sortedHistory = [...sourceList].sort((a, b) => new Date(b.ex_date) - new Date(a.ex_date));
-          currentEvent = sortedHistory[0];
+    let cancelled = false;
+    const fetchStock = async () => {
+      const cached = getCachedStockDetail(stockCode);
+      if (cached) {
+        setInfo(cached.info);
+        setHistory(cached.history);
+        return;
       }
-  }
 
-  // --- 邏輯處理：歷史列表 (排除未來) ---
-  const historicalRecords = history.filter(item => {
+      setLoading(true);
+      setInfo(null);
+      setHistory([]);
+      try {
+        const res = await axios.get(`${apiUrl}/api/stock/${stockCode}`);
+        if (cancelled) return;
+        const payload = {
+          info: res.data.info,
+          history: Array.isArray(res.data.history) ? res.data.history : [],
+        };
+        setInfo(payload.info);
+        setHistory(payload.history);
+        setCachedStockDetail(stockCode, payload);
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Failed to fetch stock modal data", error);
+        const message =
+          error?.response?.data?.detail ||
+          error?.response?.data?.error ||
+          "無法載入個股資料，請稍後再試";
+        addToast(message, "error");
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchStock();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiUrl, isOpen, stockCode, addToast]);
+
+  const prioritizedHistory = useMemo(() => {
+    const withDividend = history.filter(
+      (item) =>
+        Number(item.cash_dividend) > 0 || Number(item.stock_dividend) > 0
+    );
+    return withDividend.length ? withDividend : history;
+  }, [history]);
+
+  const currentEvent = useMemo(() => {
+    if (!prioritizedHistory.length) return null;
+
+    const upcoming = prioritizedHistory
+      .map((item) => {
+        if (!item.ex_date) return null;
+        const date = parseISO(item.ex_date);
+        return Number.isNaN(date) ? null : { ...item, exDateObj: date };
+      })
+      .filter(
+        (item) => item && item.exDateObj >= today
+      )
+      .sort((a, b) => a.exDateObj - b.exDateObj);
+
+    if (upcoming.length) {
+      return upcoming[0];
+    }
+
+    return (
+      [...prioritizedHistory]
+        .filter((item) => item.ex_date)
+        .sort(
+          (a, b) => new Date(b.ex_date).getTime() - new Date(a.ex_date).getTime()
+        )[0] || null
+    );
+  }, [prioritizedHistory, today]);
+
+  const historicalRecords = useMemo(() => {
+    return history.filter((item) => {
       const dateStr = item.pay_date || item.ex_date;
       if (!dateStr) return false;
-      return new Date(dateStr) < today;
-  });
+      const parsed = parseISO(dateStr);
+      if (Number.isNaN(parsed)) return false;
+      return parsed < today;
+    });
+  }, [history, today]);
 
-  // --- 邏輯處理：動態生成描述文字 ---
-  // 需同時使用 info (股價/名稱) 和 currentEvent (股利/日期)
-  const generateDescription = () => {
-    if (!info || !currentEvent) return "";
-    
-    const { stock_code, stock_name, daily_price } = info;
-    const { cash_dividend, ex_date, pay_date } = currentEvent;
-    
-    // 即時計算殖利率
-    let yieldRate = 0;
-    if (cash_dividend && daily_price > 0) {
-        yieldRate = ((cash_dividend / daily_price) * 100).toFixed(2);
-    }
-    
-    let desc = `<strong>${stock_name} (${stock_code})</strong> `;
-    
-    if (cash_dividend > 0) {
-        desc += `最新一期配發現金股利 <strong>${Number(cash_dividend).toFixed(2)}</strong> 元。`;
-    }
-    
-    if (ex_date) {
-        desc += `除權息交易日為 ${ex_date}，`;
-    }
-    
-    if (pay_date) {
-        desc += `現金股利發放日預計為 <strong>${pay_date}</strong>。`;
-    } else {
-        desc += `現金股利發放日尚未公告。`;
-    }
-    
-    // 使用即時計算的殖利率
-    if (yieldRate > 0) {
-        desc += ` 依據最新收盤價 ${daily_price} 元計算，預估現金殖利率約為 <span class="text-amber-600 font-bold">${yieldRate}%</span>。`;
-    }
-    
-    return desc;
-  };
+  const displayYield = useMemo(() => {
+    if (!currentEvent || !info?.daily_price) return "--";
+    const price = Number(info.daily_price);
+    const dividend = Number(currentEvent.cash_dividend);
+    if (!price || price <= 0) return "--";
+    return ((dividend / price) * 100).toFixed(2);
+  }, [currentEvent, info]);
 
-  // 📅 1. 加入 Google Calendar
+  const displayMarket = useMemo(() => {
+    if (!info?.market_type) return "—";
+    return info.market_type === "TPEX" ? "櫃買" : "上市";
+  }, [info]);
+
   const addToGoogleCalendar = () => {
     if (!currentEvent?.pay_date || !info) return;
-    const dateStr = currentEvent.pay_date.replace(/-/g, ""); 
-    const nextDay = new Date(currentEvent.pay_date);
-    nextDay.setDate(nextDay.getDate() + 1);
-    const nextDayStr = nextDay.toISOString().split('T')[0].replace(/-/g, "");
+    const start = currentEvent.pay_date.replace(/-/g, "");
+    const end = new Date(currentEvent.pay_date);
+    end.setDate(end.getDate() + 1);
+    const endStr = end.toISOString().split("T")[0].replace(/-/g, "");
 
-    const title = encodeURIComponent(`💰 領股利: ${info.stock_name} (${info.stock_code})`);
-    const details = encodeURIComponent(`預計發放現金股利: ${currentEvent.cash_dividend} 元\n除息日: ${currentEvent.ex_date}`);
-    
-    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dateStr}/${nextDayStr}&details=${details}`;
-    window.open(url, '_blank');
+    const title = encodeURIComponent(
+      `股利提醒 - ${info.stock_name} (${info.stock_code})`
+    );
+    const details = encodeURIComponent(
+      `現金股利：${currentEvent.cash_dividend} 元\n除息日：${currentEvent.ex_date}`
+    );
+
+    const url = `${GOOGLE_CALENDAR_URL}?action=TEMPLATE&text=${title}&dates=${start}/${endStr}&details=${details}`;
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
-  // 🍎 2. 下載 ICS 檔案
   const downloadIcsFile = () => {
     if (!currentEvent?.pay_date || !info) return;
     const dateStr = currentEvent.pay_date.replace(/-/g, "");
-    
     const icsContent = [
-      'BEGIN:VCALENDAR',
-      'VERSION:2.0',
-      'BEGIN:VEVENT',
-      `SUMMARY:💰 領股利: ${info.stock_name}`,
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "BEGIN:VEVENT",
+      `SUMMARY:股利提醒 - ${info.stock_name}`,
       `DTSTART;VALUE=DATE:${dateStr}`,
-      `DESCRIPTION:現金股利: ${currentEvent.cash_dividend}元\\n除息日: ${currentEvent.ex_date}`,
-      'END:VEVENT',
-      'END:VCALENDAR'
-    ].join('\n');
+      `DESCRIPTION:現金股利：${currentEvent.cash_dividend} 元\\n除息日：${currentEvent.ex_date}`,
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\n");
 
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const blob = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
     const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
-    link.setAttribute('download', `dividend_${info.stock_code}_${dateStr}.ics`);
+    link.setAttribute("download", `dividend_${info.stock_code}_${dateStr}.ics`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
   };
 
-  // 計算顯示用的殖利率
-  const displayYield = (currentEvent && info?.daily_price) 
-    ? ((currentEvent.cash_dividend / info.daily_price) * 100).toFixed(2)
-    : "--";
-  const displayMarket = (info?.market_type === "TPEX" || info?.market_type === "上櫃") ? "上櫃" : "上市";
+  if (!isOpen) return null;
+
+  const renderSummary = () => {
+    if (!info || !currentEvent) return null;
+
+    return (
+      <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+        <p>
+          <strong>
+            {info.stock_name} ({info.stock_code})
+          </strong>{" "}
+          最新現金股利
+          <strong className="ml-1">
+            {Number(currentEvent.cash_dividend || 0).toFixed(2)} 元
+          </strong>
+        </p>
+        <p>
+          除息日：<strong>{currentEvent.ex_date || "尚未公布"}</strong>
+        </p>
+        <p>
+          發放日：<strong>{currentEvent.pay_date || "尚未公布"}</strong>
+        </p>
+        {displayYield !== "--" && (
+          <p>
+            以最新收盤價{" "}
+            <strong>{info.daily_price}</strong> 元計算，
+            <strong className="text-amber-600 ml-1">{displayYield}%</strong> 殖利率。
+          </p>
+        )}
+      </div>
+    );
+  };
+
+  const renderHistory = () => {
+    if (!historicalRecords.length) {
+      return (
+        <div className="text-center text-slate-400 text-sm py-2">
+          尚無歷史紀錄
+        </div>
+      );
+    }
+
+    return historicalRecords.map((item) => (
+      <div
+        key={`${item.stock_code}-${item.ex_date}-${item.pay_date}`}
+        onClick={() => onHistoryDateClick(item.pay_date || item.ex_date)}
+        className="flex justify-between items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-blue-200 cursor-pointer transition group"
+      >
+        <div>
+          <div className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition">
+            發放日 {item.pay_date || "未提供"}
+          </div>
+          <div className="text-xs text-slate-400">除息日 {item.ex_date}</div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="font-bold text-slate-800">
+            {Number(item.cash_dividend).toFixed(4)} 元
+          </div>
+          <ChevronRight
+            size={14}
+            className="text-slate-300 group-hover:text-blue-400"
+          />
+        </div>
+      </div>
+    ));
+  };
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
-        
-        {/* Header */}
+    <ModalContainer
+      isOpen={isOpen}
+      onClose={onClose}
+      contentClassName="max-w-md animate-in slide-in-from-bottom-5 duration-300"
+    >
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
         <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-6 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
-          
-          <button onClick={onClose} className="absolute top-4 right-4 text-white/80 hover:text-white transition z-20">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
+
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-white/80 hover:text-white transition z-20"
+            aria-label="關閉"
+          >
             <X size={24} />
           </button>
-          
+
           <div className="relative z-10 flex justify-between items-start mt-2">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                {/* 🔥 修改：使用 info.stock_name */}
-                <h2 className="text-3xl font-bold mb-1">{info?.stock_name || stockCode}</h2>
-                <Link 
+                <h2 className="text-3xl font-bold mb-1">
+                  {info?.stock_name || stockCode}
+                </h2>
+                {stockCode && (
+                  <Link
                     href={`/stock/${stockCode}`}
                     className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition text-white/90 hover:text-white"
-                    title="查看完整詳情頁"
-                >
+                    title="檢視個股頁面"
+                  >
                     <ExternalLink size={16} />
-                </Link>
+                  </Link>
+                )}
               </div>
               <div className="flex items-center gap-2 text-blue-100">
-                <span className="bg-white/20 px-2 py-0.5 rounded text-sm">{stockCode}</span>
-                {/* 🔥 修改：使用 info.market_type */}
+                {stockCode && (
+                  <span className="bg-white/20 px-2 py-0.5 rounded text-sm">
+                    {stockCode}
+                  </span>
+                )}
                 <span className="text-sm">{displayMarket}</span>
               </div>
             </div>
 
-            <button 
+            {stockCode && (
+              <button
                 onClick={() => onToggleTrack(stockCode)}
                 className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition active:scale-95 mr-8"
-                title={isTracked ? "取消追蹤" : "加入追蹤"}
-            >
-                <Heart 
-                    size={24} 
-                    className={isTracked ? "fill-rose-400 text-rose-400" : "text-white"} 
+                title={isTracked ? "移除追蹤" : "加入追蹤"}
+              >
+                <Heart
+                  size={24}
+                  className={isTracked ? "fill-rose-400 text-rose-400" : "text-white"}
                 />
-            </button>
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Content */}
         <div className="p-6 max-h-[60vh] overflow-y-auto">
-          {loading || !info ? (
+          {loading ? (
             <div className="h-full flex items-center justify-center">
-                <Loading text="正在查詢最新資料..." scale={0.4} />
+              <Loading text="載入個股資料中..." scale={0.4} />
+            </div>
+          ) : !info ? (
+            <div className="text-center text-slate-500 py-12">
+              暫時查無資料，請稍後再試。
             </div>
           ) : (
             <div className="space-y-6">
+              {renderSummary()}
 
-              {/* 動態生成的文字 (Info Box) */}
-              {currentEvent && (
-                <div 
-                    className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100"
-                    dangerouslySetInnerHTML={{ __html: generateDescription() }}
-                />
-              )}
-
-              {/* 股價與殖利率儀表板 */}
               <div className="grid grid-cols-2 gap-4 mb-2">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
-                        <div className="text-xs text-slate-500 mb-1">最新收盤價</div>
-                        <div className="text-xl font-bold text-slate-700">
-                            {/* 🔥 修改：使用 info.daily_price */}
-                            {info.daily_price ? `$${info.daily_price}` : "--"}
-                        </div>
-                    </div>
-                    <div className={`p-4 rounded-xl border flex flex-col items-center justify-center
-                        ${displayYield > 5 ? "bg-rose-50 border-rose-100" : "bg-blue-50 border-blue-100"}
-                    `}>
-                        <div className={`text-xs mb-1 ${displayYield > 5 ? "text-rose-600" : "text-blue-600"}`}>
-                            預估殖利率
-                        </div>
-                        <div className={`text-xl font-bold ${displayYield > 5 ? "text-rose-600" : "text-blue-600"}`}>
-                            {displayYield !== "--" ? `${displayYield}%` : "--"}
-                        </div>
-                    </div>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+                  <div className="text-xs text-slate-500 mb-1">最新收盤價</div>
+                  <div className="text-xl font-bold text-slate-700">
+                    {info.daily_price ? `$${info.daily_price}` : "--"}
+                  </div>
+                </div>
+                <div
+                  className={`p-4 rounded-xl border flex flex-col items-center justify-center ${
+                    displayYield !== "--"
+                      ? "bg-rose-50 border-rose-100"
+                      : "bg-blue-50 border-blue-100"
+                  }`}
+                >
+                  <div
+                    className={`text-xs mb-1 ${
+                      displayYield !== "--" ? "text-rose-600" : "text-blue-600"
+                    }`}
+                  >
+                    估算殖利率
+                  </div>
+                  <div
+                    className={`text-xl font-bold ${
+                      displayYield !== "--" ? "text-rose-600" : "text-blue-600"
+                    }`}
+                  >
+                    {displayYield !== "--" ? `${displayYield}%` : "--"}
+                  </div>
+                </div>
               </div>
-              
-              {/* 最新股利資訊 */}
+
               {currentEvent && (
                 <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
                   <h3 className="text-emerald-800 font-bold flex items-center gap-2 mb-3">
@@ -247,72 +363,57 @@ export default function StockModal({
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-xs text-emerald-600 mb-1">現金股利</div>
+                      <div className="text-xs text-emerald-600 mb-1">
+                        現金股利
+                      </div>
                       <div className="text-2xl font-bold text-emerald-700">
-                        {Number(currentEvent.cash_dividend).toFixed(4)} <span className="text-sm">元</span>
+                        {Number(currentEvent.cash_dividend).toFixed(4)}{" "}
+                        <span className="text-sm">元</span>
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-emerald-600 mb-1">發放日期</div>
-                      <div className="text-lg font-bold text-emerald-700">{currentEvent.pay_date || "尚未公布"}</div>
-                      
-                      {/* 行事曆按鈕 */}
+                      <div className="text-xs text-emerald-600 mb-1">
+                        發放日
+                      </div>
+                      <div className="text-lg font-bold text-emerald-700">
+                        {currentEvent.pay_date || "尚未公布"}
+                      </div>
+
                       {currentEvent.pay_date && (
                         <div className="flex gap-2 mt-2">
-                            <button 
-                                onClick={addToGoogleCalendar}
-                                className="flex items-center gap-1 px-2 py-1 bg-white border border-emerald-200 rounded text-[10px] text-emerald-700 hover:bg-emerald-100 transition"
-                            >
-                                <CalendarPlus size={12} /> Google
-                            </button>
-                            <button 
-                                onClick={downloadIcsFile}
-                                className="flex items-center gap-1 px-2 py-1 bg-white border border-emerald-200 rounded text-[10px] text-emerald-700 hover:bg-emerald-100 transition"
-                            >
-                                <CalendarPlus size={12} /> iOS
-                            </button>
+                          <button
+                            onClick={addToGoogleCalendar}
+                            className="flex items-center gap-1 px-2 py-1 bg-white border border-emerald-200 rounded text-[10px] text-emerald-700 hover:bg-emerald-100 transition"
+                          >
+                            <CalendarPlus size={12} /> Google
+                          </button>
+                          <button
+                            onClick={downloadIcsFile}
+                            className="flex items-center gap-1 px-2 py-1 bg-white border border-emerald-200 rounded text-[10px] text-emerald-700 hover:bg-emerald-100 transition"
+                          >
+                            <CalendarPlus size={12} /> iOS
+                          </button>
                         </div>
                       )}
 
-                      <div className="text-xs text-slate-400 mt-2">除息: {currentEvent.ex_date}</div>
+                      <div className="text-xs text-slate-400 mt-2">
+                        除息日：{currentEvent.ex_date || "尚未公布"}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* 歷史紀錄 */}
               <div>
                 <h3 className="text-slate-800 font-bold flex items-center gap-2 mb-4">
-                  <Calendar size={18} /> 歷史發放紀錄
-                  <span className="text-xs font-normal text-slate-400 ml-auto">(點擊跳轉)</span>
+                  <Calendar size={18} /> 歷史配息紀錄
+                  <span className="text-xs font-normal text-slate-400 ml-auto">
+                    （最新在前）
+                  </span>
                 </h3>
-                <div className="space-y-2">
-                    {historicalRecords.length === 0 ? (
-                        <div className="text-center text-slate-400 text-sm py-2">無過去紀錄</div>
-                    ) : (
-                        historicalRecords.map((item) => (
-                            <div 
-                                key={item.id} 
-                                onClick={() => onHistoryDateClick(item.pay_date || item.ex_date)}
-                                className="flex justify-between items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-blue-200 cursor-pointer transition group"
-                            >
-                                <div>
-                                    <div className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition">
-                                        發放日: {item.pay_date || "未定"}
-                                    </div>
-                                    <div className="text-xs text-slate-400">除息日: {item.ex_date}</div>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="font-bold text-slate-800">{Number(item.cash_dividend).toFixed(4)} 元</div>
-                                    <ChevronRight size={14} className="text-slate-300 group-hover:text-blue-400" />
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
+                <div className="space-y-2">{renderHistory()}</div>
               </div>
-              
-              {/* 招財貓版位 */}
+
               <div className="pt-4 border-t border-slate-100">
                 <AdUnit type="rectangle" />
               </div>
@@ -320,6 +421,6 @@ export default function StockModal({
           )}
         </div>
       </div>
-    </div>
+    </ModalContainer>
   );
 }
