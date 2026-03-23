@@ -1,6 +1,12 @@
 // app/not-found.js
 import Link from 'next/link';
 
+export const metadata = {
+  title: "404 找不到頁面 - uGoodly 股利日曆",
+  description:
+    "您查詢的頁面可能不存在或已移除。回到 uGoodly 股利日曆首頁，查詢台股除權息、配息發放日與殖利率資訊。",
+};
+
 export default function NotFound() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-4 text-center">

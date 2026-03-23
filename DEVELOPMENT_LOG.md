@@ -1,5 +1,14 @@
 # Technical Development Log
 
+## 2026-03-23 – Stock Meta Description Hardening (SEO)
+- **個股頁 metadata fallback 與長度一致化**  
+  *Why*: 外部 SEO 健檢指出多個個股頁出現 meta description 過短或缺失，且在上游資料暫時失敗時更容易被爬蟲放大。  
+  *Impact*:  
+  1. `app/stock/[id]/page.js` 在查無資料時改為回傳完整 fallback metadata（title/description/openGraph/twitter），避免空白或過短描述。  
+  2. 新增 `buildStockMetaDescription(...)` 與 `buildStockFallbackDescription(...)`，統一 `description`、`openGraph.description`、`twitter.description` 文案來源。  
+  3. `getStockData` 改用 `cache(...)` 做 request-level memoization，降低同一請求內 metadata 與頁面重複打 API 的失敗率。  
+  4. `app/not-found.js` 新增 metadata，補齊 404 頁的 title/description。  
+
 ## 2026-03-18 – Cache Policy Adjustment (Performance)
 - **延長前端快取 TTL (Performance)**  
   *Why*: 月份與個股視圖在 5 分鐘內常被重複開啟，依舊會頻繁打到 proxy。  
