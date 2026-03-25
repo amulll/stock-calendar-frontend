@@ -1,61 +1,106 @@
-# Technical Development Log
+﻿# Technical Development Log
 
-## 2026-03-23 – Stock Meta Description Hardening (SEO)
-- **個股頁 metadata fallback 與長度一致化**  
-  *Why*: 外部 SEO 健檢指出多個個股頁出現 meta description 過短或缺失，且在上游資料暫時失敗時更容易被爬蟲放大。  
-  *Impact*:  
-  1. `app/stock/[id]/page.js` 在查無資料時改為回傳完整 fallback metadata（title/description/openGraph/twitter），避免空白或過短描述。  
-  2. 新增 `buildStockMetaDescription(...)` 與 `buildStockFallbackDescription(...)`，統一 `description`、`openGraph.description`、`twitter.description` 文案來源。  
-  3. `getStockData` 改用 `cache(...)` 做 request-level memoization，降低同一請求內 metadata 與頁面重複打 API 的失敗率。  
-  4. `app/not-found.js` 新增 metadata，補齊 404 頁的 title/description。  
+## 2026-03-23 – Stock Meta Description Hardening
+- Status: done
+- Priority: high
+- Area: SEO
+- Files:
+  - app/stock/[id]/page.js
+  - app/not-found.js
+  - TBD
+- Why: 外部 SEO 健檢指出多個個股頁出現 meta description 過短或缺失，且在上游資料暫時失敗時更容易被爬蟲放大。
+- Impact: `app/stock/[id]/page.js` 在查無資料時回傳完整 fallback metadata（title、description、openGraph、twitter）；新增 `buildStockMetaDescription(...)` 與 `buildStockFallbackDescription(...)` 統一描述文案來源；`getStockData` 改用 `cache(...)` 做 request-level memoization，降低同一請求內 metadata 與頁面重複打 API 的失敗率；`app/not-found.js` 補上 404 頁 metadata。
+- Next: 觀察實際搜尋引擎收錄結果與 metadata 長度是否仍有缺口。
 
-## 2026-03-18 – Cache Policy Adjustment (Performance)
-- **延長前端快取 TTL (Performance)**  
-  *Why*: 月份與個股視圖在 5 分鐘內常被重複開啟，依舊會頻繁打到 proxy。  
-  *Impact*: 將 in-memory cache TTL 自 5 分鐘延長到 10 分鐘，搭配 StockModal 詳細資料快取後，可顯著降低 `/api/dividends` 與 `/api/stock/:code` 的重複請求；代價是若後端在 10 分鐘內更新資料，使用者需重新整理才能即時看到最新值。
+## 2026-03-18 – Cache Policy Adjustment
+- Status: done
+- Priority: medium
+- Area: Performance
+- Files:
+  - lib/cache.js
+  - TBD
+- Why: 月份與個股視圖在 5 分鐘內常被重複開啟，依舊會頻繁打到 proxy。
+- Impact: 將 in-memory cache TTL 自 5 分鐘延長到 10 分鐘，搭配 StockModal 詳細資料快取後，可顯著降低 `/api/dividends` 與 `/api/stock/:code` 的重複請求；代價是若後端在 10 分鐘內更新資料，使用者需重新整理才能即時看到最新值。
+- Next: 觀察資料新鮮度與快取命中率，必要時改為更細緻的失效策略。
 
-## 2026-03-18 – Accessibility & Feedback Hardening
-- **FilterBar 語意補強 (UX/UI)**  
-  *Why*: 建議清單缺乏完整的 combobox 語意，螢幕閱讀器無法感知焦點與結果數。  
-  *Impact*: 以 `role="combobox"`、`aria-activedescendant`、`aria-live` 等語意描述輸入狀態，並為 Watchlist / High-Yield 控制加入 aria 屬性，讓鍵盤與輔助工具都能安全操作。  
-- **StockModal 錯誤提示一致化 (UX/Reliability)**  
-  *Why*: axios 錯誤僅寫入 `console.error`，後端 403/500 時使用者看不到回饋。  
-  *Impact*: 將資料請求改成可取消的 async 流程並統一導入 `ToastProvider`，即時顯示「無法載入個股資料」等訊息，同時避免 race condition 造成閃爍。
+## 2026-03-18 – Accessibility and Feedback Hardening
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - TBD
+- Why: 建議清單缺乏完整的 combobox 語意，且 axios 錯誤僅寫入 `console.error`，螢幕閱讀器與一般使用者都缺乏明確回饋。
+- Impact: 以 `role="combobox"`、`aria-activedescendant`、`aria-live` 等語意補強 FilterBar，並為 Watchlist / High-Yield 控制加入 aria 屬性；同時將資料請求改成可取消的 async 流程並導入 `ToastProvider`，在 403/500 等失敗情境中提供一致訊息，避免 race condition 造成閃爍。
+- Next: 補做鍵盤操作與錯誤提示的驗收檢查，確認所有互動元件行為一致。
 
-## 2026-03-18 – Modal UX & Error Handling
-- **Modal Accessibility Upgrade (UX/UI)**  
-  *Why*: 分散式 Modal 缺乏 focus trap、Esc 與 ARIA，鍵盤／螢幕閱讀器體驗受限。  
-  *Impact*: `ModalContainer` 統一處理焦點循環與遮罩關閉，Dividend/Stock/Watchlist/Yield 皆採用，確保彈窗可被輔助工具順利操作。
-- **Global Toast Provider (UX/Reliability)**  
-  *Why*: `alert` / `console.error` 沒有一致提示，錯誤容易被忽略。  
-  *Impact*: `ToastProvider` 包在 `app/layout`，Calendar 與 Yield Modal 流程出錯會顯示 toast，提升回饋透明度。
+## 2026-03-18 – Modal UX and Error Handling
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - app/layout
+  - TBD
+- Why: 分散式 Modal 缺乏 focus trap、Esc 與 ARIA，且 `alert` / `console.error` 沒有一致提示，錯誤容易被忽略。
+- Impact: `ModalContainer` 統一處理焦點循環與遮罩關閉，Dividend、Stock、Watchlist、Yield 皆採用；`ToastProvider` 包在 `app/layout`，讓 Calendar 與 Yield Modal 流程出錯時能顯示一致 toast。
+- Next: 持續收斂彈窗與全域提示元件，避免新流程再出現分散實作。
 
-## 2026-03-17 – Calendar Performance & Architecture
-- **Client-side Cache + Debounced Search (Performance)**  
-  *Why*: 月份切換與股票跳轉頻繁觸發 API，造成延遲與後端壓力。  
-  *Impact*: 5 分鐘 TTL 的 in-memory cache（`lib/cache.js`）加上 250 ms debounce，減少重複請求並讓搜尋輸入更順暢。
-- **CalendarClient 拆分與 Memoization (Architecture)**  
-  *Why*: 巨型 `CalendarClient` 不利維護，URL 同步與 render 成本過高。  
-  *Impact*: `useCalendarQueryState`、`FilterBar`、`CalendarGrid` 分離責任；透過 memoization 將日曆 render 降為 O(N)，方便後續擴充。
+## 2026-03-17 – Calendar Performance and Architecture
+- Status: done
+- Priority: high
+- Area: Architecture
+- Files:
+  - lib/cache.js
+  - useCalendarQueryState
+  - FilterBar
+  - CalendarGrid
+- Why: 月份切換與股票跳轉頻繁觸發 API，造成延遲與後端壓力；巨型 `CalendarClient` 也不利維護，URL 同步與 render 成本過高。
+- Impact: 透過 5 分鐘 TTL 的 in-memory cache 與 250 ms debounce 減少重複請求；並將 `useCalendarQueryState`、`FilterBar`、`CalendarGrid` 分離責任，搭配 memoization 降低日曆 render 成本，方便後續擴充。
+- Next: 盤點仍集中在 `CalendarClient` 的責任，持續降低元件耦合。
 
-## 2026-03-16 – Security & Data Accuracy
-- **Proxy Layer Hardening (Security)**  
-  *Why*: 需要統一的 service token 邊界並防止 proxy 被濫用。  
-  *Impact*: `/api/proxy` 只允許 `api/dividends|stocks|stock` 前綴並注入 `X-Service-Token`；`lib/proxy-client.js` 讓前端維持單一出口。
-- **Ex-Date Link 修復 (UX/Accuracy)**  
-  *Why*: 個股頁的除息日連結指到發放日，誤導使用者。  
-  *Impact*: 改成直接帶入 `ex_date` 參數，讓日曆定位正確日期。  
-- **Initial Foundations (Infrastructure) [Pending Merge]**  
-  完成 App Router 架構、SSR 初始資料與 UI 主題，打底後續優化。
+## 2026-03-16 – Security and Data Accuracy
+- Status: done
+- Priority: high
+- Area: Security
+- Files:
+  - lib/proxy-client.js
+  - TBD
+- Why: 需要統一的 service token 邊界並防止 proxy 被濫用，同時修正個股頁除息日連結定位錯誤。
+- Impact: `/api/proxy` 僅允許 `api/dividends|stocks|stock` 前綴並注入 `X-Service-Token`，`lib/proxy-client.js` 讓前端維持單一出口；個股頁改為直接帶入 `ex_date` 參數，讓日曆定位正確日期；App Router、SSR 初始資料與 UI 主題也完成基礎打底。
+- Next: 補齊 proxy 使用面盤點，確保舊呼叫路徑全部收斂到同一安全邊界。
 
----
+## 2026-03-24 – Architecture README Consolidation
+- Status: done
+- Priority: medium
+- Area: Documentation
+- Files:
+  - README.md
+  - DEVELOPMENT_LOG.md
+- Why: 前後端目前已形成固定的 SSR + proxy + service token 架構，但缺少一份能快速回想請求流、安全邊界與部署方式的 repo 級摘要。
+- Impact: 新增 `README.md`，明確記錄首頁與個股頁的 SSR 直連路徑、`/api/proxy` 的轉發角色、`SERVICE_TOKEN` 的伺服器邊界，以及目前 `BACKEND_INTERNAL_URL`、`NEXT_PUBLIC_API_URL`、`API_URL` 的分工，降低後續回看專案時的理解成本。
+- Next: 若後續將所有 client 請求完全收斂到 `proxyGet`，同步更新 README 中的資料流與環境變數說明。
 
-## Backlog / Technical Debt
+## Backlog
 
-| Priority | Item | Category | Note |
-| --- | --- | --- | --- |
-| High | 使用 `router.replace` 同步篩選狀態，避免污染瀏覽器歷史 | UX/UI | 月份與篩選目前會 push history，造成返回鍵需要多次點擊 |
-| High | 將舊有 axios 呼叫改寫成 `proxyGet` 並共用錯誤處理 | Security | CalendarClient、WatchlistModal 仍繞過 helper，沒有統一 token 驗證與失敗訊息 |
-| Medium | 安裝依賴、產生 lockfile、串接 lint/test CI | Infrastructure | 維護版本鎖定並早期攔截回歸問題 |
+### Item 1
+- Priority: high
+- Status: todo
+- Category: UX/UI
+- Owner: TBD
+- Note: 使用 `router.replace` 同步篩選狀態，避免污染瀏覽器歷史；目前月份與篩選會 push history，造成返回鍵需要多次點擊。
+- Due: TBD
 
-（後續任何重要決策請依同樣格式補上 Why / Impact，以維護決策脈絡。）
+### Item 2
+- Priority: high
+- Status: todo
+- Category: Security
+- Owner: TBD
+- Note: 將舊有 axios 呼叫改寫成 `proxyGet` 並共用錯誤處理；`CalendarClient`、`WatchlistModal` 仍繞過 helper，沒有統一 token 驗證與失敗訊息。
+- Due: TBD
+
+### Item 3
+- Priority: medium
+- Status: todo
+- Category: Infrastructure
+- Owner: TBD
+- Note: 安裝依賴、產生 lockfile、串接 lint/test CI，以維護版本鎖定並提早攔截回歸問題。
+- Due: TBD
