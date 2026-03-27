@@ -3,14 +3,29 @@ import { ArrowLeft, Calendar, Banknote, Info } from "lucide-react";
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit"; 
 import { startOfDay, parseISO } from "date-fns";
+import { cache } from "react";
 import DividendCalculator from "../../../components/DividendCalculator"; 
 import DividendChart from "../../../components/DividendChart";
 
 // 設定 ISR 快取時間 (例如 1 小時更新一次)
 export const revalidate = 0;
 
+const STOCK_META_IMAGE = "https://ugoodly.com/ugoodly_1200x630.png";
+
+function buildStockMetaDescription({ stockName, stockCode, dailyPrice }) {
+  return `免費使用股利計算機，查詢 ${stockName} (${stockCode}) 最新現金股利發放日、除權息日期與殖利率。${
+    dailyPrice
+      ? `目前股價 ${dailyPrice} 元，可即時試算投報率。`
+      : "可即時試算投報率與領息規劃。"
+  }`;
+}
+
+function buildStockFallbackDescription(stockCode) {
+  return `查詢 ${stockCode} 的股利發放日、除權息日期、歷年配息與殖利率變化，搭配免費股利計算機快速試算存股回報。`;
+}
+
 // 資料抓取函式
-async function getStockData(id) {
+const getStockData = cache(async (id) => {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN; 
 
@@ -28,25 +43,58 @@ async function getStockData(id) {
     console.error("Fetch stock error:", error);
     return null;
   }
-}
+});
 
 // 1. 動態生成 SEO Metadata
 export async function generateMetadata({ params }) {
   const { id } = params;
   const data = await getStockData(id);
+  const fallbackDescription = buildStockFallbackDescription(id);
 
   // 檢查 info 是否存在
   if (!data || !data.info) {
-    return { title: "查無股票資料" };
+    return {
+      title: `${id} 股利資訊查詢 - uGoodly`,
+      description: fallbackDescription,
+      alternates: {
+        canonical: `https://ugoodly.com/stock/${id}`,
+      },
+      openGraph: {
+        title: `${id} 股利資訊查詢`,
+        description: fallbackDescription,
+        url: `https://ugoodly.com/stock/${id}`,
+        siteName: "uGoodly 股利日曆",
+        locale: "zh_TW",
+        type: "website",
+        images: [
+          {
+            url: STOCK_META_IMAGE,
+            width: 1200,
+            height: 630,
+            alt: "uGoodly 股利日曆",
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${id} 股利資訊查詢`,
+        description: fallbackDescription,
+        images: [STOCK_META_IMAGE],
+      },
+    };
   }
 
   const { info } = data; // 使用 info
   const year = new Date().getFullYear();
-  const ogImageUrl = `https://ugoodly.com/ugoodly_1200x630.png`;
+  const metaDescription = buildStockMetaDescription({
+    stockName: info.stock_name,
+    stockCode: id,
+    dailyPrice: info.daily_price,
+  });
 
   return {
     title: `${info.stock_name} (${id}) ${year} 股利配息日、殖利率與股利計算 - uGoodly`,
-    description: `免費使用股利計算機，查詢 ${info.stock_name} (${id}) 最新現金股利發放日、除權息日期。目前股價 ${info.daily_price || '-'} 元，即時殖利率試算。`,
+    description: metaDescription,
     keywords: [info.stock_name, id, "股利計算", "存股試算", "殖利率計算機", "股息試算", 
       "股利", "發放日", "除息日", "殖利率", "存股","配息日"],
     alternates: {
@@ -54,25 +102,25 @@ export async function generateMetadata({ params }) {
     },
     openGraph: {
       title: `${info.stock_name} (${id}) 股利發放日與試算`,
-      description: `查詢 ${info.stock_name} 最新現金股利與殖利率，使用免費股利計算機試算存股回報。`,
+      description: metaDescription,
       url: `https://ugoodly.com/stock/${id}`,
       siteName: 'uGoodly 股利日曆',
       locale: 'zh_TW',
       type: 'website',
       images: [
         {
-          url: ogImageUrl, 
+          url: STOCK_META_IMAGE, 
           width: 1200,      
           height: 630,     
-          alt: 'uGoodly Logo',
+          alt: "uGoodly 股利日曆",
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${info.stock_name} (${id}) 股利日曆`,
-      description: `查詢 ${info.stock_name} 殖利率與除息日`,
-      images: [ogImageUrl],
+      description: metaDescription,
+      images: [STOCK_META_IMAGE],
     },
   };
 }
