@@ -35,6 +35,9 @@ export function useCalendarQueryState({ searchParams, router, pathname }) {
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
+    const currentUrl = searchParamsString
+      ? `${pathname}?${searchParamsString}`
+      : pathname;
 
     const today = new Date();
     const isDefaultMonth =
@@ -61,7 +64,11 @@ export function useCalendarQueryState({ searchParams, router, pathname }) {
 
     const newQuery = params.toString();
     const nextUrl = newQuery ? `${pathname}?${newQuery}` : pathname;
-    router.replace(nextUrl, { scroll: false });
+
+    // Avoid redundant navigations when the derived URL already matches the current one.
+    if (nextUrl !== currentUrl) {
+      router.replace(nextUrl, { scroll: false });
+    }
   }, [
     currentDate,
     showHighYieldOnly,

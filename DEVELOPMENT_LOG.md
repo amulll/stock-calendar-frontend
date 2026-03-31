@@ -1,5 +1,16 @@
 ﻿# Technical Development Log
 
+## 2026-03-31 – Query History Replace Guard
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - hooks/useCalendarQueryState.js
+  - DEVELOPMENT_LOG.md
+- Why: 篩選與月份同步已改用 `router.replace`，但當推導出的 URL 與目前 URL 相同時仍會重複觸發 navigation，增加 history / routing flow 的不必要干擾風險。
+- Impact: 在 `useCalendarQueryState` 新增目前 URL 與下一個 URL 的比對，只有在 query 真正變動時才執行 `router.replace`；既有月份切換、殖利率篩選、`date` 參數清理與資料載入流程維持不變。
+- Next: 以人工操作驗證返回鍵、月份切換、殖利率切換與從個股頁跳回日曆的 URL 同步流程。
+
 ## 2026-03-23 – Stock Meta Description Hardening
 - Status: done
 - Priority: high
@@ -83,10 +94,10 @@
 
 ### Item 1
 - Priority: high
-- Status: todo
+- Status: done
 - Category: UX/UI
 - Owner: TBD
-- Note: 使用 `router.replace` 同步篩選狀態，避免污染瀏覽器歷史；目前月份與篩選會 push history，造成返回鍵需要多次點擊。
+- Note: 已改為在 query 真正變動時才執行 `router.replace`，避免不必要 navigation 干擾返回流程與瀏覽器歷史。
 - Due: TBD
 
 ### Item 2
