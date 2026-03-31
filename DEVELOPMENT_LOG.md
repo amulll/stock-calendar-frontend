@@ -7,9 +7,9 @@
 - Files:
   - hooks/useCalendarQueryState.js
   - DEVELOPMENT_LOG.md
-- Why: 篩選與月份同步已改用 `router.replace`，但當推導出的 URL 與目前 URL 相同時仍會重複觸發 navigation，增加 history / routing flow 的不必要干擾風險。
-- Impact: 在 `useCalendarQueryState` 新增目前 URL 與下一個 URL 的比對，只有在 query 真正變動時才執行 `router.replace`；既有月份切換、殖利率篩選、`date` 參數清理與資料載入流程維持不變。
-- Next: 以人工操作驗證返回鍵、月份切換、殖利率切換與從個股頁跳回日曆的 URL 同步流程。
+- Why: 篩選與月份同步雖已改用 `router.replace`，但 hook 仍缺少外部 URL 變更回灌到本地 state 的同步；同時當推導出的 URL 與目前 URL 相同時也會重複觸發 navigation，影響返回與 history 行為的穩定性。
+- Impact: 在 `useCalendarQueryState` 抽出統一的 query state parser，讓 `searchParams` 變化時可把月份與 `yield` 狀態同步回本地 state；同時保留 current URL / next URL guard，只有在 query 真正變動時才執行 `router.replace`。既有月份切換、殖利率篩選、`date` 參數清理與資料載入流程維持不變。
+- Next: 以人工操作驗證返回鍵、前進鍵、月份切換、殖利率切換與從個股頁跳回日曆的 URL 同步流程。
 
 ## 2026-03-23 – Stock Meta Description Hardening
 - Status: done
@@ -97,7 +97,7 @@
 - Status: done
 - Category: UX/UI
 - Owner: TBD
-- Note: 已改為在 query 真正變動時才執行 `router.replace`，避免不必要 navigation 干擾返回流程與瀏覽器歷史。
+- Note: 已補上 URL -> state 同步與 `router.replace` guard，避免不必要 navigation 並改善返回 / 前進時的 query state 還原。
 - Due: TBD
 
 ### Item 2

@@ -3,35 +3,69 @@
 import { useEffect, useMemo, useState } from "react";
 import { format, isValid } from "date-fns";
 
+function getQueryStateFromSearchParams(searchParams) {
+  const year = searchParams.get("year");
+  const month = searchParams.get("month");
+  const dateParam = searchParams.get("date");
+  const yieldParam = searchParams.get("yield");
+
+  let currentDate = new Date();
+  let dateSource = "default";
+
+  if (dateParam) {
+    const target = new Date(dateParam);
+    if (!Number.isNaN(target.getTime())) {
+      currentDate = target;
+      dateSource = "date";
+    }
+  } else if (year && month) {
+    const candidate = new Date(parseInt(year, 10), parseInt(month, 10) - 1);
+    if (isValid(candidate)) {
+      currentDate = candidate;
+      dateSource = "month";
+    }
+  }
+
+  return {
+    currentDate,
+    dateSource,
+    yieldThreshold: yieldParam ? Number(yieldParam) : 5,
+    showHighYieldOnly: searchParams.has("yield"),
+  };
+}
+
 export function useCalendarQueryState({ searchParams, router, pathname }) {
   const searchParamsString = searchParams.toString();
+  const initialQueryState = getQueryStateFromSearchParams(searchParams);
 
-  const [currentDate, setCurrentDate] = useState(() => {
-    const year = searchParams.get("year");
-    const month = searchParams.get("month");
-    const dateParam = searchParams.get("date");
-
-    if (dateParam) {
-      const target = new Date(dateParam);
-      if (!Number.isNaN(target.getTime())) return target;
-    }
-
-    if (year && month) {
-      const candidate = new Date(parseInt(year, 10), parseInt(month, 10) - 1);
-      if (isValid(candidate)) return candidate;
-    }
-
-    return new Date();
-  });
-
-  const [yieldThreshold, setYieldThreshold] = useState(() => {
-    const value = searchParams.get("yield");
-    return value ? Number(value) : 5;
-  });
-
-  const [showHighYieldOnly, setShowHighYieldOnly] = useState(() =>
-    searchParams.has("yield")
+  const [currentDate, setCurrentDate] = useState(initialQueryState.currentDate);
+  const [yieldThreshold, setYieldThreshold] = useState(
+    initialQueryState.yieldThreshold
   );
+  const [showHighYieldOnly, setShowHighYieldOnly] = useState(
+    initialQueryState.showHighYieldOnly
+  );
+
+  useEffect(() => {
+    const nextQueryState = getQueryStateFromSearchParams(searchParams);
+    const dateFormat =
+      nextQueryState.dateSource === "date" ? "yyyy-MM-dd" : "yyyy-MM";
+
+    if (
+      format(currentDate, dateFormat) !==
+      format(nextQueryState.currentDate, dateFormat)
+    ) {
+      setCurrentDate(nextQueryState.currentDate);
+    }
+
+    if (yieldThreshold !== nextQueryState.yieldThreshold) {
+      setYieldThreshold(nextQueryState.yieldThreshold);
+    }
+
+    if (showHighYieldOnly !== nextQueryState.showHighYieldOnly) {
+      setShowHighYieldOnly(nextQueryState.showHighYieldOnly);
+    }
+  }, [searchParamsString]);
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
