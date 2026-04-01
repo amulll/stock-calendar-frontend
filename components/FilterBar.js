@@ -83,7 +83,7 @@ export default function FilterBar({
     : "請輸入股票代號或名稱";
 
   return (
-    <div className="sticky top-3 z-20 flex flex-col gap-3 xl:flex-row xl:items-center">
+    <div className="sticky top-3 z-40 flex flex-col gap-3 xl:flex-row xl:items-center">
       <div className="relative flex-grow rounded-[28px] border border-slate-200/80 bg-slate-50/90 p-1.5 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)] backdrop-blur">
         <label htmlFor={inputId} id={labelId} className="sr-only">
           搜尋股票
@@ -130,7 +130,7 @@ export default function FilterBar({
             id={listboxId}
             role="listbox"
             aria-label="股票搜尋建議"
-            className="absolute left-0 right-0 z-30 mt-2 max-h-72 overflow-y-auto rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)]"
+            className="absolute left-0 right-0 z-[90] mt-2 max-h-72 overflow-y-auto rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)]"
           >
             {visibleSuggestions.map((stock, index) => (
               <li
@@ -181,7 +181,7 @@ export default function FilterBar({
           {watchlistMenuOpen && (
             <div
               id={watchlistMenuId}
-              className="absolute right-0 top-full z-30 mt-3 w-64 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
+              className="absolute right-0 top-full z-[90] mt-3 w-64 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
               role="menu"
             >
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-rose-500/70">
@@ -249,7 +249,7 @@ export default function FilterBar({
           {yieldMenuOpen && (
             <div
               id={yieldMenuId}
-              className="absolute right-0 top-full z-30 mt-3 w-72 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
+              className="absolute right-0 top-full z-[90] mt-3 w-72 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
               role="menu"
             >
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-500/80">

@@ -282,10 +282,12 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
   return (
     <main className="min-h-screen max-w-7xl mx-auto px-3 pb-14 pt-3 md:px-8 md:pb-20 md:pt-8">
-      <section className="relative overflow-hidden rounded-[32px] border border-slate-200/80 bg-white/90 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.45)]">
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-blue-100 via-sky-50 to-white" />
-        <div className="pointer-events-none absolute -right-16 top-10 h-40 w-40 rounded-full bg-blue-200/30 blur-3xl" />
-        <div className="pointer-events-none absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-emerald-100/70 blur-3xl" />
+      <section className="relative rounded-[32px] border border-slate-200/80 bg-white/90 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.45)]">
+        <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-[32px]">
+          <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-blue-100 via-sky-50 to-white" />
+          <div className="absolute -right-16 top-10 h-40 w-40 rounded-full bg-blue-200/30 blur-3xl" />
+          <div className="absolute -left-12 bottom-0 h-32 w-32 rounded-full bg-emerald-100/70 blur-3xl" />
+        </div>
 
         <div className="relative px-5 py-6 md:px-8 md:py-8">
           <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
@@ -303,15 +305,12 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:w-[360px]">
-              <div className="rounded-[28px] bg-slate-950 px-4 py-4 text-white shadow-[0_24px_60px_-40px_rgba(15,23,42,0.85)] sm:col-span-2">
+            <div className="xl:w-[420px]">
+              <div className="rounded-[28px] bg-slate-950 px-4 py-4 text-white shadow-[0_24px_60px_-40px_rgba(15,23,42,0.85)]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
                       Current View
-                    </p>
-                    <p className="mt-2 text-2xl font-black tracking-tight">
-                      {format(currentDate, "yyyy年 M月")}
                     </p>
                   </div>
                   <div className="rounded-full bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-blue-100">
@@ -319,7 +318,36 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </div>
                 </div>
 
-                <div className="mt-5 flex items-center justify-between gap-3 rounded-[22px] bg-white/5 p-2">
+                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_108px_108px] md:items-start">
+                  <div className="min-w-0">
+                    <p className="text-2xl font-black tracking-tight md:text-[2rem]">
+                      {format(currentDate, "yyyy年 M月")}
+                    </p>
+                    <p className="mt-1 text-xs font-medium text-slate-400">
+                      目前檢視月份與篩選概況
+                    </p>
+                  </div>
+
+                  <div className="rounded-[20px] border border-white/10 bg-white/6 px-3 py-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">
+                      Entries
+                    </p>
+                    <p className="mt-2 text-2xl font-black tracking-tight">
+                      {filteredDividends.length}
+                    </p>
+                  </div>
+
+                  <div className="rounded-[20px] border border-emerald-400/10 bg-emerald-400/8 px-3 py-3">
+                    <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-200/70">
+                      Watchlist
+                    </p>
+                    <p className="mt-2 text-2xl font-black tracking-tight">
+                      {watchlist.length}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between gap-3 rounded-[22px] bg-white/5 p-2">
                   <button
                     onClick={prevMonth}
                     className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-lg text-white transition hover:bg-white/20"
@@ -338,30 +366,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                     ›
                   </button>
                 </div>
-              </div>
-
-              <div className="rounded-[26px] border border-slate-200 bg-slate-50/90 px-4 py-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
-                  Visible Entries
-                </p>
-                <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">
-                  {filteredDividends.length}
-                </p>
-                <p className="mt-1 text-xs font-medium text-slate-500">
-                  目前月份與條件下的股利筆數
-                </p>
-              </div>
-
-              <div className="rounded-[26px] border border-emerald-100 bg-emerald-50/90 px-4 py-4">
-                <p className="text-[10px] font-black uppercase tracking-[0.22em] text-emerald-600/70">
-                  Watchlist
-                </p>
-                <p className="mt-2 text-3xl font-black tracking-tight text-slate-900">
-                  {watchlist.length}
-                </p>
-                <p className="mt-1 text-xs font-medium text-slate-500">
-                  已加入追蹤清單的股票數量
-                </p>
               </div>
             </div>
           </div>
