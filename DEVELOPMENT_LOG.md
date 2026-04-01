@@ -1,5 +1,19 @@
 ﻿# Technical Development Log
 
+## 2026-04-01 – Design Reference Adaptation
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/CalendarClient.js
+  - components/FilterBar.js
+  - components/CalendarGrid.js
+  - components/SeoContent.js
+  - DEVELOPMENT_LOG.md
+- Why: 目前首頁資訊完整，但視覺層級、卡片節奏與區塊分層較偏功能導向，和新的設計參考相比，主標、搜尋工作區、月曆區與內容區之間的節奏不夠鮮明。
+- Impact: 參考 editorial-style 設計後，首頁改為更清楚的 hero 區塊、微標籤、分層資訊卡與更柔和的卡片式月曆；搜尋與篩選工作區、月份導覽與下方 SEO 區塊同步收斂為較一致的圓角卡片與留白節奏。現有搜尋、月份切換、篩選、modal 與資料流維持不變。
+- Next: 以桌機與手機實機檢查新版首頁的間距、sticky 篩選列、搜尋建議下拉、月曆 hover 狀態與 SEO 區塊閱讀節奏是否符合預期。
+
 ## 2026-03-31 – Query History Replace Guard
 - Status: done
 - Priority: high
@@ -115,3 +129,5 @@
 - Owner: TBD
 - Note: 安裝依賴、產生 lockfile、串接 lint/test CI，以維護版本鎖定並提早攔截回歸問題。
 - Due: TBD
+
+

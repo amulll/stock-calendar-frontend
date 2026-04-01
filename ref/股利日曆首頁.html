@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#1978e5",
+              "on-primary": "#ffffff",
+              "surface": "#fcfcfd",
+              "on-surface": "#1a1c1c",
+              "surface-container-low": "#f8f9fa",
+              "surface-container-lowest": "#ffffff",
+              "surface-container-high": "#f0f2f5",
+              "on-surface-variant": "#5a5e67",
+              "outline-variant": "#e2e4e9",
+              "secondary": "#10b981",
+              "on-secondary-container": "#064e3b",
+              "secondary-container": "#d1fae5",
+              "error-container": "#fee2e2",
+              "on-error-container": "#991b1b",
+              "outline": "#8e9199"
+            },
+            fontFamily: {
+              "headline": ["Manrope", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "label": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .soft-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 10px -2px rgba(0, 0, 0, 0.02);
+        }
+        .hover-card:hover {
+            box-shadow: 0 10px 30px -5px rgba(25, 120, 229, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+            transform: translateY(-4px);
+        }
+        .primary-gradient {
+            background: linear-gradient(135deg, #1978e5 0%, #3b82f6 100%);
+        }
+        .search-container:focus-within {
+            ring: 4px solid rgba(25, 120, 229, 0.1);
+            border-color: #1978e5;
+        }
+        .nav-link-active {
+            position: relative;
+            color: #1978e5;
+        }
+        .nav-link-active::after {
+            content: '';
+            position: absolute;
+            bottom: -18px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: #1978e5;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface selection:bg-primary/10">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl border-b border-outline-variant px-8 py-4">
+<div class="max-w-[1440px] mx-auto flex items-center justify-between">
+<div class="flex items-center gap-12">
+<span class="text-2xl font-extrabold tracking-tight text-primary font-headline">The Editorial Ledger</span>
+<div class="hidden md:flex items-center gap-8">
+<a class="nav-link-active font-semibold font-label text-sm" href="#">Home</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label text-sm" href="#">Calendar</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label text-sm" href="#">My Portfolio</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-all duration-150 active:scale-95">
+<span class="material-symbols-outlined text-on-surface-variant">account_circle</span>
+</button>
+</div>
+</div>
+</nav>
+<main class="pt-32 pb-24 px-6 md:px-12 max-w-[1280px] mx-auto">
+<!-- Hero Search Section -->
+<section class="max-w-4xl mx-auto text-center space-y-10 mb-20">
+<div class="space-y-4">
+<h1 class="text-5xl md:text-6xl font-extrabold text-on-surface font-headline tracking-tight leading-tight">Master Your Yield.</h1>
+<p class="text-on-surface-variant text-lg md:text-xl leading-relaxed font-body max-w-2xl mx-auto">Access institutional-grade dividend data curated for the modern private investor. Search any ticker to begin.</p>
+</div>
+<div class="relative group max-w-3xl mx-auto">
+<div class="search-container flex items-center bg-white border border-outline-variant rounded-2xl transition-all duration-200 soft-shadow overflow-hidden group-focus-within:border-primary group-focus-within:ring-4 group-focus-within:ring-primary/10">
+<div class="pl-6 text-outline">
+<span class="material-symbols-outlined">search</span>
+</div>
+<input class="w-full bg-transparent border-none py-6 px-4 text-xl font-body focus:ring-0 outline-none text-on-surface placeholder:text-outline" placeholder="Search Ticker or Company Symbol (e.g. AAPL, O, SCHD)" type="text"/>
+<div class="flex items-center gap-3 pr-4">
+<span class="hidden md:block text-[10px] font-bold text-outline uppercase tracking-widest bg-surface-container-low px-2 py-1 rounded-md border border-outline-variant">⌘ Enter</span>
+<button class="primary-gradient px-6 py-3 rounded-xl text-white font-bold text-sm soft-shadow hover:opacity-90 transition-opacity whitespace-nowrap">
+                            Search
+                        </button>
+</div>
+</div>
+<p class="mt-4 text-xs text-on-surface-variant font-medium flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">info</span>
+                    Hit <span class="font-bold">Enter</span> to instantly view market performance and dividend history
+                </p>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Sidebar Navigation (Filters) - Simplified and made secondary -->
+<aside class="hidden lg:flex lg:col-span-3 flex-col gap-6">
+<div class="px-2">
+<h3 class="text-sm font-bold text-on-surface font-headline uppercase tracking-wider mb-4">Quick Filters</h3>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 p-3 bg-primary/5 text-primary rounded-xl font-semibold text-sm transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-xl">event_note</span>
+<span>Upcoming Ex-Dates</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl font-medium text-sm transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-xl">trending_up</span>
+<span>High Yield Stocks</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl font-medium text-sm transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-xl">workspace_premium</span>
+<span>Dividend Aristocrats</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface rounded-xl font-medium text-sm transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-xl">domain</span>
+<span>REITs</span>
+</a>
+</nav>
+</div>
+<div class="bg-surface-container-low p-5 rounded-2xl border border-outline-variant">
+<h4 class="text-sm font-bold text-on-surface mb-2">Stay Updated</h4>
+<p class="text-xs text-on-surface-variant mb-4 leading-relaxed">Get real-time notifications for ex-dividend dates in your portfolio.</p>
+<button class="w-full py-2.5 bg-white border border-outline-variant text-on-surface rounded-lg font-label text-xs font-bold transition-all hover:bg-surface-container-high active:scale-95">
+                        Set Custom Alert
+                    </button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="lg:col-span-9 space-y-16">
+<!-- Trending Stocks Grid -->
+<section class="space-y-6">
+<div class="flex items-end justify-between">
+<div>
+<span class="text-[10px] font-bold text-primary uppercase tracking-[0.2em] font-label">Market Velocity</span>
+<h2 class="text-2xl font-bold text-on-surface font-headline mt-1">Trending Dividend Stocks</h2>
+</div>
+<a class="text-primary font-bold text-xs flex items-center gap-1 hover:underline" href="#">
+                            View All <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+<!-- Stock Card 1 -->
+<div class="bg-white p-5 rounded-2xl soft-shadow hover-card transition-all border border-outline-variant/30 cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div class="w-10 h-10 bg-surface-container-low rounded-xl flex items-center justify-center overflow-hidden border border-outline-variant/50">
+<img alt="Apple Inc" class="w-6 h-6 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXf32UfOXgDi7QsZxPn-8_numKOdx2IZKmTDH4nIu5J3r3LH6Jrush93lcAArPsjX6iLW8iHVB4R3pPHGFPgKc7aZ-UHhhIJjnUtEOm3Tzru68GPFqvosHywmYpXNLP03iALUsakaUs3-olFn-vZ8QNdT2l0NlwVCwHpdn6KA5LDShg7KvLUHqQPsLbUu9zHlLJznhTswZFaTrax3WGMg3ELluvAOzjoV4qP7FNZmAj0TkLPOgQmzCy2lbWgSBoUFIrC7Rvi6_Tydw"/>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold">+1.2%</span>
+</div>
+<h3 class="text-lg font-bold text-on-surface font-headline leading-tight">AAPL</h3>
+<p class="text-xs text-on-surface-variant mb-4 truncate">Apple Inc.</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-primary">0.52%</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Yield</span>
+</div>
+</div>
+<!-- Stock Card 2 -->
+<div class="bg-white p-5 rounded-2xl soft-shadow hover-card transition-all border border-outline-variant/30 cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div class="w-10 h-10 bg-surface-container-low rounded-xl flex items-center justify-center overflow-hidden border border-outline-variant/50">
+<img alt="Realty Income" class="w-6 h-6 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7016KyxAXq6W18hQITBWhk5T1DAhrX4X6-Omlcf05v-3vfkphK5di6sERl0hbVOCPyRSwVC6e3X0buucmWd-naoCpthodwuiSU--KL1hnXv51NQFWS9GUqvVgqeL0bxNHlTJCn0iIspdYxTxne_y0KSbgyNq7qZQe7WtH09sTtIdQs31-ckIQjkfYipaQvdyiL4oRUYpdxCzVSFBrifHUaI89L4Nt27mx0zMTJmpGBmbnTDS_Zc9fBC8rZLrurODXOBrs0fp3xUC7"/>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold">+0.4%</span>
+</div>
+<h3 class="text-lg font-bold text-on-surface font-headline leading-tight">O</h3>
+<p class="text-xs text-on-surface-variant mb-4 truncate">Realty Income Corp.</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-primary">5.84%</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Yield</span>
+</div>
+</div>
+<!-- Stock Card 3 -->
+<div class="bg-white p-5 rounded-2xl soft-shadow hover-card transition-all border border-outline-variant/30 cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div class="w-10 h-10 bg-surface-container-low rounded-xl flex items-center justify-center overflow-hidden border border-outline-variant/50">
+<img alt="Microsoft" class="w-6 h-6 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuujq9XONrz_Q5Z_8e0-D5FNsqv4RKSqn6sy8clyY_N8fF0RyDZ2lKaHb6Tn32v6WZEnzTL5DPtBDSULHkJ9WLJVfeEVaGbNGPAYOh9J8Pgu7dv6fXuLTszFJj-_X7Fxsq1Kl-Hf7DsIT8HWixC9BJxsEvDxEkEB80LQEJTdtU4jr5G6udNhpiipOarwKL2ZFXj4GR3xJZoLcx03VmMka8euSr0KODVsTyIKY8VvJTUrQzi_n_8uCevo7FPNYrgyVabXwon82imoPj"/>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[10px] font-bold">+2.1%</span>
+</div>
+<h3 class="text-lg font-bold text-on-surface font-headline leading-tight">MSFT</h3>
+<p class="text-xs text-on-surface-variant mb-4 truncate">Microsoft Corp.</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-primary">0.71%</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Yield</span>
+</div>
+</div>
+<!-- Stock Card 4 -->
+<div class="bg-white p-5 rounded-2xl soft-shadow hover-card transition-all border border-outline-variant/30 cursor-pointer">
+<div class="flex justify-between items-start mb-6">
+<div class="w-10 h-10 bg-surface-container-low rounded-xl flex items-center justify-center overflow-hidden border border-outline-variant/50">
+<img alt="Coca-Cola" class="w-6 h-6 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADG0ywfJGw0pyQztZnFadKxrNdCWl0tsXIJV1fyDY0tUuZdpaf3C66ApVy51cALGcshQHup5l9SAh-43Cz1sdkOJBARny-rd5WNXDpS5ufuvBh8TmWFLx6Np5U4o_77KjBWGKuBUaGh_jhP3joiw-hid6bufmcjqEcN-EtrqCdCGSVIx9vRYsQf9Wxe9EczKbEiHiZAxdp2k8Q3S3bEYuwaNWD4gInPhWArvekgwVeJBdGmil7VIXg3-SRmBguM2u0lmtcd6Kphq_z"/>
+</div>
+<span class="bg-error-container text-on-error-container px-2 py-0.5 rounded text-[10px] font-bold">-0.2%</span>
+</div>
+<h3 class="text-lg font-bold text-on-surface font-headline leading-tight">KO</h3>
+<p class="text-xs text-on-surface-variant mb-4 truncate">The Coca-Cola Co.</p>
+<div class="flex items-baseline gap-1">
+<span class="text-xl font-bold text-primary">3.12%</span>
+<span class="text-[10px] text-on-surface-variant font-medium">Yield</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Upcoming Ex-Dividend Dates List -->
+<section class="space-y-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl primary-gradient flex items-center justify-center soft-shadow">
+<span class="material-symbols-outlined text-white text-xl">calendar_month</span>
+</div>
+<h2 class="text-2xl font-bold text-on-surface font-headline">Upcoming Ex-Dividend Dates</h2>
+</div>
+<div class="bg-white border border-outline-variant rounded-2xl overflow-hidden soft-shadow">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[600px]">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-8 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest font-label">Date</th>
+<th class="px-8 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest font-label">Ticker</th>
+<th class="px-8 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest font-label">Dividend Amount</th>
+<th class="px-8 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest font-label">Payout Date</th>
+<th class="px-8 py-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest font-label text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="text-center w-10">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase leading-none">Oct</p>
+<p class="text-lg font-bold text-primary leading-tight">24</p>
+</div>
+<div class="h-8 w-px bg-outline-variant"></div>
+<span class="text-sm font-medium text-on-surface">Thursday</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">VZ</span>
+<span class="text-[11px] text-on-surface-variant">Verizon Communications</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="font-bold text-secondary text-sm">$0.665</span>
+</td>
+<td class="px-8 py-5 text-sm text-on-surface-variant">Nov 01, 2024</td>
+<td class="px-8 py-5 text-right">
+<button class="text-primary hover:bg-primary/10 p-2 rounded-lg transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="text-center w-10">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase leading-none">Oct</p>
+<p class="text-lg font-bold text-primary leading-tight">25</p>
+</div>
+<div class="h-8 w-px bg-outline-variant"></div>
+<span class="text-sm font-medium text-on-surface">Friday</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">T</span>
+<span class="text-[11px] text-on-surface-variant">AT&amp;T Inc.</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="font-bold text-secondary text-sm">$0.277</span>
+</td>
+<td class="px-8 py-5 text-sm text-on-surface-variant">Nov 01, 2024</td>
+<td class="px-8 py-5 text-right">
+<button class="text-primary hover:bg-primary/10 p-2 rounded-lg transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group cursor-pointer">
+<td class="px-8 py-5">
+<div class="flex items-center gap-3">
+<div class="text-center w-10">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase leading-none">Oct</p>
+<p class="text-lg font-bold text-primary leading-tight">28</p>
+</div>
+<div class="h-8 w-px bg-outline-variant"></div>
+<span class="text-sm font-medium text-on-surface">Monday</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<div class="flex flex-col">
+<span class="font-bold text-on-surface">XOM</span>
+<span class="text-[11px] text-on-surface-variant">Exxon Mobil Corp</span>
+</div>
+</td>
+<td class="px-8 py-5">
+<span class="font-bold text-secondary text-sm">$0.950</span>
+</td>
+<td class="px-8 py-5 text-sm text-on-surface-variant">Dec 10, 2024</td>
+<td class="px-8 py-5 text-right">
+<button class="text-primary hover:bg-primary/10 p-2 rounded-lg transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-5 bg-surface-container-low flex justify-center border-t border-outline-variant">
+<button class="text-primary font-bold text-xs tracking-wide hover:underline flex items-center gap-2">
+                                LOAD MORE DATES
+                                <span class="material-symbols-outlined text-sm">keyboard_arrow_down</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full border-t border-outline-variant bg-white mt-12">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center px-8 py-12 gap-6">
+<div class="flex flex-col items-center md:items-start gap-2">
+<span class="font-headline font-extrabold text-primary text-xl">The Editorial Ledger</span>
+<p class="font-body text-[10px] tracking-wide text-on-surface-variant uppercase">© 2024 The Editorial Ledger. Financial data provided by Morningstar.</p>
+</div>
+<div class="flex gap-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body text-xs" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body text-xs" href="#">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body text-xs" href="#">Data Sources</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body text-xs" href="#">Contact Support</a>
+</div>
+</div>
+</footer>
+</body></html>

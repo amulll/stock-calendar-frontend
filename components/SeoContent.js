@@ -1,13 +1,19 @@
 export default function SeoContent() {
   return (
-    <section className="bg-white border-t border-slate-200 mt-12">
-      <div className="max-w-4xl mx-auto px-6 py-12 text-slate-600 leading-relaxed">
+    <section className="rounded-[32px] border border-slate-200/80 bg-white/90 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.35)]">
+      <div className="mx-auto max-w-4xl px-6 py-10 text-slate-600 leading-relaxed md:px-10 md:py-12">
+        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-blue-600/75">
+          Editorial Guide
+        </p>
+        <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+          關於 uGoodly 台股股利日曆
+        </h2>
         
-        <h2 className="text-2xl font-bold text-slate-800 mb-6">關於 uGoodly 台股股利日曆</h2>
-        
-        <div className="space-y-8">
-          <div>
-            <h3 className="text-lg font-bold text-slate-700 mb-2">什麼是股利日曆？存股族必備的領錢行事曆</h3>
+        <div className="mt-8 space-y-5">
+          <div className="rounded-[28px] border border-slate-200/70 bg-slate-50/80 p-6">
+            <h3 className="mb-3 text-xl font-black tracking-tight text-slate-800">
+              什麼是股利日曆？存股族必備的領錢行事曆
+            </h3>
             <p>
               對於長期投資台股的存股族來說，最快樂的時刻莫過於「股利發放日」。然而，券商軟體通常只顯示「除息日」，
               對於實際現金入帳的「發放日」往往資訊破碎。uGoodly 股利日曆整合了<a 
@@ -40,9 +46,11 @@ export default function SeoContent() {
             </p>
           </div>
 
-          <div>
-            <h3 className="text-lg font-bold text-slate-700 mb-2">如何使用本網站查詢除權息與殖利率？</h3>
-            <ul className="list-disc pl-5 space-y-2">
+          <div className="rounded-[28px] border border-slate-200/70 bg-white p-6 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.24)]">
+            <h3 className="mb-3 text-xl font-black tracking-tight text-slate-800">
+              如何使用本網站查詢除權息與殖利率？
+            </h3>
+            <ul className="list-disc space-y-3 pl-5">
               <li>
                 <strong>視覺化月曆：</strong>日曆上的每一個綠色圓點，都代表當天有公司發放現金股利。點擊日期即可查看詳細的發放清單與金額。
               </li>
@@ -58,8 +66,10 @@ export default function SeoContent() {
             </ul>
           </div>
 
-          <div>
-            <h3 className="text-lg font-bold text-slate-700 mb-2">資料來源與更新頻率</h3>
+          <div className="rounded-[28px] border border-blue-100 bg-blue-50/50 p-6">
+            <h3 className="mb-3 text-xl font-black tracking-tight text-slate-800">
+              資料來源與更新頻率
+            </h3>
             <p>
               本網站的除權息預告資料來自「<a 
                 href="https://www.twse.com.tw" 
