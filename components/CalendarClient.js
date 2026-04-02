@@ -318,30 +318,30 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_108px_108px] md:items-start">
+                <div className="mt-4 grid grid-cols-[minmax(0,1fr)_84px_84px] gap-2 md:grid-cols-[minmax(0,1fr)_108px_108px] md:gap-3 md:items-start">
                   <div className="min-w-0">
-                    <p className="text-2xl font-black tracking-tight md:text-[2rem]">
+                    <p className="whitespace-nowrap text-[1.75rem] font-black tracking-tight md:text-[1.9rem] lg:text-[2rem]">
                       {format(currentDate, "yyyy年 M月")}
                     </p>
-                    <p className="mt-1 text-xs font-medium text-slate-400">
+                    <p className="mt-1 hidden text-xs font-medium text-slate-400 md:block">
                       目前檢視月份與篩選概況
                     </p>
                   </div>
 
-                  <div className="rounded-[20px] border border-white/10 bg-white/6 px-3 py-3">
+                  <div className="rounded-[18px] border border-white/10 bg-white/6 px-2.5 py-2.5 md:rounded-[20px] md:px-3 md:py-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.18em] text-slate-500">
                       Entries
                     </p>
-                    <p className="mt-2 text-2xl font-black tracking-tight">
+                    <p className="mt-1.5 text-xl font-black tracking-tight md:mt-2 md:text-2xl">
                       {filteredDividends.length}
                     </p>
                   </div>
 
-                  <div className="rounded-[20px] border border-emerald-400/10 bg-emerald-400/8 px-3 py-3">
+                  <div className="rounded-[18px] border border-emerald-400/10 bg-emerald-400/8 px-2.5 py-2.5 md:rounded-[20px] md:px-3 md:py-3">
                     <p className="text-[9px] font-black uppercase tracking-[0.18em] text-emerald-200/70">
                       Watchlist
                     </p>
-                    <p className="mt-2 text-2xl font-black tracking-tight">
+                    <p className="mt-1.5 text-xl font-black tracking-tight md:mt-2 md:text-2xl">
                       {watchlist.length}
                     </p>
                   </div>
@@ -355,7 +355,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   >
                     ‹
                   </button>
-                  <span className="min-w-[120px] text-center text-sm font-semibold text-slate-200 md:min-w-[140px]">
+                  <span className="min-w-[132px] whitespace-nowrap text-center text-sm font-semibold text-slate-200 md:min-w-[156px] md:text-[0.95rem]">
                     {format(currentDate, "yyyy年 M月")}
                   </span>
                   <button
@@ -412,7 +412,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 md:min-w-[340px]">
+          <div className="hidden gap-3 sm:grid-cols-2 md:grid md:min-w-[340px]">
             <div className="rounded-[24px] border border-slate-200 bg-white px-4 py-4 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.3)]">
               <p className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-400">
                 Active Filters
