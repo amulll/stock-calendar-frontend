@@ -102,17 +102,17 @@ export default function CalendarGrid({
                         {div.stock_code} {div.stock_name}
                       </span>
                     </button>
-                    {div.yield_rate > 0 && (
-                      <span
-                        className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${
-                          div.yield_rate >= localYield
+                    <span
+                      className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${
+                        div.yield_rate > 0
+                          ? div.yield_rate >= localYield
                             ? "bg-amber-50 text-amber-600"
                             : "bg-white text-slate-400"
-                        }`}
-                      >
-                        {div.yield_rate}%
-                      </span>
-                    )}
+                          : "bg-white text-slate-300"
+                      }`}
+                    >
+                      {div.yield_rate > 0 ? `${div.yield_rate}%` : "--"}
+                    </span>
                   </div>
                 ))}
                 {dayDividends.length > 3 && (
