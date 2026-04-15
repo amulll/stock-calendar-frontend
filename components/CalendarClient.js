@@ -305,7 +305,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
               </p>
             </div>
 
-            <div className="xl:w-[420px]">
+            <div className="xl:w-[456px] 2xl:w-[480px]">
               <div className="rounded-[28px] bg-slate-950 px-4 py-4 text-white shadow-[0_24px_60px_-40px_rgba(15,23,42,0.85)]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
@@ -320,7 +320,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
                 <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-[minmax(0,1fr)_108px_108px] md:gap-3 md:items-start">
                   <div className="col-span-2 min-w-0 md:col-span-1">
-                    <p className="whitespace-nowrap text-[1.55rem] font-black tracking-tight md:text-[1.9rem] lg:text-[2rem]">
+                    <p className="whitespace-nowrap text-[1.55rem] font-black tracking-tight md:text-[1.72rem] xl:text-[1.84rem] 2xl:text-[1.95rem]">
                       {format(currentDate, "yyyy年 M月")}
                     </p>
                     <p className="mt-1 hidden text-xs font-medium text-slate-400 md:block">
