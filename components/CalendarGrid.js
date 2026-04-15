@@ -43,7 +43,7 @@ export default function CalendarGrid({
                   onDateSelect(day);
                 }
               }}
-              className={`group relative min-h-[84px] rounded-[24px] border p-2 transition-all md:min-h-[140px] md:p-3 ${
+              className={`group relative min-h-[84px] rounded-[24px] border p-1.5 transition-all md:min-h-[140px] md:p-2.5 ${
                 !isCurrentMonth
                   ? "border-slate-100 bg-slate-50/80 text-slate-300"
                   : "border-slate-200/70 bg-white shadow-[0_16px_35px_-30px_rgba(15,23,42,0.35)]"
@@ -53,7 +53,7 @@ export default function CalendarGrid({
                   : ""
               }`}
             >
-              <div className="mb-2 flex items-start justify-between">
+              <div className="mb-1.5 flex items-start justify-between">
                 <span
                   className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-black md:h-8 md:w-8 md:text-sm ${
                     isToday
@@ -81,11 +81,11 @@ export default function CalendarGrid({
                 </div>
               </div>
 
-              <div className="hidden md:block space-y-1">
+              <div className="hidden md:block space-y-0.5">
                 {dayDividends.slice(0, 3).map((div) => (
                   <div
                     key={div.id}
-                    className="flex items-center justify-between rounded-[16px] border border-slate-200/70 bg-slate-50/90 px-2 py-1.5 text-xs text-slate-600 transition group-hover:border-blue-100"
+                    className="flex items-center justify-between rounded-[14px] border border-slate-200/70 bg-slate-50/90 px-1.5 py-1 text-xs text-slate-600 transition group-hover:border-blue-100"
                   >
                     <button
                       type="button"
@@ -93,7 +93,7 @@ export default function CalendarGrid({
                         e.stopPropagation();
                         onStockSelect(div.stock_code);
                       }}
-                      className="flex min-w-0 items-center gap-1 text-left"
+                      className="flex min-w-0 items-center gap-0.5 text-left"
                     >
                       {watchlistSet.has(div.stock_code) && (
                         <span className="text-rose-500 text-[10px]">♥</span>
@@ -104,7 +104,7 @@ export default function CalendarGrid({
                     </button>
                     {div.yield_rate > 0 && (
                       <span
-                        className={`ml-1 rounded-full px-2 py-1 text-[10px] font-black ${
+                        className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${
                           div.yield_rate >= localYield
                             ? "bg-amber-50 text-amber-600"
                             : "bg-white text-slate-400"
