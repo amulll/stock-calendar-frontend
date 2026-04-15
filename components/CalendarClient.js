@@ -318,9 +318,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   </div>
                 </div>
 
-                <div className="mt-4 grid grid-cols-[minmax(0,1fr)_84px_84px] gap-2 md:grid-cols-[minmax(0,1fr)_108px_108px] md:gap-3 md:items-start">
-                  <div className="min-w-0">
-                    <p className="whitespace-nowrap text-[1.75rem] font-black tracking-tight md:text-[1.9rem] lg:text-[2rem]">
+                <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-[minmax(0,1fr)_108px_108px] md:gap-3 md:items-start">
+                  <div className="col-span-2 min-w-0 md:col-span-1">
+                    <p className="whitespace-nowrap text-[1.55rem] font-black tracking-tight md:text-[1.9rem] lg:text-[2rem]">
                       {format(currentDate, "yyyy年 M月")}
                     </p>
                     <p className="mt-1 hidden text-xs font-medium text-slate-400 md:block">
