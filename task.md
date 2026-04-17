@@ -1,166 +1,94 @@
-# UI / Behavior Task Plan
+# UI / Behavior Task Status
 
-## Scope
-- Frontend UX / behavior improvements only
-- No API contract changes
-- No dependency changes
-- No deployment, auth, proxy, or security policy changes
+## Current State
+- This task file now reflects the actual repo state instead of the original planning draft.
+- Significant frontend work has already been completed:
+  - query/history synchronization hardening
+  - homepage visual redesign and responsive cleanup
+  - calendar density tuning and missing-yield `--` fallback
+  - stock metadata hardening
+- The main remaining work is no longer homepage visual polish. It is accessibility, modal/request stability, and a few deferred architecture chores.
 
-## Goal
-- Reduce UI architecture risk in the current calendar flows without broad rewrites
-- Prioritize keyboard access, interaction semantics, async stability, and modal behavior
-- Keep the blast radius local and verification explicit
+## Completed
 
-## Working Method
-- Use the local agent roles as review lenses:
-  - `ux_auditor`
-  - `state_flow_reviewer`
-  - `frontend_implementer`
-  - `regression_reviewer`
-- Execute in small tranches
-- Verify the smallest relevant behavior after each tranche
-- Update `DEVELOPMENT_LOG.md` for meaningful changes
-
-## Findings Summary
-
-### 1. Calendar date cell accessibility
-- Priority: high
-- Affected files:
-  - components/CalendarGrid.js
-- User-visible issue:
-  - Calendar day cells are clickable by mouse but are not keyboard-focusable controls
-  - Keyboard users cannot reliably open the day detail flow from the grid
-- Low-risk direction:
-  - Convert the date cell interaction into a semantic button pattern without changing the public props
-  - Preserve existing stock sub-actions and stop-propagation behavior
-- Verification:
-  - Tab through the calendar
-  - Open a day with keyboard
-  - Ensure stock buttons inside the cell still work
-
-### 2. Filter dropdown semantics
-- Priority: high
-- Affected files:
-  - components/FilterBar.js
-- User-visible issue:
-  - Watchlist and yield panels use `role="menu"` even though they contain toggles, range input, and action buttons
-  - Current semantics do not match the interaction model
-- Low-risk direction:
-  - Reframe these panels as labeled popovers / grouped controls instead of menus
-  - Keep current visuals and behavior
-- Verification:
-  - Open and close both panels
-  - Confirm keyboard focus remains usable
-  - Confirm toggle and slider interactions still work
-
-### 3. Yield modal stale request risk
-- Priority: high
-- Affected files:
-  - components/YieldListModal.js
-- User-visible issue:
-  - Rapid threshold changes or close/reopen cycles can allow an older request to overwrite newer state
-- Low-risk direction:
-  - Add request version guarding or effect-scoped cancellation
-  - Keep the same API and UI
-- Verification:
-  - Open modal, change threshold quickly, reopen, and confirm latest threshold wins
-  - Confirm loading, error, and empty states still render correctly
-
-### 4. Modal background scroll behavior
-- Priority: medium
-- Affected files:
-  - components/ModalContainer.js
-- User-visible issue:
-  - Background content can still scroll while modal is open, especially on narrow viewports
-- Low-risk direction:
-  - Add temporary body scroll lock with cleanup on close
-- Verification:
-  - Open modal on desktop and mobile-width viewport
-  - Ensure background does not scroll
-  - Ensure scroll state restores on close
-
-### 5. Toast accessibility
-- Priority: medium
-- Affected files:
-  - components/ToastProvider.js
-- User-visible issue:
-  - Toasts are visible but not clearly announced for assistive technology
-- Low-risk direction:
-  - Add `aria-live` / `role="status"` semantics and tighten timer cleanup
-- Verification:
-  - Trigger success and error toasts
-  - Confirm UI remains unchanged and timers still dismiss correctly
-
-### 6. CalendarClient responsibility load
-- Priority: medium
-- Affected files:
-  - components/CalendarClient.js
-- User-visible issue:
-  - Not an immediate bug, but the component still centralizes too many responsibilities
-- Low-risk direction:
-  - Do not refactor yet
-  - Revisit only after the behavior-critical items above are stable
-- Verification:
-  - N/A for this tranche
-
-## Recommended Execution Order
-
-### Tranche 1
-- `components/CalendarGrid.js`
+### Done
+- `hooks/useCalendarQueryState.js`
+  - URL -> state synchronization and `router.replace` guard are complete.
+- `components/CalendarClient.js`
+  - Homepage hero, current view card, responsive month layout, and mobile-first calendar emphasis are complete.
 - `components/FilterBar.js`
-- Goal:
-  - Fix the two clearest semantic and keyboard UX gaps with local edits only
+  - Visual refresh, search suggestion styling, and dropdown layering fixes are complete.
+- `components/CalendarGrid.js`
+  - Calendar visual redesign, density tuning, and missing-yield fallback display are complete.
+- `components/SeoContent.js`
+  - Lower-page content blocks are visually aligned with the homepage redesign.
+- `app/stock/[id]/page.js`
+  - Stock metadata fallback and request-level memoization are complete.
+- `app/not-found.js`
+  - 404 metadata is complete.
 
-### Tranche 2
+## Remaining Work
+
+### High Priority
+- `components/CalendarGrid.js`
+  - Status: todo
+  - Task: make day cells keyboard-focusable and semantically actionable without breaking nested stock buttons.
+  - Why: current day cells are still clickable `div`s, so keyboard access remains incomplete.
+
+- `components/FilterBar.js`
+  - Status: todo
+  - Task: replace `role="menu"` / `menuitem` semantics with a more accurate popover / grouped-controls model.
+  - Why: current semantics still do not match the controls inside the panels.
+
 - `components/YieldListModal.js`
-- `components/ModalContainer.js`
-- Goal:
-  - Stabilize async behavior and modal scroll handling
+  - Status: todo
+  - Task: add stale-request protection via cancellation or request versioning.
+  - Why: rapid threshold changes can still race and overwrite the latest state.
 
-### Tranche 3
+### Medium Priority
+- `components/ModalContainer.js`
+  - Status: todo
+  - Task: add body scroll lock with cleanup.
+  - Why: modal background can still scroll on narrow/mobile viewports.
+
 - `components/ToastProvider.js`
-- Goal:
-  - Improve assistive feedback and timer cleanup
+  - Status: todo
+  - Task: add accessible live-region semantics and tighten toast timer lifecycle cleanup.
+  - Why: visible feedback exists, but assistive feedback is still weak.
 
 ### Deferred
 - `components/CalendarClient.js`
-- Goal:
-  - Reassess only if later changes show maintainability pain or regression risk
+  - Status: deferred
+  - Task: reassess whether responsibility should be split further.
+  - Why: the component is still heavy, but this is not the highest-risk issue right now.
 
-## Risks
-- Semantic changes around calendar cells can affect nested click behavior if event boundaries are not preserved
-- Changing panel semantics in `FilterBar` can affect focus order if not verified manually
-- Request guarding in `YieldListModal` must not hide legitimate error states
-- Body scroll lock must restore correctly to avoid trapping the page after modal close
+## Non-UI Backlog
 
-## Out of Scope
-- Proxy helper consolidation
-- API changes
-- SSR/data fetching redesign
-- Large component restructuring
-- Dependency additions
+### Security / Request Flow
+- `components/CalendarClient.js`
+- `components/WatchlistModal.js`
+  - Status: todo
+  - Task: consolidate old axios paths behind shared proxy helper behavior.
+  - Why: request consistency and token/error handling are still not fully unified.
 
-## Verification Matrix
-- Keyboard flow:
-  - calendar day selection
-  - stock suggestion navigation
-  - filter panel open/close
-  - modal close via Escape
-- Async flow:
-  - yield modal rapid threshold changes
-  - close during loading
-- Visual behavior:
-  - current month navigation unchanged
-  - existing modal visuals unchanged
-  - loading / error / empty states still visible
-- History behavior:
-  - no regression against the existing query sync work
+### Infrastructure
+- Repo-wide
+  - Status: todo
+  - Task: add dependency lockfile discipline and wire up lint/test CI.
+  - Why: verification still depends too much on manual checking.
 
-## Next Decision
-- Proposed first implementation tranche:
-  - `components/CalendarGrid.js`
-  - `components/FilterBar.js`
-- Reason:
-  - Highest UX value
-  - Smallest code surface
-  - No API or architectural changes
+## Recommended Next Order
+1. `CalendarGrid.js` accessibility
+2. `FilterBar.js` semantics cleanup
+3. `YieldListModal.js` stale-request guard
+4. `ModalContainer.js` scroll lock
+5. `ToastProvider.js` live-region cleanup
+6. request/helper consolidation
+
+## Verification Focus
+- Keyboard access to calendar day selection
+- Filter panel open/close and focus flow
+- Yield modal rapid threshold switching
+- Modal scroll behavior on mobile-width viewports
+- Toast announcement behavior
+- Regression against existing month navigation, search suggestions, and stock modal opening

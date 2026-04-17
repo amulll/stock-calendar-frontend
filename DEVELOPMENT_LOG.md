@@ -1,5 +1,16 @@
 # Technical Development Log
 
+## 2026-04-17 – Task And Log Sync
+- Status: done
+- Priority: medium
+- Area: Documentation
+- Files:
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: `task.md` 已落後於實際進度，仍停留在早期 tranche 規劃，容易和目前已完成的首頁 UI、query/history 與 metadata 調整產生認知落差。
+- Impact: 將 `task.md` 重寫為現況版 backlog，明確區分已完成項目、仍待處理的 accessibility / modal / toast / request-flow 工作，以及延後處理的 `CalendarClient` 責任拆分；同時保留 `DEVELOPMENT_LOG.md` 作為已完成工作時間線。
+- Next: 後續若再完成 `CalendarGrid` accessibility、`FilterBar` semantics 或 modal/request 穩定性修正，應同步更新 `task.md` 與對應的 development log 條目。
+
 ## 2026-04-01 – Design Reference Adaptation
 - Status: done
 - Priority: medium
