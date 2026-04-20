@@ -33,6 +33,8 @@ export default function FilterBar({
   const listboxId = `${controlId}-listbox`;
   const watchlistMenuId = `${controlId}-watchlist-menu`;
   const yieldMenuId = `${controlId}-yield-menu`;
+  const watchlistHeadingId = `${controlId}-watchlist-heading`;
+  const yieldHeadingId = `${controlId}-yield-heading`;
 
   const visibleSuggestions = suggestions.slice(0, MAX_SUGGESTIONS);
   const hasSuggestions = visibleSuggestions.length > 0;
@@ -52,6 +54,17 @@ export default function FilterBar({
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    function handleEscape(event) {
+      if (event.key !== "Escape") return;
+      setWatchlistMenuOpen(false);
+      setYieldMenuOpen(false);
+    }
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
   useEffect(() => {
@@ -167,7 +180,7 @@ export default function FilterBar({
             }`}
             title="僅顯示自選股"
             aria-pressed={showWatchlistOnly}
-            aria-haspopup="menu"
+            aria-haspopup="dialog"
             aria-expanded={watchlistMenuOpen}
             aria-controls={watchlistMenuOpen ? watchlistMenuId : undefined}
             aria-label={showWatchlistOnly ? "顯示全部股票" : "僅顯示自選股"}
@@ -182,9 +195,14 @@ export default function FilterBar({
             <div
               id={watchlistMenuId}
               className="absolute right-0 top-full z-[90] mt-3 w-64 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
-              role="menu"
+              role="dialog"
+              aria-modal="false"
+              aria-labelledby={watchlistHeadingId}
             >
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-rose-500/70">
+              <p
+                id={watchlistHeadingId}
+                className="text-[10px] font-black uppercase tracking-[0.22em] text-rose-500/70"
+              >
                 Watchlist
               </p>
               <div className="mb-4 mt-3 flex items-center justify-between rounded-[22px] bg-rose-50 px-4 py-3">
@@ -214,7 +232,6 @@ export default function FilterBar({
                   setWatchlistMenuOpen(false);
                 }}
                 className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
-                role="menuitem"
               >
                 <List size={16} />
                 管理自選清單
@@ -233,7 +250,7 @@ export default function FilterBar({
             }`}
             title="高殖利率篩選"
             aria-pressed={showHighYieldOnly}
-            aria-haspopup="menu"
+            aria-haspopup="dialog"
             aria-expanded={yieldMenuOpen}
             aria-controls={yieldMenuOpen ? yieldMenuId : undefined}
             aria-label={
@@ -250,9 +267,14 @@ export default function FilterBar({
             <div
               id={yieldMenuId}
               className="absolute right-0 top-full z-[90] mt-3 w-72 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
-              role="menu"
+              role="dialog"
+              aria-modal="false"
+              aria-labelledby={yieldHeadingId}
             >
-              <p className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-500/80">
+              <p
+                id={yieldHeadingId}
+                className="text-[10px] font-black uppercase tracking-[0.22em] text-amber-500/80"
+              >
                 Yield Filter
               </p>
               <div className="mb-4 mt-3 flex items-center justify-between rounded-[22px] bg-amber-50 px-4 py-3">
@@ -304,7 +326,6 @@ export default function FilterBar({
                   setYieldMenuOpen(false);
                 }}
                 className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
-                role="menuitem"
               >
                 <List size={16} />
                 檢視高殖利率清單

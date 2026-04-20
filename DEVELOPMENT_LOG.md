@@ -1,5 +1,17 @@
 # Technical Development Log
 
+## 2026-04-20 – Filter Popover Semantics Cleanup
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - components/FilterBar.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: `FilterBar` 的自選與殖利率面板原本使用 `role="menu"` / `menuitem`，但實際內容是 toggle、slider 與一般操作按鈕，語意模型不準確，也不利於後續鍵盤與焦點驗證。
+- Impact: 將兩個面板改為較符合目前內容的 non-modal dialog/popover 語意，觸發按鈕改用 `aria-haspopup="dialog"`，面板本體改為 `role="dialog"` 並加上 `aria-labelledby`；同時補上 `Escape` 關閉面板，但不改既有外觀、篩選邏輯或資料流。`task.md` 也同步將此項標記為完成，並把下一個優先項目推進到 `YieldListModal` stale-request guard。
+- Next: 以實機驗證自選/殖利率面板的開關、Escape 關閉、滑鼠點外關閉，以及 slider / toggle / action button 在新語意下的行為是否正常，再處理 `YieldListModal` 的非同步保護。
+
 ## 2026-04-20 – Calendar Grid Keyboard Access
 - Status: done
 - Priority: high

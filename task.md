@@ -17,7 +17,7 @@
 - `components/CalendarClient.js`
   - Homepage hero, current view card, responsive month layout, and mobile-first calendar emphasis are complete.
 - `components/FilterBar.js`
-  - Visual refresh, search suggestion styling, and dropdown layering fixes are complete.
+  - Visual refresh, search suggestion styling, dropdown layering fixes, and popover/dialog semantics cleanup are complete.
 - `components/CalendarGrid.js`
   - Calendar visual redesign, density tuning, missing-yield fallback display, and keyboard-focusable day cell activation are complete.
 - `components/SeoContent.js`
@@ -30,11 +30,6 @@
 ## Remaining Work
 
 ### High Priority
-- `components/FilterBar.js`
-  - Status: todo
-  - Task: replace `role="menu"` / `menuitem` semantics with a more accurate popover / grouped-controls model.
-  - Why: current semantics still do not match the controls inside the panels.
-
 - `components/YieldListModal.js`
   - Status: todo
   - Task: add stale-request protection via cancellation or request versioning.
@@ -73,14 +68,12 @@
   - Why: verification still depends too much on manual checking.
 
 ## Recommended Next Order
-1. `FilterBar.js` semantics cleanup
-2. `YieldListModal.js` stale-request guard
-3. `ModalContainer.js` scroll lock
-4. `ToastProvider.js` live-region cleanup
-5. request/helper consolidation
+1. `YieldListModal.js` stale-request guard
+2. `ModalContainer.js` scroll lock
+3. `ToastProvider.js` live-region cleanup
+4. request/helper consolidation
 
 ## Verification Focus
-- Filter panel open/close and focus flow
 - Yield modal rapid threshold switching
 - Modal scroll behavior on mobile-width viewports
 - Toast announcement behavior
