@@ -29,27 +29,44 @@ export default function CalendarGrid({
         {calendarDays.map((day) => {
           const dayKey = format(day, "yyyy-MM-dd");
           const dayDividends = dividendsByDate.get(dayKey) || [];
+          const isInteractive = dayDividends.length > 0;
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isToday = isSameDay(day, new Date());
           const hasTrackedStock = dayDividends.some((div) =>
             watchlistSet.has(div.stock_code)
           );
 
+          const handleDayActivate = () => {
+            if (isInteractive) {
+              onDateSelect(day);
+            }
+          };
+
           return (
             <div
               key={day.toISOString()}
-              onClick={() => {
-                if (dayDividends.length > 0) {
-                  onDateSelect(day);
+              onClick={handleDayActivate}
+              onKeyDown={(event) => {
+                if (!isInteractive) return;
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  handleDayActivate();
                 }
               }}
+              role={isInteractive ? "button" : undefined}
+              tabIndex={isInteractive ? 0 : undefined}
+              aria-label={
+                isInteractive
+                  ? `${format(day, "M月d日")}有 ${dayDividends.length} 檔股利，按 Enter 查看詳細清單`
+                  : undefined
+              }
               className={`group relative min-h-[84px] rounded-[24px] border p-1.5 transition-all md:min-h-[140px] md:p-2.5 ${
                 !isCurrentMonth
                   ? "border-slate-100 bg-slate-50/80 text-slate-300"
                   : "border-slate-200/70 bg-white shadow-[0_16px_35px_-30px_rgba(15,23,42,0.35)]"
               } ${
-                dayDividends.length > 0
-                  ? "cursor-pointer hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60"
+                isInteractive
+                  ? "cursor-pointer hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2"
                   : ""
               }`}
             >

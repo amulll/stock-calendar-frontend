@@ -1,5 +1,17 @@
 # Technical Development Log
 
+## 2026-04-20 – Calendar Grid Keyboard Access
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - components/CalendarGrid.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: `task.md` 的第一個未完成項目是日曆日期格的鍵盤可操作性；目前日期格只能滑鼠點擊，鍵盤使用者無法可靠地開啟當日股利清單。
+- Impact: `CalendarGrid` 的有資料日期格現在可透過 `Tab` 聚焦，並以 `Enter` / `Space` 開啟當日明細；同時保留格內個股按鈕的既有點擊行為，不引入巢狀 button 問題。`task.md` 也同步將此項標記為完成，並把下一個優先項目推進到 `FilterBar` semantics cleanup。
+- Next: 以鍵盤實際驗證日期格焦點樣式、`Enter` / `Space` 啟動、以及格內股票按鈕不受影響後，再處理 `FilterBar` 的語意模型修正。
+
 ## 2026-04-17 – Task And Log Sync
 - Status: done
 - Priority: medium

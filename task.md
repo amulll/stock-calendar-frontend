@@ -19,7 +19,7 @@
 - `components/FilterBar.js`
   - Visual refresh, search suggestion styling, and dropdown layering fixes are complete.
 - `components/CalendarGrid.js`
-  - Calendar visual redesign, density tuning, and missing-yield fallback display are complete.
+  - Calendar visual redesign, density tuning, missing-yield fallback display, and keyboard-focusable day cell activation are complete.
 - `components/SeoContent.js`
   - Lower-page content blocks are visually aligned with the homepage redesign.
 - `app/stock/[id]/page.js`
@@ -30,11 +30,6 @@
 ## Remaining Work
 
 ### High Priority
-- `components/CalendarGrid.js`
-  - Status: todo
-  - Task: make day cells keyboard-focusable and semantically actionable without breaking nested stock buttons.
-  - Why: current day cells are still clickable `div`s, so keyboard access remains incomplete.
-
 - `components/FilterBar.js`
   - Status: todo
   - Task: replace `role="menu"` / `menuitem` semantics with a more accurate popover / grouped-controls model.
@@ -78,15 +73,13 @@
   - Why: verification still depends too much on manual checking.
 
 ## Recommended Next Order
-1. `CalendarGrid.js` accessibility
-2. `FilterBar.js` semantics cleanup
-3. `YieldListModal.js` stale-request guard
-4. `ModalContainer.js` scroll lock
-5. `ToastProvider.js` live-region cleanup
-6. request/helper consolidation
+1. `FilterBar.js` semantics cleanup
+2. `YieldListModal.js` stale-request guard
+3. `ModalContainer.js` scroll lock
+4. `ToastProvider.js` live-region cleanup
+5. request/helper consolidation
 
 ## Verification Focus
-- Keyboard access to calendar day selection
 - Filter panel open/close and focus flow
 - Yield modal rapid threshold switching
 - Modal scroll behavior on mobile-width viewports
