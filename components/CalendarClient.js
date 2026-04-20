@@ -13,7 +13,6 @@ import {
   subMonths,
   parseISO,
 } from "date-fns";
-import axios from "axios";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 import DividendModal from "./DividendModal";
@@ -32,6 +31,7 @@ import {
   getCachedStockLatest,
   setCachedStockLatest,
 } from "../lib/cache";
+import { proxyGet } from "../lib/proxy-client";
 import { useToast } from "../hooks/useToast";
 
 const API_URL = "/api/proxy";
@@ -122,11 +122,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${API_URL}/api/dividends?year=${year}&month=${month}`
-      );
-      setDividends(res.data);
-      setCachedDividends(cacheKey, res.data);
+      const data = await proxyGet("api/dividends", { year, month });
+      setDividends(data);
+      setCachedDividends(cacheKey, data);
     } catch (error) {
       addToast("股利資料載入失敗，請稍後再試。", "error");
     } finally {
@@ -148,9 +146,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const fetchStockLatest = async (code) => {
     const cached = getCachedStockLatest(code);
     if (cached) return cached;
-    const res = await axios.get(`${API_URL}/api/stock/${code}/latest`);
-    setCachedStockLatest(code, res.data);
-    return res.data;
+    const data = await proxyGet(`api/stock/${code}/latest`);
+    setCachedStockLatest(code, data);
+    return data;
   };
 
   const handleSuggestionClick = async (stock) => {

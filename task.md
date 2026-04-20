@@ -30,14 +30,12 @@
   - Stale-request protection via request version guarding is complete.
 - `components/ModalContainer.js`
   - Body scroll lock with cleanup is complete.
+- `components/ToastProvider.js`
+  - Accessible live-region semantics and timer lifecycle cleanup are complete.
+- `components/CalendarClient.js`
+  - Direct proxy requests now use the shared `proxyGet` helper instead of local axios paths.
 
 ## Remaining Work
-
-### Medium Priority
-- `components/ToastProvider.js`
-  - Status: todo
-  - Task: add accessible live-region semantics and tighten toast timer lifecycle cleanup.
-  - Why: visible feedback exists, but assistive feedback is still weak.
 
 ### Deferred
 - `components/CalendarClient.js`
@@ -50,9 +48,9 @@
 ### Security / Request Flow
 - `components/CalendarClient.js`
 - `components/WatchlistModal.js`
-  - Status: todo
-  - Task: consolidate old axios paths behind shared proxy helper behavior.
-  - Why: request consistency and token/error handling are still not fully unified.
+  - Status: done
+  - Task: consolidate old client-side proxy requests behind shared helper behavior.
+  - Why: `CalendarClient` now uses `proxyGet`; `WatchlistModal` no longer has direct request logic to consolidate.
 
 ### Infrastructure
 - Repo-wide
@@ -61,9 +59,7 @@
   - Why: verification still depends too much on manual checking.
 
 ## Recommended Next Order
-1. `ToastProvider.js` live-region cleanup
-2. request/helper consolidation
+1. dependency lockfile discipline and lint/test CI
 
 ## Verification Focus
-- Toast announcement behavior
 - Regression against existing month navigation, search suggestions, and stock modal opening

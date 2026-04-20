@@ -1,4 +1,28 @@
-# Technical Development Log
+﻿# Technical Development Log
+
+## 2026-04-20 – Proxy Helper Consolidation
+- Status: done
+- Priority: medium
+- Area: Request Flow
+- Files:
+  - components/CalendarClient.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: CalendarClient still used local axios proxy calls even though the repo already had a shared proxyGet helper, which left client-side proxy usage inconsistent and kept error/token handling split across patterns.
+- Impact: CalendarClient now routes dividend and latest-stock proxy requests through lib/proxy-client.js, reusing the shared proxy path builder and fetch behavior without changing routes, props, cache behavior, or modal flow. task.md now reflects that the helper-consolidation backlog item is complete and that WatchlistModal has no direct request path left to normalize.
+- Next: If request flow cleanup continues, evaluate whether StockModal should also migrate off local axios usage without changing its public API.
+
+## 2026-04-20 – Toast Accessibility And Timer Cleanup
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/ToastProvider.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: 雖然畫面上已有 toast 提示，但目前缺少清楚的 assistive live-region 語意，且 timeout 沒有集中管理，元件卸載時可能殘留未清理的 timer。
+- Impact: `ToastProvider` 現在為 toast 容器補上 `aria-live`，並依 variant 對單筆 toast 使用 `role="status"` 或 `role="alert"`；同時將 timeout 集中到 `Map` 管理，在 toast 移除與 provider 卸載時一併清理。外觀與 `addToast` 使用方式維持不變。`task.md` 也同步將此項標記為完成，剩餘主要 backlog 集中在 request/helper consolidation 與 deferred 的 `CalendarClient` 責任拆分。
+- Next: 若後續要進一步補強，可在實機驗證錯誤 toast 與成功 toast 的讀屏行為，並評估是否需要手動關閉按鈕或更細緻的優先級管理。
 
 ## 2026-04-20 – Modal Body Scroll Lock
 - Status: done
@@ -188,6 +212,4 @@
 - Owner: TBD
 - Note: 安裝依賴、產生 lockfile、串接 lint/test CI，以維護版本鎖定並提早攔截回歸問題。
 - Due: TBD
-
-
 
