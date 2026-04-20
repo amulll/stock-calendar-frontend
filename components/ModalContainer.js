@@ -18,6 +18,16 @@ export default function ModalContainer({
 
     const previouslyFocused = document.activeElement;
     const container = containerRef.current;
+    const { body, documentElement } = document;
+    const previousBodyOverflow = body.style.overflow;
+    const previousBodyPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - documentElement.clientWidth;
+
+    body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
     if (container) container.focus();
 
     function onKeyDown(event) {
@@ -49,6 +59,8 @@ export default function ModalContainer({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
+      body.style.overflow = previousBodyOverflow;
+      body.style.paddingRight = previousBodyPaddingRight;
       if (previouslyFocused instanceof HTMLElement) {
         previouslyFocused.focus();
       }

@@ -26,21 +26,14 @@
   - Stock metadata fallback and request-level memoization are complete.
 - `app/not-found.js`
   - 404 metadata is complete.
+- `components/YieldListModal.js`
+  - Stale-request protection via request version guarding is complete.
+- `components/ModalContainer.js`
+  - Body scroll lock with cleanup is complete.
 
 ## Remaining Work
 
-### High Priority
-- `components/YieldListModal.js`
-  - Status: todo
-  - Task: add stale-request protection via cancellation or request versioning.
-  - Why: rapid threshold changes can still race and overwrite the latest state.
-
 ### Medium Priority
-- `components/ModalContainer.js`
-  - Status: todo
-  - Task: add body scroll lock with cleanup.
-  - Why: modal background can still scroll on narrow/mobile viewports.
-
 - `components/ToastProvider.js`
   - Status: todo
   - Task: add accessible live-region semantics and tighten toast timer lifecycle cleanup.
@@ -68,13 +61,9 @@
   - Why: verification still depends too much on manual checking.
 
 ## Recommended Next Order
-1. `YieldListModal.js` stale-request guard
-2. `ModalContainer.js` scroll lock
-3. `ToastProvider.js` live-region cleanup
-4. request/helper consolidation
+1. `ToastProvider.js` live-region cleanup
+2. request/helper consolidation
 
 ## Verification Focus
-- Yield modal rapid threshold switching
-- Modal scroll behavior on mobile-width viewports
 - Toast announcement behavior
 - Regression against existing month navigation, search suggestions, and stock modal opening

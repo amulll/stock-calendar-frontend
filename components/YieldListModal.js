@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, TrendingUp, Loader2, ArrowUpDown } from "lucide-react";
 
 import { proxyGet } from "../lib/proxy-client";
@@ -18,14 +18,21 @@ export default function YieldListModal({
   const [error, setError] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
   const { addToast } = useToast();
+  const requestVersionRef = useRef(0);
 
   useEffect(() => {
-    if (isOpen) {
-      fetchHighYieldStocks();
+    if (!isOpen) {
+      requestVersionRef.current += 1;
+      setLoading(false);
+      return;
     }
+
+    const requestVersion = requestVersionRef.current + 1;
+    requestVersionRef.current = requestVersion;
+    fetchHighYieldStocks(requestVersion);
   }, [isOpen, threshold]);
 
-  const fetchHighYieldStocks = async () => {
+  const fetchHighYieldStocks = async (requestVersion) => {
     setLoading(true);
     setError("");
     try {
@@ -33,13 +40,17 @@ export default function YieldListModal({
         threshold,
         year: new Date().getFullYear(),
       });
+      if (requestVersion !== requestVersionRef.current) return;
       setDividends(Array.isArray(data) ? data : []);
     } catch (error) {
+      if (requestVersion !== requestVersionRef.current) return;
       setDividends([]);
       setError(error.message || "載入高殖利率清單失敗");
       addToast("載入高殖利率清單失敗", "error");
     } finally {
-      setLoading(false);
+      if (requestVersion === requestVersionRef.current) {
+        setLoading(false);
+      }
     }
   };
 

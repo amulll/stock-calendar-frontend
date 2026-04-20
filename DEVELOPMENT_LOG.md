@@ -1,5 +1,29 @@
 # Technical Development Log
 
+## 2026-04-20 – Modal Body Scroll Lock
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/ModalContainer.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: modal 開啟時背景仍可滾動，尤其在手機或窄視窗下會讓使用者誤滑到底層頁面，造成關閉後位置感混亂。
+- Impact: 在共用 `ModalContainer` 加入 body scroll lock 與 cleanup。modal 開啟時會暫存既有 `body` style，鎖住背景捲動，並在有 scrollbar 時補上 `padding-right` 避免畫面跳動；關閉時完整還原。既有 focus trap、Esc 關閉與 modal 內容結構維持不變。`task.md` 也同步將此項標記為完成，並把下一個優先項目推進到 `ToastProvider` live-region cleanup。
+- Next: 實機驗證各 modal 在桌機與手機寬度下開啟時背景不再滾動，且關閉後頁面位置與焦點恢復正常，再處理 `ToastProvider` 的 assistive feedback 補強。
+
+## 2026-04-20 – Yield Modal Stale Request Guard
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - components/YieldListModal.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: `YieldListModal` 在快速切換 threshold、關閉後立即重開時，舊請求有機會晚於新請求返回，覆蓋最新狀態，造成列表與目前門檻不一致。
+- Impact: 以 request version guard 保護 `YieldListModal` 的請求結果。當 modal 關閉或新的 threshold 請求發出時，舊請求即使晚回來也不再覆蓋 `dividends`、`error` 或 `loading`；UI、API 介面與排序行為維持不變。`task.md` 也同步將此項標記為完成，並把下一個優先項目推進到 `ModalContainer` scroll lock。
+- Next: 實機驗證快速切換殖利率門檻、關閉再重開 modal、以及錯誤情境下的 loading / error / empty state 是否仍正常，再處理 `ModalContainer` 的背景 scroll lock。
+
 ## 2026-04-20 – Filter Popover Semantics Cleanup
 - Status: done
 - Priority: high
