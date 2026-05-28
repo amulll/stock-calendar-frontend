@@ -1,0 +1,1 @@
+Please provide the "Original Theme", "Updated Document", and "Original Document" inputs to perform the synchronization. Without these, I cannot execute the differential analysis as specified in the instructions.
