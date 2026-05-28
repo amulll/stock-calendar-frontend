@@ -1,5 +1,31 @@
 ﻿# Technical Development Log
 
+## 2026-05-28 – Static Pages Visual Alignment
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/disclaimer/page.js
+  - app/knowledge/page.js
+  - app/privacy/page.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The legal, privacy, and knowledge pages still used slightly softer standalone card styling and did not fully match the homepage and stock page's professional minimal utility style.
+- Impact: Static informational pages now use consistent white surfaces, thin slate borders, restrained shadows, smaller heading scale, and tighter card language. Metadata, structured data, links, and page content are unchanged.
+- Next: Manually review `/disclaimer`, `/privacy`, and `/knowledge` on mobile and desktop to confirm readability and spacing.
+
+## 2026-05-28 – Stock Page Visual Alignment
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still used a heavier blue gradient header and larger rounded cards, which no longer matched the homepage's more professional minimal financial-tool direction.
+- Impact: The stock detail page now uses a calmer white header, thinner borders, lighter metric cards, smaller radii, tighter content spacing, and a more consistent history table container. Metadata, API requests, JSON-LD, links back to the calendar, chart/calculator wiring, and data contracts are unchanged.
+- Next: Manually compare `/stock/2330` and `/stock/0050` on desktop and mobile to confirm the page still feels clear and sufficiently branded.
+
 ## 2026-05-28 – Nested Modal Scroll Lock Fix
 - Status: done
 - Priority: high

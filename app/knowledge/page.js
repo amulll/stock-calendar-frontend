@@ -76,9 +76,9 @@ function KnowledgeCard({ id, icon, iconClassName, title, children }) {
   return (
     <article
       id={id}
-      className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-100"
+      className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8"
     >
-      <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3 mb-4">
+      <h2 className="mb-4 flex items-center gap-3 text-lg font-black tracking-tight text-slate-900">
         <div className={iconClassName}>{icon}</div>
         {title}
       </h2>
@@ -92,7 +92,7 @@ function KnowledgeCard({ id, icon, iconClassName, title, children }) {
 export default function KnowledgePage() {
   return (
     <main
-      className="min-h-screen bg-slate-50 py-8 px-4 md:px-8"
+      className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 md:py-8"
       aria-labelledby="knowledge-page-title"
     >
       {/* 結構化資料 */}
@@ -105,7 +105,7 @@ export default function KnowledgePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ARTICLE_JSON_LD) }}
       />
 
-      <div className="max-w-4xl mx-auto">
+      <div className="mx-auto max-w-4xl">
         {/* 導航 */}
         <div className="mb-6">
           <Link
@@ -118,15 +118,15 @@ export default function KnowledgePage() {
         </div>
 
         {/* Header */}
-        <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100 mb-6 text-center md:text-left">
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 md:text-left">
           <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="p-4 bg-blue-100 text-blue-600 rounded-2xl">
-              <BookOpen size={48} aria-hidden="true" />
+            <div className="rounded-xl border border-blue-100 bg-blue-50 p-3 text-blue-600">
+              <BookOpen size={40} aria-hidden="true" />
             </div>
             <div>
               <h1
                 id="knowledge-page-title"
-                className="text-3xl font-bold text-slate-800 mb-2"
+                className="mb-2 text-3xl font-black tracking-tight text-slate-950"
               >
                 股市新手小教室
               </h1>
@@ -146,7 +146,7 @@ export default function KnowledgePage() {
         </div>
 
         {/* 目錄區塊 */}
-        <nav className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 mb-6">
+        <nav className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-sm text-slate-500 mb-2 font-medium">
             本頁重點快速導覽
           </div>

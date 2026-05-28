@@ -40,6 +40,10 @@
   - Professional minimal visual polish is complete: reduced decoration, tighter card language, lighter shadows, smaller radii, and more scan-friendly hierarchy.
 - `components/ModalContainer.js`
   - Nested modal scroll-lock handling is complete: body scroll is restored only after the last open modal closes.
+- `app/stock/[id]/page.js`
+  - Professional minimal visual polish is complete: stock detail page now aligns with the homepage utility-style card language.
+- `app/disclaimer/page.js`, `app/knowledge/page.js`, `app/privacy/page.js`
+  - Static informational pages now follow the same professional minimal card, border, and typography language.
 
 ## Remaining Work
 
