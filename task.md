@@ -44,6 +44,8 @@
   - Professional minimal visual polish is complete: stock detail page now aligns with the homepage utility-style card language.
 - `app/disclaimer/page.js`, `app/knowledge/page.js`, `app/privacy/page.js`
   - Static informational pages now follow the same professional minimal card, border, and typography language.
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`
+  - Stock detail page compact visual pass is complete: mobile spacing, header contrast, calculator styling, and chart height now better support dense stock-information scanning.
 
 ## Remaining Work
 

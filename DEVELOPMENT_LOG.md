@@ -1,5 +1,20 @@
 ﻿# Technical Development Log
 
+## 2026-05-28 – Stock Page Compact Visual Pass
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still felt too white and vertically long on mobile because the header, calculator, chart, and dividend panels had similar visual weight and generous spacing.
+- Impact: The stock detail page now has a darker financial-tool header, tighter mobile spacing, more compact metric panels, a calculator aligned to the slate/emerald visual language, and a shorter mobile chart area. API requests, metadata, JSON-LD, links, calculator math, chart data processing, and route behavior are unchanged.
+- Next: Manually review /stock/00929 on mobile and desktop to confirm the page feels denser without losing readability.
+
+
 ## 2026-05-28 – Static Pages Visual Alignment
 - Status: done
 - Priority: medium

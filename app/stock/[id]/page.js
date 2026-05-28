@@ -284,12 +284,12 @@ export default async function StockPage({ params }) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 md:py-8">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef6f3_48%,#f8fafc_100%)] px-4 py-4 md:px-8 md:py-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-6">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-4 md:mb-6">
           <Link href="/" className="inline-flex items-center text-slate-500 hover:text-blue-600 transition font-medium">
             <ArrowLeft size={20} className="mr-2" />
             回首頁日曆
@@ -299,35 +299,35 @@ export default async function StockPage({ params }) {
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           
           {/* Header */}
-          <div className="relative overflow-hidden border-b border-slate-200 bg-white p-6 text-slate-900 md:p-8">
-            <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-slate-50 to-white"></div>
+          <div className="relative overflow-hidden border-b border-slate-800 bg-slate-950 p-5 text-white md:p-7">
+            <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.28),transparent_34%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.2),transparent_30%)]"></div>
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-2">
-                <span className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1 font-mono text-sm text-slate-700">
+              <div className="mb-3 flex items-center gap-2">
+                <span className="rounded-lg border border-white/15 bg-white/10 px-3 py-1 font-mono text-sm text-slate-100">
                   {id}
                 </span>
-                <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-sm text-slate-500">
+                <span className="rounded border border-white/15 bg-white/5 px-2 py-0.5 text-sm text-slate-300">
                   {displayMarket}
                 </span>
               </div>
-              <h1 className="mb-4 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{info.stock_name}</h1>
+              <h1 className="mb-4 text-2xl font-black tracking-tight text-white md:text-4xl">{info.stock_name}</h1>
               
               {/* 股價與殖利率儀表板 */}
-              <div className="mt-6 grid grid-cols-2 gap-3 md:max-w-xl">
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <div className="mb-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-500">最新收盤價</div>
-                  <div className="text-2xl font-black tracking-tight text-slate-900">
+              <div className="mt-5 grid grid-cols-2 gap-3 md:max-w-xl">
+                <div className="rounded-xl border border-white/10 bg-white/[0.07] p-3 md:p-4">
+                  <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">最新收盤價</div>
+                  <div className="text-2xl font-black tracking-tight text-white">
                     {/* 🔥 這裡改用 info.daily_price */}
                     {info.daily_price ? `$${info.daily_price}` : "--"}
                   </div>
                 </div>
-                <div className={`rounded-xl border p-4
-                    ${currentYieldRate !== "--" && Number(currentYieldRate) > 5 ? "border-amber-200 bg-amber-50 text-amber-700" : "border-slate-200 bg-slate-50 text-slate-700"}
+                <div className={`rounded-xl border p-3 md:p-4
+                    ${currentYieldRate !== "--" && Number(currentYieldRate) > 5 ? "border-amber-300/40 bg-amber-300/10 text-amber-100" : "border-white/10 bg-white/[0.07] text-slate-100"}
                 `}>
-                  <div className="mb-1 text-xs font-bold uppercase tracking-[0.14em] opacity-80">預估殖利率(最新)</div>
+                  <div className="mb-1 text-[11px] font-bold uppercase tracking-[0.14em] opacity-80">預估殖利率(最新)</div>
                   <div className="flex items-center gap-2 text-2xl font-black tracking-tight">
                     {currentYieldRate !== "--" ? `${currentYieldRate}%` : "--"}
-                    {currentYieldRate !== "--" && Number(currentYieldRate) > 5 && <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-black text-amber-700">高</span>}
+                    {currentYieldRate !== "--" && Number(currentYieldRate) > 5 && <span className="rounded bg-amber-300/20 px-1.5 py-0.5 text-[10px] font-black text-amber-100">高</span>}
                   </div>
                 </div>
               </div>
@@ -335,17 +335,17 @@ export default async function StockPage({ params }) {
           </div>
 
           {/* Content */}
-          <div className="space-y-6 p-5 md:p-8">
+          <div className="space-y-4 p-4 md:space-y-6 md:p-7">
             
             {/* 最新股利區塊 (資料來自 latestEvent) */}
             <section>
-              <h2 className="mb-4 flex items-center gap-2 text-lg font-black tracking-tight text-slate-900">
+              <h2 className="mb-3 flex items-center gap-2 text-lg font-black tracking-tight text-slate-900">
                 <Banknote className="text-emerald-600" /> 最新股利資訊
               </h2>
-              <div className="grid gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-5 md:grid-cols-2">
+              <div className="grid gap-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 md:grid-cols-2 md:p-5">
                 <div>
                   <div className="mb-1 text-sm font-semibold text-emerald-700">現金股利</div>
-                  <div className="text-3xl font-black tracking-tight text-emerald-700">
+                  <div className="text-2xl font-black tracking-tight text-emerald-700 md:text-3xl">
                     {/* 🔥 修改：小數點後 3 位 */}
                     {Number(latestEvent.cash_dividend).toFixed(3)} <span className="text-base font-normal text-emerald-600">元</span>
                   </div>
@@ -380,11 +380,11 @@ export default async function StockPage({ params }) {
 
             {/* 歷史紀錄區塊 (資料來自 history) */}
             <section>
-              <h2 className="mb-4 flex items-center gap-2 text-lg font-black tracking-tight text-slate-900">
+              <h2 className="mb-3 flex items-center gap-2 text-lg font-black tracking-tight text-slate-900">
                 <Calendar className="text-blue-600" /> 歷史發放紀錄
               </h2>
               <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-                <table className="w-full text-sm text-left min-w-[600px]">
+                <table className="w-full min-w-[560px] text-left text-xs md:text-sm">
                   <thead className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
                     <tr>
                       <th className="px-2 py-2 whitespace-nowrap">年度</th>
@@ -499,7 +499,7 @@ export default async function StockPage({ params }) {
             </section>
             
             {/* SEO 描述文章 (傳入 info) */}
-            <section className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <section className="rounded-xl border border-slate-200 bg-slate-50 p-4 md:p-5">
                 {generateSeoArticle(info, latestEvent, history)}
             </section>            
 

@@ -62,12 +62,12 @@ export default function DividendChart({ history }) {
   if (currentData.length === 0) return null;
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+    <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:mb-6 md:p-5">
+      <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
         
         {/* 標題 */}
-        <h3 className="text-lg font-bold text-slate-700 flex items-center gap-2">
-          <span className="bg-blue-100 text-blue-600 p-1.5 rounded-lg">📊</span>
+        <h3 className="flex items-center gap-2 text-lg font-black tracking-tight text-slate-800">
+          <span className="h-2.5 w-2.5 rounded-full bg-blue-600"></span>
           歷年現金股利趨勢
         </h3>
 
@@ -97,7 +97,7 @@ export default function DividendChart({ history }) {
       </div>
       
       {/* 圖表區域 */}
-      <div className="h-[300px] w-full">
+      <div className="h-[220px] w-full md:h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={currentData}
