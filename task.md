@@ -34,6 +34,10 @@
   - Accessible live-region semantics and timer lifecycle cleanup are complete.
 - `components/CalendarClient.js`
   - Direct proxy requests now use the shared `proxyGet` helper instead of local axios paths.
+- `components/FilterBar.js`, `components/ToastProvider.js`, `components/CalendarGrid.js`
+  - Small UI/UX polish pass is complete: responsive popover widths, safer mobile toast placement, and cleaner calendar keyboard semantics.
+- `components/CalendarClient.js`, `components/FilterBar.js`, `components/CalendarGrid.js`, `components/SeoContent.js`
+  - Professional minimal visual polish is complete: reduced decoration, tighter card language, lighter shadows, smaller radii, and more scan-friendly hierarchy.
 
 ## Remaining Work
 

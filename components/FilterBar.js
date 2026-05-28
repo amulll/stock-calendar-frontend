@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { Search, Heart, List, TrendingUp } from "lucide-react";
+import { Search, Heart, List, TrendingUp, X } from "lucide-react";
 
 const MAX_SUGGESTIONS = 4;
 
@@ -97,7 +97,7 @@ export default function FilterBar({
 
   return (
     <div className="sticky top-3 z-40 flex flex-col gap-3 xl:flex-row xl:items-center">
-      <div className="relative flex-grow rounded-[28px] border border-slate-200/80 bg-slate-50/90 p-1.5 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)] backdrop-blur">
+      <div className="relative flex-grow rounded-2xl border border-slate-200 bg-slate-50 p-1 shadow-sm backdrop-blur">
         <label htmlFor={inputId} id={labelId} className="sr-only">
           搜尋股票
         </label>
@@ -107,7 +107,7 @@ export default function FilterBar({
           value={filterText}
           onChange={(e) => onFilterChange(e.target.value)}
           placeholder="輸入股票代號或名稱..."
-          className="w-full rounded-[22px] border border-transparent bg-white px-4 py-4 pl-12 pr-12 text-sm font-medium text-slate-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] transition placeholder:text-slate-400 focus:border-blue-200 focus:ring-4 focus:ring-blue-100"
+          className="w-full rounded-xl border border-transparent bg-white px-4 py-3.5 pl-12 pr-12 text-sm font-medium text-slate-800 transition placeholder:text-slate-400 focus:border-blue-200 focus:ring-4 focus:ring-blue-100"
           role="combobox"
           aria-autocomplete="list"
           aria-haspopup="listbox"
@@ -131,11 +131,12 @@ export default function FilterBar({
         </div>
         {filterText && (
           <button
+            type="button"
             onClick={onClearFilter}
-            className="absolute right-5 top-1/2 -translate-y-1/2 rounded-full bg-slate-100 px-2 py-1 text-xs font-bold text-slate-500 transition hover:bg-slate-200 hover:text-slate-700"
+            className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="清除搜尋條件"
           >
-            ×
+            <X size={16} aria-hidden="true" />
           </button>
         )}
         {hasSuggestions && (
@@ -143,7 +144,7 @@ export default function FilterBar({
             id={listboxId}
             role="listbox"
             aria-label="股票搜尋建議"
-            className="absolute left-0 right-0 z-[90] mt-2 max-h-72 overflow-y-auto rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)]"
+            className="absolute left-0 right-0 z-[90] mt-2 max-h-72 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-2 shadow-lg"
           >
             {visibleSuggestions.map((stock, index) => (
               <li
@@ -153,7 +154,7 @@ export default function FilterBar({
                 aria-selected={activeIndex === index}
                 onMouseDown={() => onSuggestionClick(stock)}
                 onMouseEnter={() => setActiveIndex(index)}
-                className={`flex cursor-pointer items-center justify-between rounded-[18px] px-4 py-3 text-sm transition duration-100 ${
+                className={`flex cursor-pointer items-center justify-between rounded-xl px-4 py-3 text-sm transition duration-100 ${
                   activeIndex === index ? "bg-blue-50/90" : "hover:bg-slate-50"
                 }`}
               >
@@ -173,7 +174,7 @@ export default function FilterBar({
         <div className="relative" ref={watchlistMenuRef}>
           <button
             onClick={() => setWatchlistMenuOpen((open) => !open)}
-            className={`flex min-w-[5.25rem] items-center justify-center gap-2 rounded-[24px] border px-4 py-4 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)] transition ${
+            className={`flex min-w-[5.25rem] items-center justify-center gap-2 rounded-xl border px-4 py-3.5 shadow-sm transition ${
               showWatchlistOnly
                 ? "border-rose-300 bg-rose-500 text-white shadow-rose-200"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
@@ -194,7 +195,7 @@ export default function FilterBar({
           {watchlistMenuOpen && (
             <div
               id={watchlistMenuId}
-              className="absolute right-0 top-full z-[90] mt-3 w-64 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
+              className="absolute right-0 top-full z-[90] mt-3 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white p-4 shadow-lg animate-in fade-in zoom-in-95 duration-200"
               role="dialog"
               aria-modal="false"
               aria-labelledby={watchlistHeadingId}
@@ -205,7 +206,7 @@ export default function FilterBar({
               >
                 Watchlist
               </p>
-              <div className="mb-4 mt-3 flex items-center justify-between rounded-[22px] bg-rose-50 px-4 py-3">
+              <div className="mb-4 mt-3 flex items-center justify-between rounded-xl bg-rose-50 px-4 py-3">
                 <span className="text-sm font-bold text-slate-700">
                   僅顯示自選股
                 </span>
@@ -231,7 +232,7 @@ export default function FilterBar({
                   onOpenWatchlistModal();
                   setWatchlistMenuOpen(false);
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
               >
                 <List size={16} />
                 管理自選清單
@@ -243,7 +244,7 @@ export default function FilterBar({
         <div className="relative" ref={yieldMenuRef}>
           <button
             onClick={() => setYieldMenuOpen((open) => !open)}
-            className={`flex min-w-[6.75rem] items-center justify-center gap-2 rounded-[24px] border px-4 py-4 shadow-[0_20px_50px_-38px_rgba(15,23,42,0.35)] transition ${
+            className={`flex min-w-[6.75rem] items-center justify-center gap-2 rounded-xl border px-4 py-3.5 shadow-sm transition ${
               showHighYieldOnly
                 ? "border-amber-300 bg-amber-500 text-white shadow-amber-200"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
@@ -266,7 +267,7 @@ export default function FilterBar({
           {yieldMenuOpen && (
             <div
               id={yieldMenuId}
-              className="absolute right-0 top-full z-[90] mt-3 w-72 rounded-[28px] border border-slate-200 bg-white p-4 shadow-[0_28px_70px_-40px_rgba(15,23,42,0.45)] animate-in fade-in zoom-in-95 duration-200"
+              className="absolute right-0 top-full z-[90] mt-3 w-72 max-w-[calc(100vw-2rem)] rounded-2xl border border-slate-200 bg-white p-4 shadow-lg animate-in fade-in zoom-in-95 duration-200"
               role="dialog"
               aria-modal="false"
               aria-labelledby={yieldHeadingId}
@@ -277,7 +278,7 @@ export default function FilterBar({
               >
                 Yield Filter
               </p>
-              <div className="mb-4 mt-3 flex items-center justify-between rounded-[22px] bg-amber-50 px-4 py-3">
+              <div className="mb-4 mt-3 flex items-center justify-between rounded-xl bg-amber-50 px-4 py-3">
                 <span className="text-sm font-bold text-slate-700">
                   高殖利率篩選
                 </span>
@@ -298,7 +299,7 @@ export default function FilterBar({
                   />
                 </button>
               </div>
-              <div className="mb-4 rounded-[22px] bg-slate-50 px-4 py-4">
+              <div className="mb-4 rounded-xl bg-slate-50 px-4 py-4">
                 <div className="mb-2 flex justify-between text-xs text-slate-500">
                   <span>殖利率門檻</span>
                   <span className="font-bold text-amber-600">{localYield}%</span>
@@ -325,7 +326,7 @@ export default function FilterBar({
                   onOpenYieldList();
                   setYieldMenuOpen(false);
                 }}
-                className="flex w-full items-center justify-center gap-2 rounded-[18px] bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
               >
                 <List size={16} />
                 檢視高殖利率清單

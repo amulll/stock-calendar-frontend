@@ -45,7 +45,7 @@ export default function ToastProvider({ children }) {
     <ToastContext.Provider value={value}>
       {children}
       <div
-        className="fixed bottom-4 right-4 z-50 flex w-full max-w-sm flex-col gap-2"
+        className="pointer-events-none fixed inset-x-4 bottom-4 z-50 flex flex-col gap-2 sm:left-auto sm:right-4 sm:w-full sm:max-w-sm"
         aria-live="polite"
         aria-atomic="false"
       >
@@ -55,7 +55,7 @@ export default function ToastProvider({ children }) {
             role={toast.variant === "error" ? "alert" : "status"}
             aria-live={toast.variant === "error" ? "assertive" : "polite"}
             aria-atomic="true"
-            className={`px-4 py-3 rounded-xl shadow-lg text-sm text-white ${
+            className={`pointer-events-auto rounded-xl px-4 py-3 text-sm text-white shadow-lg ${
               toast.variant === "error"
                 ? "bg-rose-500"
                 : toast.variant === "success"

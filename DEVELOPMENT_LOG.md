@@ -1,5 +1,34 @@
 ﻿# Technical Development Log
 
+## 2026-05-28 – Professional Minimal Visual Polish
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/CalendarClient.js
+  - components/FilterBar.js
+  - components/CalendarGrid.js
+  - components/SeoContent.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The homepage still had a landing-page-like visual weight: large hero type, decorative background elements, oversized radii, and heavy shadows that made the financial utility feel less focused than the underlying data workflow.
+- Impact: The homepage, filter controls, calendar grid, and SEO content now use a more restrained finance-tool visual language: white surfaces, thinner borders, lighter shadows, smaller radii, tighter section spacing, and calmer labels. Existing API paths, query state, modal behavior, data flow, and dependencies are unchanged.
+- Next: Manually compare desktop and mobile screenshots to confirm the interface still feels sufficiently branded while improving scan speed and professionalism.
+
+## 2026-05-28 – Frontend UX Polish Pass
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/FilterBar.js
+  - components/CalendarGrid.js
+  - components/ToastProvider.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: A focused skill-based review found a few remaining small interaction risks: filter popovers could feel cramped on narrow screens, the toast container could overflow on mobile because it combined `w-full` with right offset positioning, and calendar date activation still depended on an outer interactive wrapper around stock buttons.
+- Impact: Filter popovers now use viewport-constrained widths and the search clear control uses a proper icon button. Toast placement now uses inset mobile positioning with pointer-event isolation. Calendar date keyboard activation now lives on the visible date button instead of making the whole day cell a nested interactive region. API paths, router behavior, data contracts, modal flow, and dependencies are unchanged.
+- Next: Manually verify mobile filter popovers, toast placement, and keyboard activation for dividend dates in a browser.
+
 ## 2026-04-20 – Proxy Helper Consolidation
 - Status: done
 - Priority: medium

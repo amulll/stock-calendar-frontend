@@ -1,17 +1,17 @@
 export default function SeoContent() {
   return (
-    <section className="rounded-[32px] border border-slate-200/80 bg-white/90 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.35)]">
-      <div className="mx-auto max-w-4xl px-6 py-10 text-slate-600 leading-relaxed md:px-10 md:py-12">
-        <p className="text-[11px] font-black uppercase tracking-[0.24em] text-blue-600/75">
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="mx-auto max-w-4xl px-6 py-8 text-slate-600 leading-relaxed md:px-8 md:py-10">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
           Editorial Guide
         </p>
-        <h2 className="mt-3 text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-950 md:text-3xl">
           關於 uGoodly 台股股利日曆
         </h2>
         
         <div className="mt-8 space-y-5">
-          <div className="rounded-[28px] border border-slate-200/70 bg-slate-50/80 p-6">
-            <h3 className="mb-3 text-xl font-black tracking-tight text-slate-800">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="mb-3 text-lg font-black tracking-tight text-slate-800">
               什麼是股利日曆？存股族必備的領錢行事曆
             </h3>
             <p>
@@ -46,8 +46,8 @@ export default function SeoContent() {
             </p>
           </div>
 
-          <div className="rounded-[28px] border border-slate-200/70 bg-white p-6 shadow-[0_18px_45px_-34px_rgba(15,23,42,0.24)]">
-            <h3 className="mb-3 text-xl font-black tracking-tight text-slate-800">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="mb-3 text-lg font-black tracking-tight text-slate-800">
               如何使用本網站查詢除權息與殖利率？
             </h3>
             <ul className="list-disc space-y-3 pl-5">
@@ -66,8 +66,8 @@ export default function SeoContent() {
             </ul>
           </div>
 
-          <div className="rounded-[28px] border border-blue-100 bg-blue-50/50 p-6">
-            <h3 className="mb-3 text-xl font-black tracking-tight text-slate-800">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <h3 className="mb-3 text-lg font-black tracking-tight text-slate-800">
               資料來源與更新頻率
             </h3>
             <p>

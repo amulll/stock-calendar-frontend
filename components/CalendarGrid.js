@@ -13,19 +13,19 @@ export default function CalendarGrid({
   localYield,
 }) {
   return (
-    <div className="rounded-[32px] border border-slate-200/80 bg-white/90 p-2 shadow-[0_30px_80px_-48px_rgba(15,23,42,0.4)] md:p-4">
-      <div className="grid grid-cols-7 gap-1.5 rounded-[26px] bg-slate-100/80 p-1.5 md:gap-2 md:p-2">
+    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm md:p-3">
+      <div className="grid grid-cols-7 gap-1 rounded-xl bg-slate-100 p-1 md:gap-1.5 md:p-1.5">
         {["日", "一", "二", "三", "四", "五", "六"].map((day) => (
           <div
             key={day}
-            className="rounded-2xl bg-white/80 py-2 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 md:py-3"
+            className="rounded-lg bg-white py-2 text-center text-[10px] font-black uppercase tracking-[0.14em] text-slate-500 md:py-2.5"
           >
             {day}
           </div>
         ))}
       </div>
 
-      <div className="mt-2 grid grid-cols-7 auto-rows-fr gap-1.5 md:gap-2">
+      <div className="mt-2 grid grid-cols-7 auto-rows-fr gap-1 md:gap-1.5">
         {calendarDays.map((day) => {
           const dayKey = format(day, "yyyy-MM-dd");
           const dayDividends = dividendsByDate.get(dayKey) || [];
@@ -41,45 +41,50 @@ export default function CalendarGrid({
               onDateSelect(day);
             }
           };
+          const dayButtonLabel = `${format(day, "M月d日")}有 ${dayDividends.length} 檔股利，按 Enter 查看詳細清單`;
 
           return (
             <div
               key={day.toISOString()}
               onClick={handleDayActivate}
-              onKeyDown={(event) => {
-                if (!isInteractive) return;
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  handleDayActivate();
-                }
-              }}
-              role={isInteractive ? "button" : undefined}
-              tabIndex={isInteractive ? 0 : undefined}
-              aria-label={
-                isInteractive
-                  ? `${format(day, "M月d日")}有 ${dayDividends.length} 檔股利，按 Enter 查看詳細清單`
-                  : undefined
-              }
-              className={`group relative min-h-[84px] rounded-[24px] border p-1.5 transition-all md:min-h-[140px] md:p-2.5 ${
+              className={`group relative min-h-[84px] rounded-xl border p-1.5 transition-all md:min-h-[140px] md:p-2 ${
                 !isCurrentMonth
                   ? "border-slate-100 bg-slate-50/80 text-slate-300"
-                  : "border-slate-200/70 bg-white shadow-[0_16px_35px_-30px_rgba(15,23,42,0.35)]"
+                  : "border-slate-200 bg-white"
               } ${
                 isInteractive
-                  ? "cursor-pointer hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2"
+                  ? "cursor-pointer hover:border-blue-200 hover:bg-blue-50/60"
                   : ""
               }`}
             >
               <div className="mb-1.5 flex items-start justify-between">
-                <span
-                  className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-black md:h-8 md:w-8 md:text-sm ${
-                    isToday
-                      ? "bg-blue-600 text-white shadow-[0_12px_25px_-18px_rgba(37,99,235,0.95)]"
-                      : "text-slate-700"
-                  }`}
-                >
-                  {format(day, "d")}
-                </span>
+                {isInteractive ? (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      handleDayActivate();
+                    }}
+                    aria-label={dayButtonLabel}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 md:h-8 md:w-8 md:text-sm ${
+                      isToday
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "text-slate-700 hover:bg-blue-50"
+                    }`}
+                  >
+                    {format(day, "d")}
+                  </button>
+                ) : (
+                  <span
+                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-black md:h-8 md:w-8 md:text-sm ${
+                      isToday
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "text-slate-700"
+                    }`}
+                  >
+                    {format(day, "d")}
+                  </span>
+                )}
 
                 <div className="flex items-center gap-1">
                   {hasTrackedStock && (
@@ -88,7 +93,7 @@ export default function CalendarGrid({
                     </span>
                   )}
                   {dayDividends.length > 0 && (
-                    <span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-600">
+                    <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700">
                       <span className="hidden md:inline">
                         {dayDividends.length} 檔
                       </span>
@@ -102,7 +107,7 @@ export default function CalendarGrid({
                 {dayDividends.slice(0, 3).map((div) => (
                   <div
                     key={div.id}
-                    className="flex items-center justify-between rounded-[14px] border border-slate-200/70 bg-slate-50/90 px-1.5 py-1 text-xs text-slate-600 transition group-hover:border-blue-100"
+                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1 text-xs text-slate-600 transition group-hover:border-blue-100"
                   >
                     <button
                       type="button"
