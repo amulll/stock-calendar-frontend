@@ -38,6 +38,8 @@
   - Small UI/UX polish pass is complete: responsive popover widths, safer mobile toast placement, and cleaner calendar keyboard semantics.
 - `components/CalendarClient.js`, `components/FilterBar.js`, `components/CalendarGrid.js`, `components/SeoContent.js`
   - Professional minimal visual polish is complete: reduced decoration, tighter card language, lighter shadows, smaller radii, and more scan-friendly hierarchy.
+- `components/ModalContainer.js`
+  - Nested modal scroll-lock handling is complete: body scroll is restored only after the last open modal closes.
 
 ## Remaining Work
 

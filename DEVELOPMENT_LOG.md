@@ -1,5 +1,17 @@
 ﻿# Technical Development Log
 
+## 2026-05-28 – Nested Modal Scroll Lock Fix
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - components/ModalContainer.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: Opening a dividend-date modal from inside the stock modal could leave `document.body.style.overflow` stuck at `hidden`, because each modal instance restored body scroll independently and one modal could capture `hidden` as its previous state.
+- Impact: `ModalContainer` now uses a shared open-modal counter. Body scroll is locked once when the first modal opens and restored only after the final modal closes, so switching from `StockModal` to `DividendModal` no longer leaves the page unscrollable. API paths, router behavior, data flow, and modal props are unchanged.
+- Next: Manually verify stock history date clicks for older months, then close the resulting modal and confirm page scrolling is restored.
+
 ## 2026-05-28 – Professional Minimal Visual Polish
 - Status: done
 - Priority: medium

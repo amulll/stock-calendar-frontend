@@ -5,6 +5,36 @@ import { useEffect, useRef } from "react";
 const FOCUSABLE_SELECTORS =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
 
+let openModalCount = 0;
+let originalBodyOverflow = "";
+let originalBodyPaddingRight = "";
+
+function lockBodyScroll() {
+  const { body, documentElement } = document;
+
+  if (openModalCount === 0) {
+    originalBodyOverflow = body.style.overflow;
+    originalBodyPaddingRight = body.style.paddingRight;
+
+    const scrollbarWidth = window.innerWidth - documentElement.clientWidth;
+    body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+  }
+
+  openModalCount += 1;
+}
+
+function unlockBodyScroll() {
+  openModalCount = Math.max(0, openModalCount - 1);
+  if (openModalCount !== 0) return;
+
+  const { body } = document;
+  body.style.overflow = originalBodyOverflow;
+  body.style.paddingRight = originalBodyPaddingRight;
+}
+
 export default function ModalContainer({
   isOpen,
   onClose,
@@ -18,15 +48,7 @@ export default function ModalContainer({
 
     const previouslyFocused = document.activeElement;
     const container = containerRef.current;
-    const { body, documentElement } = document;
-    const previousBodyOverflow = body.style.overflow;
-    const previousBodyPaddingRight = body.style.paddingRight;
-    const scrollbarWidth = window.innerWidth - documentElement.clientWidth;
-
-    body.style.overflow = "hidden";
-    if (scrollbarWidth > 0) {
-      body.style.paddingRight = `${scrollbarWidth}px`;
-    }
+    lockBodyScroll();
 
     if (container) container.focus();
 
@@ -59,8 +81,7 @@ export default function ModalContainer({
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      body.style.overflow = previousBodyOverflow;
-      body.style.paddingRight = previousBodyPaddingRight;
+      unlockBodyScroll();
       if (previouslyFocused instanceof HTMLElement) {
         previouslyFocused.focus();
       }
