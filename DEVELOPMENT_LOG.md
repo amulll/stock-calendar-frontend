@@ -1,5 +1,21 @@
 ﻿# Technical Development Log
 
+## 2026-06-01 – Homepage Dashboard Visual Direction
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - UI_DESIGN_GUIDE.md
+  - components/CalendarClient.js
+  - components/FilterBar.js
+  - components/CalendarGrid.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The homepage still read like a generic AI-generated landing layout, with excessive hero language, decorative labels, rounded cards, shadows, and inconsistent financial-tool hierarchy.
+- Impact: Added a reference-driven UI guide and converted the homepage first viewport into a compact financial dashboard workspace. Search, month navigation, filter state, entries, watchlist count, and calendar cells now use denser data-utility styling. API calls, query state, router behavior, modal flow, and data contracts are unchanged.
+- Next: Manually review desktop and mobile homepage layouts, then apply the same reference-driven report language to stock detail and modal surfaces in a later pass.
+
+
 ## 2026-05-28 – Stock Page Compact Visual Pass
 - Status: done
 - Priority: medium

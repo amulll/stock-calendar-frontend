@@ -46,10 +46,18 @@
   - Static informational pages now follow the same professional minimal card, border, and typography language.
 - `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`
   - Stock detail page compact visual pass is complete: mobile spacing, header contrast, calculator styling, and chart height now better support dense stock-information scanning.
+- `UI_DESIGN_GUIDE.md`
+  - Reference-driven UI direction is documented for future visual work.
+- `components/CalendarClient.js`, `components/FilterBar.js`, `components/CalendarGrid.js`
+  - Homepage dashboard pass phases 1-2 are complete: the first viewport now behaves more like a financial data workspace, FilterBar is closer to a compact toolbar, and calendar cells use denser ticker-row styling.
 
 ## Remaining Work
 
 ### Deferred
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`
+  - Status: deferred
+  - Task: apply the same reference-driven report style to stock detail pages.
+  - Why: homepage dashboard alignment was prioritized first; stock report and modal alignment should follow in a separate pass.
 - `components/CalendarClient.js`
   - Status: deferred
   - Task: reassess whether responsibility should be split further.

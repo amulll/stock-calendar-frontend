@@ -1,0 +1,41 @@
+# UI Design Guide
+
+## Design Read
+- Product type: Taiwan stock dividend calendar and dividend research utility.
+- Audience: investors who need quick scanning, filtering, and stock detail lookup.
+- Direction: professional financial data utility, not a landing page.
+- References: TradingView for market-density patterns, Mobbin/Pageflows for real product flow patterns, Godly only for restraint and spacing inspiration.
+
+## Visual Principles
+- Data first: prioritize month navigation, search, filters, calendar cells, and stock rows.
+- Reduce decoration: avoid large gradients, heavy shadows, oversized rounded cards, and ornamental uppercase labels.
+- Consistent density: desktop should feel like a compact workstation; mobile should get to the calendar quickly.
+- Clear hierarchy: numbers and dates can be bold; supporting labels should stay quiet.
+- Stable interactions: styling changes must not alter API calls, query state, modal flow, or data contracts.
+
+## Tokens And Patterns
+- Background: `bg-slate-50` or white surfaces with thin `border-slate-200`.
+- Primary accent: blue for navigation/current month/focus.
+- Positive/data accent: emerald for dividend counts and confirmed dividend data.
+- Warning/high yield: amber only for high-yield emphasis.
+- Watchlist: rose only for heart/watchlist state.
+- Radius: prefer `rounded-xl` for major panels, `rounded-lg` for controls and chips.
+- Shadow: avoid shadows by default; use borders and subtle background contrast.
+- Labels: prefer Chinese product labels over decorative English uppercase labels unless they clarify data semantics.
+
+## Homepage Rules
+- The first viewport should behave like a dashboard header, not a marketing hero.
+- Month controller, entries count, watchlist count, and filters should be close together.
+- Active filter summaries should be compact text, not extra cards on mobile.
+- Calendar cells should show ticker rows as dense data, not decorative chips.
+
+## Stock Page Rules
+- Treat stock detail pages like compact financial reports.
+- Keep key metrics near the symbol/name header.
+- Calculator and chart panels should be useful but visually secondary to current dividend and history data.
+- SEO content should be readable but visually lower priority.
+
+## Change Control
+- Do not add dependencies for visual polish unless explicitly approved.
+- Do not change backend API, data shape, metadata behavior, router behavior, or modal lifecycle as part of styling passes.
+- Meaningful UI changes must update `task.md` and `DEVELOPMENT_LOG.md`.
