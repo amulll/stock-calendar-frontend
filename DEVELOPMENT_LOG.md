@@ -1,5 +1,36 @@
 ﻿# Technical Development Log
 
+## 2026-06-01 – Modal Data Utility Visual Alignment
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/StockModal.js
+  - components/DividendModal.js
+  - components/WatchlistModal.js
+  - components/YieldListModal.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: Modal surfaces still used heavier gradients, shadows, rounded cards, and list styling that no longer matched the homepage dashboard and stock report visual direction.
+- Impact: Stock, dividend-date, watchlist, and high-yield modals now use quieter data-utility styling: white headers, thin borders, lower-radius panels, ticker-like rows, restrained metric cards, and reduced decorative color. Modal props, fetch behavior, sorting, watchlist actions, date navigation, calendar export actions, and scroll-lock behavior are unchanged.
+- Next: Manually review each modal on desktop and mobile, especially nested stock-to-date modal navigation and high-yield sorting.
+
+
+## 2026-06-01 – Stock Detail Report Visual Direction
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still carried a generic AI-styled visual language, including a dark decorative header, isolated card stack, stronger shadows, and uneven density compared with the new homepage dashboard direction.
+- Impact: Stock detail pages now use a calmer financial report layout with a white ticker header, compact key metrics, a denser latest-dividend panel, report-style calculator/chart cards, and cleaner history table framing. Metadata, JSON-LD, API calls, calculator math, chart data processing, and calendar back-links are unchanged.
+- Next: Manually review /stock/00929 on desktop and mobile, then align modal surfaces with the same data-utility language in a later pass.
+
+
 ## 2026-06-01 – Homepage Dashboard Visual Direction
 - Status: done
 - Priority: high

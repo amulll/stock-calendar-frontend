@@ -50,14 +50,18 @@
   - Reference-driven UI direction is documented for future visual work.
 - `components/CalendarClient.js`, `components/FilterBar.js`, `components/CalendarGrid.js`
   - Homepage dashboard pass phases 1-2 are complete: the first viewport now behaves more like a financial data workspace, FilterBar is closer to a compact toolbar, and calendar cells use denser ticker-row styling.
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`
+  - Stock detail report-style pass is complete: stock pages now use the same reference-driven financial report language, with a quieter header, compact key metrics, denser latest-dividend panel, calculator/chart report cards, and cleaner history table framing.
+- `components/StockModal.js`, `components/DividendModal.js`, `components/WatchlistModal.js`, `components/YieldListModal.js`
+  - Modal data-utility visual alignment is complete: modal headers, list rows, ticker chips, metric panels, and ranking rows now use the same lower-decoration financial tool language.
 
 ## Remaining Work
 
 ### Deferred
-- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`
+- Repo-wide UI surfaces
   - Status: deferred
-  - Task: apply the same reference-driven report style to stock detail pages.
-  - Why: homepage dashboard alignment was prioritized first; stock report and modal alignment should follow in a separate pass.
+  - Task: perform a final visual consistency pass after manual review on deployed desktop and mobile views.
+  - Why: homepage, stock detail pages, and modal surfaces are aligned; remaining issues should be based on rendered screenshots rather than further broad class edits.
 - `components/CalendarClient.js`
   - Status: deferred
   - Task: reassess whether responsibility should be split further.

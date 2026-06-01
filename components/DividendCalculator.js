@@ -218,10 +218,10 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
     : 0;
 
   return (
-    <div className="mb-4 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm md:mb-6">
-      <div className="flex flex-col items-start gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 sm:flex-row sm:items-center sm:justify-between md:px-5 md:py-4">
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+      <div className="flex flex-col items-start gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-2 font-black tracking-tight">
-          <Calculator size={20} className="flex-shrink-0" /> 
+          <Calculator size={18} className="flex-shrink-0 text-slate-500" />
           <div className="flex flex-col md:flex-row md:items-center md:gap-2 leading-tight md:leading-normal">
             <span>{stockName}</span>
             <span>股利計算機</span>
@@ -232,7 +232,7 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
         </span>
       </div>
       
-      <div className="grid gap-4 p-4 md:grid-cols-[1fr_0.9fr] md:gap-6 md:p-5">
+      <div className="grid gap-4 p-4 md:grid-cols-[1fr_0.9fr]">
         
         {/* 輸入區 */}
         <div className="space-y-3 md:space-y-4">
@@ -247,7 +247,7 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
                     inputMode="decimal"
                     value={priceStr}
                     onChange={handlePriceChange}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 font-mono text-base font-bold text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-emerald-500 md:p-3 md:text-lg"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-mono text-base font-bold text-slate-700 outline-none transition focus:bg-white focus:ring-2 focus:ring-emerald-500 md:p-3 md:text-lg"
                 />
                 <span className="absolute right-4 top-3 text-sm text-slate-400 md:top-3.5">元</span>
             </div>
@@ -278,14 +278,14 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
                     inputMode="numeric"
                     value={sharesStr}
                     onChange={handleSharesChange}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 font-mono text-base font-bold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500 md:p-3 md:text-lg"
+                    className="w-full rounded-lg border border-slate-200 p-2.5 font-mono text-base font-bold text-slate-700 outline-none focus:ring-2 focus:ring-emerald-500 md:p-3 md:text-lg"
                 />
                 <span className="absolute right-4 top-3 text-sm text-slate-400 md:top-3.5">股</span>
             </div>
             <div className="flex gap-2 mt-2">
-                <button onClick={() => handleSharesChange(1000)} className="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition">1張</button>
-                <button onClick={() => handleSharesChange(5000)} className="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition">5張</button>
-                <button onClick={() => handleSharesChange(10000)} className="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-lg text-slate-600 transition">10張</button>
+                <button onClick={() => handleSharesChange(1000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">1張</button>
+                <button onClick={() => handleSharesChange(5000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">5張</button>
+                <button onClick={() => handleSharesChange(10000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">10張</button>
             </div>
           </div>
 
@@ -303,7 +303,7 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
                     value={investStr}
                     onChange={handleInvestChange}
                     placeholder={`以股價 ${priceStr} 元試算...`}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 font-mono text-base font-bold text-slate-700 outline-none placeholder:font-normal focus:ring-2 focus:ring-emerald-500 md:p-3 md:text-lg"
+                    className="w-full rounded-lg border border-slate-200 p-2.5 font-mono text-base font-bold text-slate-700 outline-none placeholder:font-normal focus:ring-2 focus:ring-emerald-500 md:p-3 md:text-lg"
                 />
                 <span className="absolute right-4 top-3 text-sm text-slate-400 md:top-3.5">$</span>
             </div>
@@ -311,11 +311,11 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
         </div>
 
         {/* 結果區 */}
-        <div className="flex flex-col justify-center space-y-4 rounded-xl border border-slate-100 bg-slate-50 p-4 md:space-y-6 md:p-5">
+        <div className="flex flex-col justify-center space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 md:space-y-5">
             
             <div className="text-center">
                 <div className="text-xs text-slate-500 mb-1">試算殖利率</div>
-                <div className="text-3xl font-extrabold tracking-tight text-amber-500 md:text-4xl">
+                <div className="text-3xl font-extrabold tracking-tight text-amber-600 md:text-4xl">
                     {calculatedYield}%
                 </div>
                 <div className="text-[10px] text-slate-400 mt-1">

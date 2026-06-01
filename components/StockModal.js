@@ -192,7 +192,7 @@ export default function StockModal({
     if (!info || !currentEvent) return null;
 
     return (
-      <div className="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
+      <div className="space-y-2 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm leading-relaxed text-slate-600">
         <p>
           <strong>
             {info.stock_name} ({info.stock_code})
@@ -232,7 +232,7 @@ export default function StockModal({
       <div
         key={`${item.stock_code}-${item.ex_date}-${item.pay_date}`}
         onClick={() => onHistoryDateClick(item.pay_date || item.ex_date)}
-        className="flex justify-between items-center p-3 rounded-lg border border-slate-100 hover:bg-slate-50 hover:border-blue-200 cursor-pointer transition group"
+        className="group flex cursor-pointer items-center justify-between rounded-lg border border-slate-200 p-3 transition hover:border-blue-200 hover:bg-slate-50"
       >
         <div>
           <div className="text-sm font-medium text-slate-700 group-hover:text-blue-600 transition">
@@ -257,39 +257,37 @@ export default function StockModal({
     <ModalContainer
       isOpen={isOpen}
       onClose={onClose}
-      contentClassName="max-w-md animate-in slide-in-from-bottom-5 duration-300"
+      contentClassName="max-w-lg animate-in slide-in-from-bottom-5 duration-300"
     >
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-6 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-white/10 rounded-full blur-2xl" />
-
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <div className="relative border-b border-slate-200 bg-white p-4 text-slate-900">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/80 hover:text-white transition z-20"
+            className="absolute right-3 top-3 z-20 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
             aria-label="關閉"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
 
-          <div className="relative z-10 flex justify-between items-start mt-2">
+          <div className="flex items-start justify-between gap-3 pr-12">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-3xl font-bold mb-1">
+                <h2 className="text-2xl font-black tracking-tight text-slate-950">
                   {info?.stock_name || stockCode}
                 </h2>
                 {stockCode && (
                   <Link
                     href={`/stock/${stockCode}`}
-                    className="p-1.5 bg-white/20 hover:bg-white/30 rounded-lg transition text-white/90 hover:text-white"
+                    className="rounded-md border border-slate-200 bg-slate-50 p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600"
                     title="檢視個股頁面"
                   >
                     <ExternalLink size={16} />
                   </Link>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-blue-100">
+              <div className="flex items-center gap-2 text-slate-500">
                 {stockCode && (
-                  <span className="bg-white/20 px-2 py-0.5 rounded text-sm">
+                  <span className="rounded border border-slate-200 bg-slate-50 px-2 py-0.5 font-mono text-sm font-bold text-slate-700">
                     {stockCode}
                   </span>
                 )}
@@ -300,19 +298,19 @@ export default function StockModal({
             {stockCode && (
               <button
                 onClick={() => onToggleTrack(stockCode)}
-                className="p-3 bg-white/10 hover:bg-white/20 rounded-full transition active:scale-95 mr-8"
+                className="mr-1 rounded-lg border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:bg-slate-50 active:scale-95"
                 title={isTracked ? "移除追蹤" : "加入追蹤"}
               >
                 <Heart
-                  size={24}
-                  className={isTracked ? "fill-rose-400 text-rose-400" : "text-white"}
+                  size={20}
+                  className={isTracked ? "fill-rose-500 text-rose-500" : "text-slate-500"}
                 />
               </button>
             )}
           </div>
         </div>
 
-        <div className="p-6 max-h-[60vh] overflow-y-auto">
+        <div className="max-h-[62vh] overflow-y-auto p-4">
           {loading ? (
             <div className="h-full flex items-center justify-center">
               <Loading text="載入個股資料中..." scale={0.4} />
@@ -322,33 +320,33 @@ export default function StockModal({
               暫時查無資料，請稍後再試。
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {renderSummary()}
 
-              <div className="grid grid-cols-2 gap-4 mb-2">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col items-center justify-center">
+              <div className="mb-2 grid grid-cols-2 gap-2">
+                <div className="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <div className="text-xs text-slate-500 mb-1">最新收盤價</div>
                   <div className="text-xl font-bold text-slate-700">
                     {info.daily_price ? `$${info.daily_price}` : "--"}
                   </div>
                 </div>
                 <div
-                  className={`p-4 rounded-xl border flex flex-col items-center justify-center ${
+                  className={`flex flex-col items-center justify-center rounded-lg border p-3 ${
                     displayYield !== "--"
-                      ? "bg-rose-50 border-rose-100"
-                      : "bg-blue-50 border-blue-100"
+                      ? "border-amber-200 bg-amber-50"
+                      : "border-slate-200 bg-white"
                   }`}
                 >
                   <div
                     className={`text-xs mb-1 ${
-                      displayYield !== "--" ? "text-rose-600" : "text-blue-600"
+                      displayYield !== "--" ? "text-amber-700" : "text-slate-500"
                     }`}
                   >
                     估算殖利率
                   </div>
                   <div
                     className={`text-xl font-bold ${
-                      displayYield !== "--" ? "text-rose-600" : "text-blue-600"
+                      displayYield !== "--" ? "text-amber-700" : "text-slate-700"
                     }`}
                   >
                     {displayYield !== "--" ? `${displayYield}%` : "--"}
@@ -357,13 +355,13 @@ export default function StockModal({
               </div>
 
               {currentEvent && (
-                <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                  <h3 className="text-emerald-800 font-bold flex items-center gap-2 mb-3">
+                <div className="rounded-lg border border-slate-200 bg-white p-4">
+                  <h3 className="mb-3 flex items-center gap-2 font-bold text-slate-900">
                     <Banknote size={18} /> 最新股利資訊
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <div className="text-xs text-emerald-600 mb-1">
+                      <div className="text-xs text-slate-500 mb-1">
                         現金股利
                       </div>
                       <div className="text-2xl font-bold text-emerald-700">
@@ -372,10 +370,10 @@ export default function StockModal({
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-emerald-600 mb-1">
+                      <div className="text-xs text-slate-500 mb-1">
                         發放日
                       </div>
-                      <div className="text-lg font-bold text-emerald-700">
+                      <div className="text-lg font-bold text-slate-900">
                         {currentEvent.pay_date || "尚未公布"}
                       </div>
 
@@ -383,13 +381,13 @@ export default function StockModal({
                         <div className="flex gap-2 mt-2">
                           <button
                             onClick={addToGoogleCalendar}
-                            className="flex items-center gap-1 px-2 py-1 bg-white border border-emerald-200 rounded text-[10px] text-emerald-700 hover:bg-emerald-100 transition"
+                            className="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-700 transition hover:bg-slate-100"
                           >
                             <CalendarPlus size={12} /> Google
                           </button>
                           <button
                             onClick={downloadIcsFile}
-                            className="flex items-center gap-1 px-2 py-1 bg-white border border-emerald-200 rounded text-[10px] text-emerald-700 hover:bg-emerald-100 transition"
+                            className="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-700 transition hover:bg-slate-100"
                           >
                             <CalendarPlus size={12} /> iOS
                           </button>
@@ -405,7 +403,7 @@ export default function StockModal({
               )}
 
               <div>
-                <h3 className="text-slate-800 font-bold flex items-center gap-2 mb-4">
+                <h3 className="mb-3 flex items-center gap-2 font-bold text-slate-800">
                   <Calendar size={18} /> 歷史配息紀錄
                   <span className="text-xs font-normal text-slate-400 ml-auto">
                     （最新在前）
@@ -414,7 +412,7 @@ export default function StockModal({
                 <div className="space-y-2">{renderHistory()}</div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
+              <div className="border-t border-slate-100 pt-4">
                 <AdUnit type="rectangle" />
               </div>
             </div>

@@ -62,7 +62,7 @@ export default function DividendChart({ history }) {
   if (currentData.length === 0) return null;
 
   return (
-    <div className="mb-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:mb-6 md:p-5">
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
         
         {/* 標題 */}
@@ -72,12 +72,12 @@ export default function DividendChart({ history }) {
         </h3>
 
         {/* 切換按鈕 (Tab Switcher) */}
-        <div className="flex bg-slate-100 p-1 rounded-lg">
+        <div className="flex rounded-lg bg-slate-100 p-1">
           <button
             onClick={() => setViewMode("annual")}
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               viewMode === "annual"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-white text-blue-600"
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
@@ -87,7 +87,7 @@ export default function DividendChart({ history }) {
             onClick={() => setViewMode("detail")}
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               viewMode === "detail"
-                ? "bg-white text-blue-600 shadow-sm"
+                ? "bg-white text-blue-600"
                 : "text-slate-500 hover:text-slate-700"
             }`}
           >
@@ -123,7 +123,7 @@ export default function DividendChart({ history }) {
             
             <Tooltip 
                 cursor={{ fill: '#f1f5f9' }}
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: 'none' }}
                 // 自訂 Tooltip 顯示格式
                 formatter={(value) => [`$${value}`, "現金股利"]}
                 labelFormatter={(label) => viewMode === 'annual' ? `${label}年度` : `發放日：${label}`}
