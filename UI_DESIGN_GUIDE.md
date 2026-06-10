@@ -34,6 +34,9 @@
 - Keep key metrics near the symbol/name header.
 - Calculator and chart panels should be useful but visually secondary to current dividend and history data.
 - SEO content should be readable but visually lower priority.
+- Use a thin accent strip or narrow module accent to add identity; avoid large gradients or decorative backgrounds.
+- Prefer dividend timelines for ex-date to pay-date relationships because date sequencing is core to the product.
+- Header summaries may use three compact metrics: latest price, cash dividend, and estimated yield.
 
 ## Change Control
 - Do not add dependencies for visual polish unless explicitly approved.

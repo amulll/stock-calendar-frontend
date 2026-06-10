@@ -218,8 +218,8 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
     : 0;
 
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-      <div className="flex flex-col items-start gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 sm:flex-row sm:items-center sm:justify-between">
+    <div className="overflow-hidden rounded-lg border border-slate-200 border-l-4 border-l-emerald-500 bg-white">
+      <div className="flex flex-col items-start gap-2 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-white px-4 py-3 text-slate-900 sm:flex-row sm:items-center sm:justify-between">
         <h3 className="flex items-center gap-2 font-black tracking-tight">
           <Calculator size={18} className="flex-shrink-0 text-slate-500" />
           <div className="flex flex-col md:flex-row md:items-center md:gap-2 leading-tight md:leading-normal">
@@ -227,7 +227,7 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
             <span>股利計算機</span>
           </div>
         </h3>
-        <span className="whitespace-nowrap rounded border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 sm:ml-2">
+        <span className="whitespace-nowrap rounded border border-emerald-200 bg-white px-2 py-1 text-xs font-semibold text-emerald-700 sm:ml-2">
             現金股利: {cashDividend} 元
         </span>
       </div>
@@ -311,7 +311,7 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
         </div>
 
         {/* 結果區 */}
-        <div className="flex flex-col justify-center space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 md:space-y-5">
+        <div className="flex flex-col justify-center space-y-4 rounded-lg border border-emerald-200 bg-emerald-50/50 p-4 md:space-y-5">
             
             <div className="text-center">
                 <div className="text-xs text-slate-500 mb-1">試算殖利率</div>

@@ -297,10 +297,11 @@ export default async function StockPage({ params }) {
         </div>
 
         <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <div className="h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-slate-900" />
 
           {/* Header */}
           <div className="border-b border-slate-200 bg-white p-4 md:p-5">
-            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_360px] md:items-end">
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_520px] md:items-end">
               <div>
                 <div className="mb-2 flex items-center gap-2">
                   <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 font-mono text-sm font-bold text-slate-800">
@@ -317,12 +318,18 @@ export default async function StockPage({ params }) {
               </div>
 
               {/* 股價與殖利率儀表板 */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
                   <div className="mb-1 text-[11px] font-semibold text-slate-500">最新收盤價</div>
                   <div className="text-xl font-black tracking-tight text-slate-950">
                     {/* 🔥 這裡改用 info.daily_price */}
                     {info.daily_price ? `$${info.daily_price}` : "--"}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-emerald-700">
+                  <div className="mb-1 text-[11px] font-semibold opacity-80">現金股利</div>
+                  <div className="text-xl font-black tracking-tight">
+                    {Number(latestEvent.cash_dividend).toFixed(3)}
                   </div>
                 </div>
                 <div className={`rounded-lg border px-3 py-2.5
@@ -346,7 +353,7 @@ export default async function StockPage({ params }) {
               <h2 className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 text-base font-black tracking-tight text-slate-900">
                 <Banknote className="text-emerald-600" /> 最新股利資訊
               </h2>
-              <div className="grid gap-3 p-4 md:grid-cols-3">
+              <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
                 <div>
                   <div className="mb-1 text-sm font-semibold text-slate-500">現金股利</div>
                   <div className="text-2xl font-black tracking-tight text-emerald-700 md:text-3xl">
@@ -354,16 +361,22 @@ export default async function StockPage({ params }) {
                     {Number(latestEvent.cash_dividend).toFixed(3)} <span className="text-base font-normal text-emerald-600">元</span>
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm font-semibold text-slate-500">發放日期</div>
-                  <div className="mt-1 text-lg font-black text-slate-900">
-                    {latestEvent.pay_date || "尚未公布"}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm font-semibold text-slate-500">除息交易日</div>
-                  <div className="mt-1 text-lg font-black text-slate-900">
-                    {latestEvent.ex_date || "尚未公布"}
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <div className="mb-3 text-sm font-semibold text-slate-500">股利時程</div>
+                  <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                    <div>
+                      <div className="text-xs font-semibold text-slate-500">除息交易日</div>
+                      <div className="mt-1 whitespace-nowrap text-base font-black text-slate-900">
+                        {latestEvent.ex_date || "尚未公布"}
+                      </div>
+                    </div>
+                    <div className="h-px w-8 bg-slate-300 md:w-12" />
+                    <div className="text-right">
+                      <div className="text-xs font-semibold text-slate-500">發放日期</div>
+                      <div className="mt-1 whitespace-nowrap text-base font-black text-slate-900">
+                        {latestEvent.pay_date || "尚未公布"}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -392,7 +405,7 @@ export default async function StockPage({ params }) {
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left text-xs md:text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-500">
+                  <thead className="border-b border-slate-200 bg-slate-100 text-xs font-bold text-slate-600">
                     <tr>
                       <th className="px-2 py-2 whitespace-nowrap">年度</th>
                       <th className="px-2 py-2 whitespace-nowrap text-emerald-600">股利</th>
@@ -469,7 +482,7 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
                           {isFirstOfGroup && (
-                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-bold text-emerald-600 whitespace-nowrap text-center align-middle bg-white/50 border-l border-slate-100">
+                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-bold text-emerald-700 whitespace-nowrap text-center align-middle bg-emerald-50/60 border-l border-emerald-100">
                               {/* 🔥 使用新的 formatDividend (3位小數) */}
                               {formatDividend(totalCash)}
                               {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 block font-normal">(合計)</span>}

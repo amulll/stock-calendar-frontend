@@ -1,5 +1,21 @@
 ﻿# Technical Development Log
 
+## 2026-06-10 – Dividend Report Card Polish
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page was well categorized but still felt visually pale, with limited identity and weak date-sequence storytelling for dividend events.
+- Impact: Stock detail pages now use a thin report identity strip, a three-metric summary for price/dividend/yield, an ex-date to pay-date timeline, subtle calculator/chart module accents, and stronger history table hierarchy. API calls, metadata, JSON-LD, calculator math, chart processing, and date links are unchanged.
+- Next: Manually review /stock/00929 and one non-ETF stock on desktop and mobile to confirm the added identity improves clarity without becoming decorative.
+
+
 ## 2026-06-01 – Modal Data Utility Visual Alignment
 - Status: done
 - Priority: medium
