@@ -1,5 +1,19 @@
 ﻿# Technical Development Log
 
+## 2026-06-10 – Stock History Table Palette Refinement
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock history table palette overused emerald and felt visually noisy compared with higher-quality financial data interfaces.
+- Impact: The history table now uses a neutral/navy financial data palette: dark header, warm white section framing, neutral numeric cells, muted amber yield chips, and reduced green emphasis. Data rendering, links, API calls, metadata, JSON-LD, and table grouping logic are unchanged.
+- Next: Manually review /stock/00929 and /stock/2330 to confirm the table feels more premium and remains readable on mobile.
+
+
 ## 2026-06-10 – Dividend Report Card Polish
 - Status: done
 - Priority: medium

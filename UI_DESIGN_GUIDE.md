@@ -22,6 +22,7 @@
 - Radius: prefer `rounded-xl` for major panels, `rounded-lg` for controls and chips.
 - Shadow: avoid shadows by default; use borders and subtle background contrast.
 - Labels: prefer Chinese product labels over decorative English uppercase labels unless they clarify data semantics.
+- Tables: prefer neutral or navy headers with warm white/slate rows; avoid large green table areas. Reserve emerald for dividend summary highlights, not every numeric cell.
 
 ## Homepage Rules
 - The first viewport should behave like a dashboard header, not a marketing hero.

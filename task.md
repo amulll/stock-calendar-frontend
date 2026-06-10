@@ -56,6 +56,8 @@
   - Modal data-utility visual alignment is complete: modal headers, list rows, ticker chips, metric panels, and ranking rows now use the same lower-decoration financial tool language.
 - `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`, `UI_DESIGN_GUIDE.md`
   - Dividend Report Card polish is complete: stock detail pages now have a thin identity strip, three-metric summary, ex-date to pay-date timeline, subtle calculator/chart accents, and stronger data-table hierarchy.
+- `app/stock/[id]/page.js`, `UI_DESIGN_GUIDE.md`
+  - Stock history table color refinement is complete: table colors now use a neutral/navy financial data palette instead of broad emerald emphasis.
 
 ## Remaining Work
 

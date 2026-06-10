@@ -399,16 +399,16 @@ export default async function StockPage({ params }) {
             </div>
 
             {/* 歷史紀錄區塊 (資料來自 history) */}
-            <section className="rounded-lg border border-slate-200 bg-white">
-              <h2 className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 text-base font-black tracking-tight text-slate-900">
-                <Calendar className="text-blue-600" /> 歷史發放紀錄
+            <section className="overflow-hidden rounded-lg border border-slate-300 bg-white">
+              <h2 className="flex items-center gap-2 border-b border-slate-200 bg-[#fbfaf7] px-4 py-3 text-base font-black tracking-tight text-slate-900">
+                <Calendar className="text-slate-600" /> 歷史發放紀錄
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left text-xs md:text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-100 text-xs font-bold text-slate-600">
+                  <thead className="border-b border-slate-900 bg-slate-950 text-xs font-bold text-slate-200">
                     <tr>
                       <th className="px-2 py-2 whitespace-nowrap">年度</th>
-                      <th className="px-2 py-2 whitespace-nowrap text-emerald-600">股利</th>
+                      <th className="px-2 py-2 whitespace-nowrap text-emerald-200">股利</th>
                       <th className="px-2 py-2 whitespace-nowrap">發放日</th>
                       <th className="px-2 py-2 whitespace-nowrap">除息日</th>
                       <th className="px-2 py-2 whitespace-nowrap">股利(年)</th>
@@ -417,7 +417,7 @@ export default async function StockPage({ params }) {
                       <th className="px-2 py-2 whitespace-nowrap">除息前股價</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-slate-100 bg-white">
                     {history.length === 0 ? (
                       <tr><td colSpan="8" className="px-2 py-8 text-center text-slate-400">無過去紀錄</td></tr>
                     ) : (
@@ -457,13 +457,13 @@ export default async function StockPage({ params }) {
                         };
 
                         return (
-                        <tr key={item.id} className="transition hover:bg-slate-50">
+                        <tr key={item.id} className="transition hover:bg-[#f7fbff]">
                           {isFirstOfGroup && (
-                              <td rowSpan={rowSpanCount} className="px-2 py-2 text-slate-500 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-white">
+                              <td rowSpan={rowSpanCount} className="px-2 py-2 text-slate-600 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-[#fbfaf7]">
                                 {currentYear}
                               </td>
                           )}
-                          <td className="px-2 py-2 font-bold text-emerald-600/80 whitespace-nowrap">
+                          <td className="px-2 py-2 font-mono font-bold text-slate-900 whitespace-nowrap">
                             {/* 🔥 使用新的 formatDividend (3位小數) */}
                             {formatDividend(item.cash_dividend)}
                           </td>
@@ -482,7 +482,7 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
                           {isFirstOfGroup && (
-                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-bold text-emerald-700 whitespace-nowrap text-center align-middle bg-emerald-50/60 border-l border-emerald-100">
+                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-mono font-bold text-slate-900 whitespace-nowrap text-center align-middle bg-[#f8fafc] border-l border-slate-200">
                               {/* 🔥 使用新的 formatDividend (3位小數) */}
                               {formatDividend(totalCash)}
                               {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 block font-normal">(合計)</span>}
@@ -492,7 +492,7 @@ export default async function StockPage({ params }) {
                             <td rowSpan={rowSpanCount} className="px-2 py-2 font-medium whitespace-nowrap text-center align-middle bg-white/50">
                               {totalYield > 0 ? (
                                   <div className="flex flex-col items-center">
-                                    <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                                    <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700">
                                         {formatDividend(totalYield)}%
                                     </span>
                                     {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 mt-0.5">(合計)</span>}
@@ -502,7 +502,7 @@ export default async function StockPage({ params }) {
                           )}
                           <td className="px-2 py-2 text-slate-400 whitespace-nowrap text-center">
                             {item.days_to_fill && item.days_to_fill > 0 ? (
-                                <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">
+                                <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
                                     {item.days_to_fill} 天
                                 </span>
                             ) : "-"}
