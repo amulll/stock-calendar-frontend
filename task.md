@@ -58,6 +58,8 @@
   - Dividend Report Card polish is complete: stock detail pages now have a thin identity strip, three-metric summary, ex-date to pay-date timeline, subtle calculator/chart accents, and stronger data-table hierarchy.
 - `app/stock/[id]/page.js`, `UI_DESIGN_GUIDE.md`
   - Stock history table color refinement is complete: table colors now use a neutral/navy financial data palette instead of broad emerald emphasis.
+- `app/stock/[id]/page.js`, `UI_DESIGN_GUIDE.md`
+  - Stock history table Primer-style palette is complete: table colors are reduced to GitHub-like white, slate subtle backgrounds, slate borders, muted text, and blue links.
 
 ## Remaining Work
 

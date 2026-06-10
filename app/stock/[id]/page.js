@@ -399,16 +399,16 @@ export default async function StockPage({ params }) {
             </div>
 
             {/* 歷史紀錄區塊 (資料來自 history) */}
-            <section className="overflow-hidden rounded-lg border border-slate-300 bg-white">
-              <h2 className="flex items-center gap-2 border-b border-slate-200 bg-[#fbfaf7] px-4 py-3 text-base font-black tracking-tight text-slate-900">
-                <Calendar className="text-slate-600" /> 歷史發放紀錄
+            <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <h2 className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-base font-black tracking-tight text-slate-900">
+                <Calendar className="text-slate-500" /> 歷史發放紀錄
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[560px] text-left text-xs md:text-sm">
-                  <thead className="border-b border-slate-900 bg-slate-950 text-xs font-bold text-slate-200">
+                  <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600">
                     <tr>
                       <th className="px-2 py-2 whitespace-nowrap">年度</th>
-                      <th className="px-2 py-2 whitespace-nowrap text-emerald-200">股利</th>
+                      <th className="px-2 py-2 whitespace-nowrap">股利</th>
                       <th className="px-2 py-2 whitespace-nowrap">發放日</th>
                       <th className="px-2 py-2 whitespace-nowrap">除息日</th>
                       <th className="px-2 py-2 whitespace-nowrap">股利(年)</th>
@@ -457,9 +457,9 @@ export default async function StockPage({ params }) {
                         };
 
                         return (
-                        <tr key={item.id} className="transition hover:bg-[#f7fbff]">
+                        <tr key={item.id} className="transition hover:bg-slate-50">
                           {isFirstOfGroup && (
-                              <td rowSpan={rowSpanCount} className="px-2 py-2 text-slate-600 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-[#fbfaf7]">
+                              <td rowSpan={rowSpanCount} className="px-2 py-2 text-slate-600 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-slate-50">
                                 {currentYear}
                               </td>
                           )}
@@ -482,7 +482,7 @@ export default async function StockPage({ params }) {
                             ) : "-"}
                           </td>
                           {isFirstOfGroup && (
-                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-mono font-bold text-slate-900 whitespace-nowrap text-center align-middle bg-[#f8fafc] border-l border-slate-200">
+                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-mono font-bold text-slate-900 whitespace-nowrap text-center align-middle bg-slate-50 border-l border-slate-200">
                               {/* 🔥 使用新的 formatDividend (3位小數) */}
                               {formatDividend(totalCash)}
                               {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 block font-normal">(合計)</span>}
@@ -492,7 +492,7 @@ export default async function StockPage({ params }) {
                             <td rowSpan={rowSpanCount} className="px-2 py-2 font-medium whitespace-nowrap text-center align-middle bg-white/50">
                               {totalYield > 0 ? (
                                   <div className="flex flex-col items-center">
-                                    <span className="rounded border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-700">
+                                    <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700">
                                         {formatDividend(totalYield)}%
                                     </span>
                                     {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 mt-0.5">(合計)</span>}

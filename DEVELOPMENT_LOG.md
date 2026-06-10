@@ -1,5 +1,19 @@
 ﻿# Technical Development Log
 
+## 2026-06-10 – Primer Style Table Palette
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The previous stock history table still had too many color elements, including navy, warm tint, green emphasis, amber badges, and blue links in the same surface.
+- Impact: The history table now follows a GitHub Primer-like palette with white canvas, slate subtle headers and group cells, slate borders, muted text, and blue reserved for links. Table grouping, row spans, date links, API calls, metadata, and JSON-LD are unchanged.
+- Next: Manually review /stock/00929 and /stock/2330 to confirm the table now feels calmer and more GitHub-like.
+
+
 ## 2026-06-10 – Stock History Table Palette Refinement
 - Status: done
 - Priority: medium
