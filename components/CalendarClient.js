@@ -318,33 +318,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
           </div>
         </div>
 
-        <div className="grid gap-3 border-b border-slate-200 px-4 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:px-5">
-          <div className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1.5 md:max-w-md">
-            <button
-              onClick={prevMonth}
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
-              aria-label="上一個月"
-            >
-              ‹
-            </button>
-            <span className="min-w-[132px] whitespace-nowrap text-center text-sm font-black text-slate-900 md:min-w-[168px]">
-              {format(currentDate, "yyyy年 M月")}
-            </span>
-            <button
-              onClick={nextMonth}
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
-              aria-label="下一個月"
-            >
-              ›
-            </button>
-          </div>
-
-          <p className="text-xs font-medium text-slate-500 md:text-right">
-            {showWatchlistOnly ? "僅自選股" : "全部股票"} ·{" "}
-            {showHighYieldOnly ? `殖利率 > ${localYield}%` : "未限制殖利率"}
-          </p>
-        </div>
-
         <div className="px-4 py-3 md:px-5 md:py-4">
           <FilterBar
             filterText={filterText}
@@ -373,14 +346,43 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
       </div>
 
       <section className="mt-6">
-        <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h2 className="text-xl font-black tracking-tight text-slate-950 md:text-2xl">
-              {format(currentDate, "yyyy年 M月")} 股利日曆
-            </h2>
-            <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
-              點擊日期展開發放清單，點擊股票進入個股詳情。
-            </p>
+        <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3 md:p-4">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-xl font-black tracking-tight text-slate-950 md:text-2xl">
+                股利日曆
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-600">
+                點擊日期展開發放清單，點擊股票進入個股詳情。
+              </p>
+              <p className="mt-1 text-xs font-medium text-slate-500">
+                {filteredDividends.length} 筆 ·{" "}
+                {showWatchlistOnly ? "僅自選股" : "全部股票"} ·{" "}
+                {showHighYieldOnly
+                  ? `殖利率 > ${localYield}%`
+                  : "未限制殖利率"}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1.5 md:min-w-[260px]">
+              <button
+                onClick={prevMonth}
+                className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
+                aria-label="上一個月"
+              >
+                ‹
+              </button>
+              <span className="min-w-[132px] whitespace-nowrap text-center text-sm font-black text-slate-900 md:min-w-[168px]">
+                {format(currentDate, "yyyy年 M月")}
+              </span>
+              <button
+                onClick={nextMonth}
+                className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
+                aria-label="下一個月"
+              >
+                ›
+              </button>
+            </div>
           </div>
         </div>
 

@@ -1,4 +1,17 @@
-﻿# Technical Development Log
+# Technical Development Log
+
+## 2026-06-11 – Calendar Month Controls Relocation
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/CalendarClient.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The homepage month switcher lived in the top workspace panel, which separated the control from the calendar grid it affects.
+- Impact: Month navigation now sits directly above the calendar grid in a compact calendar toolbar, with visible entry count and active filter summary nearby. Query state, router behavior, data fetching, modal behavior, and API contracts are unchanged.
+- Next: Manually review desktop and mobile homepage to confirm month switching feels more direct and the calendar remains prominent.
+
 
 ## 2026-06-11 – Stock Detail Primer Style Unification
 - Status: done

@@ -62,6 +62,8 @@
   - Stock history table Primer-style palette is complete: table colors are reduced to GitHub-like white, slate subtle backgrounds, slate borders, muted text, and blue links.
 - `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`, `UI_DESIGN_GUIDE.md`
   - Stock detail page Primer-style unification is complete: stock detail colors are reduced to white/slate surfaces with blue reserved for links, focus, and selected controls.
+- `components/CalendarClient.js`
+  - Homepage month navigation is now placed directly above the calendar grid, with the active filter summary and visible entry count in the same calendar toolbar.
 
 ## Remaining Work
 
