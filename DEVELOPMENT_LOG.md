@@ -1,5 +1,21 @@
 ﻿# Technical Development Log
 
+## 2026-06-11 – Stock Detail Primer Style Unification
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still combined too many visual color systems across the summary, dividend panel, calculator, chart, and table. The requested direction was to use GitHub-like design as the template.
+- Impact: Stock detail page colors are now unified around white canvas, slate subtle surfaces, slate borders, muted text, and blue reserved for links, focus states, and selected controls. Broad emerald/amber surfaces and decorative gradient/accent treatments were removed from the stock detail page. API calls, metadata, JSON-LD, calculator math, chart data processing, and date links are unchanged.
+- Next: Manually review /stock/00929 and /stock/2330 to confirm the page now feels unified and Primer-like without losing financial readability.
+
+
 ## 2026-06-10 – Primer Style Table Palette
 - Status: done
 - Priority: medium

@@ -15,9 +15,8 @@
 
 ## Tokens And Patterns
 - Background: `bg-slate-50` or white surfaces with thin `border-slate-200`.
-- Primary accent: blue for navigation/current month/focus.
-- Positive/data accent: emerald for dividend counts and confirmed dividend data.
-- Warning/high yield: amber only for high-yield emphasis.
+- Primary accent: blue for navigation, links, focus, and selected controls.
+- Semantic accents: avoid broad green/yellow/red surfaces on stock detail pages. Use neutral slate by default; reserve color for links, focus, watchlist state, or clear warnings.
 - Watchlist: rose only for heart/watchlist state.
 - Radius: prefer `rounded-xl` for major panels, `rounded-lg` for controls and chips.
 - Shadow: avoid shadows by default; use borders and subtle background contrast.
@@ -35,7 +34,7 @@
 - Keep key metrics near the symbol/name header.
 - Calculator and chart panels should be useful but visually secondary to current dividend and history data.
 - SEO content should be readable but visually lower priority.
-- Use a thin accent strip or narrow module accent to add identity; avoid large gradients or decorative backgrounds.
+- Avoid decorative accent strips on stock detail pages when using the Primer-style direction; rely on layout, typography, borders, and links for hierarchy.
 - Prefer dividend timelines for ex-date to pay-date relationships because date sequencing is core to the product.
 - Header summaries may use three compact metrics: latest price, cash dividend, and estimated yield.
 

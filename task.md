@@ -60,6 +60,8 @@
   - Stock history table color refinement is complete: table colors now use a neutral/navy financial data palette instead of broad emerald emphasis.
 - `app/stock/[id]/page.js`, `UI_DESIGN_GUIDE.md`
   - Stock history table Primer-style palette is complete: table colors are reduced to GitHub-like white, slate subtle backgrounds, slate borders, muted text, and blue links.
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`, `UI_DESIGN_GUIDE.md`
+  - Stock detail page Primer-style unification is complete: stock detail colors are reduced to white/slate surfaces with blue reserved for links, focus, and selected controls.
 
 ## Remaining Work
 

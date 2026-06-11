@@ -62,12 +62,12 @@ export default function DividendChart({ history }) {
   if (currentData.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-slate-200 border-l-4 border-l-blue-500 bg-white p-4">
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
       <div className="mb-4 flex flex-col items-start justify-between gap-3 md:flex-row md:items-center">
         
         {/* 標題 */}
         <h3 className="flex items-center gap-2 text-lg font-black tracking-tight text-slate-800">
-          <span className="h-2.5 w-2.5 rounded-full bg-blue-600"></span>
+          <span className="h-2.5 w-2.5 rounded-full bg-slate-400"></span>
           歷年現金股利趨勢
         </h3>
 
