@@ -33,7 +33,8 @@ export async function GET(request, { params }) {
         "X-Service-Token": SERVICE_TOKEN, // 🔥 關鍵：在這裡偷加密碼
         ...(clientIp ? { "X-Forwarded-For": clientIp } : {}),
       },
-      cache: 'no-store' // 代理本身不快取，依賴後端 Redis
+      cache: 'no-store', // 代理本身不快取，依賴後端 Redis
+      signal: AbortSignal.timeout(15000), // 後端卡住時不讓請求無限掛著
     });
 
     const contentType = res.headers.get("content-type") || "";
@@ -45,6 +46,9 @@ export async function GET(request, { params }) {
     return NextResponse.json(data, { status: res.status });
 
   } catch (error) {
+    if (error.name === "TimeoutError" || error.name === "AbortError") {
+      return NextResponse.json({ error: "Upstream timeout" }, { status: 504 });
+    }
     return NextResponse.json({ error: "Proxy failed" }, { status: 500 });
   }
 }
