@@ -40,10 +40,38 @@
   - Professional minimal visual polish is complete: reduced decoration, tighter card language, lighter shadows, smaller radii, and more scan-friendly hierarchy.
 - `components/ModalContainer.js`
   - Nested modal scroll-lock handling is complete: body scroll is restored only after the last open modal closes.
+- `app/stock/[id]/page.js`
+  - Professional minimal visual polish is complete: stock detail page now aligns with the homepage utility-style card language.
+- `app/disclaimer/page.js`, `app/knowledge/page.js`, `app/privacy/page.js`
+  - Static informational pages now follow the same professional minimal card, border, and typography language.
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`
+  - Stock detail page compact visual pass is complete: mobile spacing, header contrast, calculator styling, and chart height now better support dense stock-information scanning.
+- `UI_DESIGN_GUIDE.md`
+  - Reference-driven UI direction is documented for future visual work.
+- `components/CalendarClient.js`, `components/FilterBar.js`, `components/CalendarGrid.js`
+  - Homepage dashboard pass phases 1-2 are complete: the first viewport now behaves more like a financial data workspace, FilterBar is closer to a compact toolbar, and calendar cells use denser ticker-row styling.
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`
+  - Stock detail report-style pass is complete: stock pages now use the same reference-driven financial report language, with a quieter header, compact key metrics, denser latest-dividend panel, calculator/chart report cards, and cleaner history table framing.
+- `components/StockModal.js`, `components/DividendModal.js`, `components/WatchlistModal.js`, `components/YieldListModal.js`
+  - Modal data-utility visual alignment is complete: modal headers, list rows, ticker chips, metric panels, and ranking rows now use the same lower-decoration financial tool language.
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`, `UI_DESIGN_GUIDE.md`
+  - Dividend Report Card polish is complete: stock detail pages now have a thin identity strip, three-metric summary, ex-date to pay-date timeline, subtle calculator/chart accents, and stronger data-table hierarchy.
+- `app/stock/[id]/page.js`, `UI_DESIGN_GUIDE.md`
+  - Stock history table color refinement is complete: table colors now use a neutral/navy financial data palette instead of broad emerald emphasis.
+- `app/stock/[id]/page.js`, `UI_DESIGN_GUIDE.md`
+  - Stock history table Primer-style palette is complete: table colors are reduced to GitHub-like white, slate subtle backgrounds, slate borders, muted text, and blue links.
+- `app/stock/[id]/page.js`, `components/DividendCalculator.js`, `components/DividendChart.js`, `UI_DESIGN_GUIDE.md`
+  - Stock detail page Primer-style unification is complete: stock detail colors are reduced to white/slate surfaces with blue reserved for links, focus, and selected controls.
+- `components/CalendarClient.js`
+  - Homepage month navigation is now placed directly above the calendar grid, with the active filter summary and visible entry count in the same calendar toolbar.
 
 ## Remaining Work
 
 ### Deferred
+- Repo-wide UI surfaces
+  - Status: deferred
+  - Task: perform a final visual consistency pass after manual review on deployed desktop and mobile views.
+  - Why: homepage, stock detail pages, and modal surfaces are aligned; remaining issues should be based on rendered screenshots rather than further broad class edits.
 - `components/CalendarClient.js`
   - Status: deferred
   - Task: reassess whether responsibility should be split further.

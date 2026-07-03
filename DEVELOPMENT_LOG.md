@@ -1,4 +1,165 @@
-﻿# Technical Development Log
+# Technical Development Log
+
+## 2026-06-11 – Calendar Month Controls Relocation
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/CalendarClient.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The homepage month switcher lived in the top workspace panel, which separated the control from the calendar grid it affects.
+- Impact: Month navigation now sits directly above the calendar grid in a compact calendar toolbar, with visible entry count and active filter summary nearby. Query state, router behavior, data fetching, modal behavior, and API contracts are unchanged.
+- Next: Manually review desktop and mobile homepage to confirm month switching feels more direct and the calendar remains prominent.
+
+
+## 2026-06-11 – Stock Detail Primer Style Unification
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still combined too many visual color systems across the summary, dividend panel, calculator, chart, and table. The requested direction was to use GitHub-like design as the template.
+- Impact: Stock detail page colors are now unified around white canvas, slate subtle surfaces, slate borders, muted text, and blue reserved for links, focus states, and selected controls. Broad emerald/amber surfaces and decorative gradient/accent treatments were removed from the stock detail page. API calls, metadata, JSON-LD, calculator math, chart data processing, and date links are unchanged.
+- Next: Manually review /stock/00929 and /stock/2330 to confirm the page now feels unified and Primer-like without losing financial readability.
+
+
+## 2026-06-10 – Primer Style Table Palette
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The previous stock history table still had too many color elements, including navy, warm tint, green emphasis, amber badges, and blue links in the same surface.
+- Impact: The history table now follows a GitHub Primer-like palette with white canvas, slate subtle headers and group cells, slate borders, muted text, and blue reserved for links. Table grouping, row spans, date links, API calls, metadata, and JSON-LD are unchanged.
+- Next: Manually review /stock/00929 and /stock/2330 to confirm the table now feels calmer and more GitHub-like.
+
+
+## 2026-06-10 – Stock History Table Palette Refinement
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock history table palette overused emerald and felt visually noisy compared with higher-quality financial data interfaces.
+- Impact: The history table now uses a neutral/navy financial data palette: dark header, warm white section framing, neutral numeric cells, muted amber yield chips, and reduced green emphasis. Data rendering, links, API calls, metadata, JSON-LD, and table grouping logic are unchanged.
+- Next: Manually review /stock/00929 and /stock/2330 to confirm the table feels more premium and remains readable on mobile.
+
+
+## 2026-06-10 – Dividend Report Card Polish
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - UI_DESIGN_GUIDE.md
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page was well categorized but still felt visually pale, with limited identity and weak date-sequence storytelling for dividend events.
+- Impact: Stock detail pages now use a thin report identity strip, a three-metric summary for price/dividend/yield, an ex-date to pay-date timeline, subtle calculator/chart module accents, and stronger history table hierarchy. API calls, metadata, JSON-LD, calculator math, chart processing, and date links are unchanged.
+- Next: Manually review /stock/00929 and one non-ETF stock on desktop and mobile to confirm the added identity improves clarity without becoming decorative.
+
+
+## 2026-06-01 – Modal Data Utility Visual Alignment
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - components/StockModal.js
+  - components/DividendModal.js
+  - components/WatchlistModal.js
+  - components/YieldListModal.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: Modal surfaces still used heavier gradients, shadows, rounded cards, and list styling that no longer matched the homepage dashboard and stock report visual direction.
+- Impact: Stock, dividend-date, watchlist, and high-yield modals now use quieter data-utility styling: white headers, thin borders, lower-radius panels, ticker-like rows, restrained metric cards, and reduced decorative color. Modal props, fetch behavior, sorting, watchlist actions, date navigation, calendar export actions, and scroll-lock behavior are unchanged.
+- Next: Manually review each modal on desktop and mobile, especially nested stock-to-date modal navigation and high-yield sorting.
+
+
+## 2026-06-01 – Stock Detail Report Visual Direction
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still carried a generic AI-styled visual language, including a dark decorative header, isolated card stack, stronger shadows, and uneven density compared with the new homepage dashboard direction.
+- Impact: Stock detail pages now use a calmer financial report layout with a white ticker header, compact key metrics, a denser latest-dividend panel, report-style calculator/chart cards, and cleaner history table framing. Metadata, JSON-LD, API calls, calculator math, chart data processing, and calendar back-links are unchanged.
+- Next: Manually review /stock/00929 on desktop and mobile, then align modal surfaces with the same data-utility language in a later pass.
+
+
+## 2026-06-01 – Homepage Dashboard Visual Direction
+- Status: done
+- Priority: high
+- Area: UX/UI
+- Files:
+  - UI_DESIGN_GUIDE.md
+  - components/CalendarClient.js
+  - components/FilterBar.js
+  - components/CalendarGrid.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The homepage still read like a generic AI-generated landing layout, with excessive hero language, decorative labels, rounded cards, shadows, and inconsistent financial-tool hierarchy.
+- Impact: Added a reference-driven UI guide and converted the homepage first viewport into a compact financial dashboard workspace. Search, month navigation, filter state, entries, watchlist count, and calendar cells now use denser data-utility styling. API calls, query state, router behavior, modal flow, and data contracts are unchanged.
+- Next: Manually review desktop and mobile homepage layouts, then apply the same reference-driven report language to stock detail and modal surfaces in a later pass.
+
+
+## 2026-05-28 – Stock Page Compact Visual Pass
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still felt too white and vertically long on mobile because the header, calculator, chart, and dividend panels had similar visual weight and generous spacing.
+- Impact: The stock detail page now has a darker financial-tool header, tighter mobile spacing, more compact metric panels, a calculator aligned to the slate/emerald visual language, and a shorter mobile chart area. API requests, metadata, JSON-LD, links, calculator math, chart data processing, and route behavior are unchanged.
+- Next: Manually review /stock/00929 on mobile and desktop to confirm the page feels denser without losing readability.
+
+
+## 2026-05-28 – Static Pages Visual Alignment
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/disclaimer/page.js
+  - app/knowledge/page.js
+  - app/privacy/page.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The legal, privacy, and knowledge pages still used slightly softer standalone card styling and did not fully match the homepage and stock page's professional minimal utility style.
+- Impact: Static informational pages now use consistent white surfaces, thin slate borders, restrained shadows, smaller heading scale, and tighter card language. Metadata, structured data, links, and page content are unchanged.
+- Next: Manually review `/disclaimer`, `/privacy`, and `/knowledge` on mobile and desktop to confirm readability and spacing.
+
+## 2026-05-28 – Stock Page Visual Alignment
+- Status: done
+- Priority: medium
+- Area: UX/UI
+- Files:
+  - app/stock/[id]/page.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: The stock detail page still used a heavier blue gradient header and larger rounded cards, which no longer matched the homepage's more professional minimal financial-tool direction.
+- Impact: The stock detail page now uses a calmer white header, thinner borders, lighter metric cards, smaller radii, tighter content spacing, and a more consistent history table container. Metadata, API requests, JSON-LD, links back to the calendar, chart/calculator wiring, and data contracts are unchanged.
+- Next: Manually compare `/stock/2330` and `/stock/0050` on desktop and mobile to confirm the page still feels clear and sufficiently branded.
 
 ## 2026-05-28 – Nested Modal Scroll Lock Fix
 - Status: done

@@ -22,20 +22,20 @@ export default function WatchlistModal({
       onClose={onClose}
       contentClassName="max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[80vh]"
     >
-      <div className="bg-white rounded-2xl shadow-xl flex flex-col max-h-[80vh]">
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 flex-shrink-0">
-          <h2 className="text-lg font-bold text-slate-800">
+      <div className="flex max-h-[80vh] flex-col rounded-xl border border-slate-200 bg-white">
+        <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+          <h2 className="text-lg font-black tracking-tight text-slate-900">
             我的追蹤清單 ({watchlist.length})
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-200 rounded-full transition text-slate-500"
+            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
             aria-label="關閉"
           >
             <X size={20} />
           </button>
         </div>
-        <div className="p-4 overflow-y-auto flex-grow">
+        <div className="flex-grow overflow-y-auto p-3">
           {watchlist.length === 0 ? (
             <div className="text-center text-slate-500 py-10">
               <p className="mb-2">📭</p>
@@ -46,23 +46,23 @@ export default function WatchlistModal({
               {watchlist.map((code) => (
                 <div
                   key={code}
-                  className="flex items-center justify-between p-3 rounded-xl border border-slate-200 hover:border-blue-400 hover:shadow-sm transition bg-white group"
+                  className="group flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 transition hover:border-blue-300 hover:bg-slate-50"
                 >
                   <button
-                    className="flex items-center gap-3 cursor-pointer flex-grow text-left"
+                    className="flex flex-grow cursor-pointer items-center gap-3 text-left"
                     onClick={() => {
                       onStockClick(code);
                       onClose();
                     }}
                   >
-                    <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm font-mono border border-rose-100">
+                    <div className="flex h-10 w-14 items-center justify-center rounded-md border border-slate-200 bg-slate-50 font-mono text-sm font-bold text-slate-700">
                       {code}
                     </div>
                     <div>
-                      <div className="font-bold text-slate-700 text-base">
+                      <div className="text-base font-bold text-slate-700">
                         {getStockName(code) || "載入中..."}
                       </div>
-                      <div className="text-xs text-slate-400 flex items-center gap-1">
+                      <div className="flex items-center gap-1 text-xs text-slate-400">
                         查看詳情 <ExternalLink size={10} />
                       </div>
                     </div>
@@ -72,7 +72,7 @@ export default function WatchlistModal({
                       e.stopPropagation();
                       onRemove(code);
                     }}
-                    className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition"
+                    className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
                     title="移除追蹤"
                   >
                     <Trash2 size={18} />

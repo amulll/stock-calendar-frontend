@@ -13,19 +13,19 @@ export default function CalendarGrid({
   localYield,
 }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-2 shadow-sm md:p-3">
-      <div className="grid grid-cols-7 gap-1 rounded-xl bg-slate-100 p-1 md:gap-1.5 md:p-1.5">
+    <div className="rounded-xl border border-slate-200 bg-white p-1.5 md:p-2">
+      <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
         {["日", "一", "二", "三", "四", "五", "六"].map((day) => (
           <div
             key={day}
-            className="rounded-lg bg-white py-2 text-center text-[10px] font-black uppercase tracking-[0.14em] text-slate-500 md:py-2.5"
+            className="bg-slate-50 py-2 text-center text-[11px] font-bold text-slate-500"
           >
             {day}
           </div>
         ))}
       </div>
 
-      <div className="mt-2 grid grid-cols-7 auto-rows-fr gap-1 md:gap-1.5">
+      <div className="mt-1.5 grid grid-cols-7 auto-rows-fr gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
         {calendarDays.map((day) => {
           const dayKey = format(day, "yyyy-MM-dd");
           const dayDividends = dividendsByDate.get(dayKey) || [];
@@ -47,13 +47,13 @@ export default function CalendarGrid({
             <div
               key={day.toISOString()}
               onClick={handleDayActivate}
-              className={`group relative min-h-[84px] rounded-xl border p-1.5 transition-all md:min-h-[140px] md:p-2 ${
+              className={`group relative min-h-[76px] p-1.5 transition-colors md:min-h-[132px] md:p-2 ${
                 !isCurrentMonth
-                  ? "border-slate-100 bg-slate-50/80 text-slate-300"
-                  : "border-slate-200 bg-white"
+                  ? "bg-slate-50 text-slate-300"
+                  : "bg-white"
               } ${
                 isInteractive
-                  ? "cursor-pointer hover:border-blue-200 hover:bg-blue-50/60"
+                  ? "cursor-pointer hover:bg-blue-50/50"
                   : ""
               }`}
             >
@@ -66,9 +66,9 @@ export default function CalendarGrid({
                       handleDayActivate();
                     }}
                     aria-label={dayButtonLabel}
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 md:h-8 md:w-8 md:text-sm ${
+                    className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 md:h-8 md:w-8 md:text-sm ${
                       isToday
-                        ? "bg-blue-600 text-white shadow-sm"
+                        ? "bg-blue-600 text-white"
                         : "text-slate-700 hover:bg-blue-50"
                     }`}
                   >
@@ -76,9 +76,9 @@ export default function CalendarGrid({
                   </button>
                 ) : (
                   <span
-                    className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-black md:h-8 md:w-8 md:text-sm ${
+                    className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-black md:h-8 md:w-8 md:text-sm ${
                       isToday
-                        ? "bg-blue-600 text-white shadow-sm"
+                        ? "bg-blue-600 text-white"
                         : "text-slate-700"
                     }`}
                   >
@@ -88,12 +88,12 @@ export default function CalendarGrid({
 
                 <div className="flex items-center gap-1">
                   {hasTrackedStock && (
-                    <span className="rounded-full bg-rose-50 p-1 text-rose-500">
+                    <span className="rounded bg-rose-50 p-1 text-rose-500">
                       <Heart size={12} className="fill-rose-500 text-rose-500" />
                     </span>
                   )}
                   {dayDividends.length > 0 && (
-                    <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-emerald-700">
+                    <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-700">
                       <span className="hidden md:inline">
                         {dayDividends.length} 檔
                       </span>
@@ -103,11 +103,11 @@ export default function CalendarGrid({
                 </div>
               </div>
 
-              <div className="hidden md:block space-y-0.5">
+              <div className="hidden space-y-0.5 md:block">
                 {dayDividends.slice(0, 3).map((div) => (
                   <div
                     key={div.id}
-                    className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1 text-xs text-slate-600 transition group-hover:border-blue-100"
+                    className="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-xs text-slate-600 transition group-hover:border-blue-100"
                   >
                     <button
                       type="button"
@@ -115,17 +115,20 @@ export default function CalendarGrid({
                         e.stopPropagation();
                         onStockSelect(div.stock_code);
                       }}
-                      className="flex min-w-0 items-center gap-0.5 text-left"
+                      className="flex min-w-0 items-center gap-1 text-left"
                     >
                       {watchlistSet.has(div.stock_code) && (
                         <span className="text-rose-500 text-[10px]">♥</span>
                       )}
-                      <span className="truncate">
-                        {div.stock_code} {div.stock_name}
+                      <span className="font-mono font-semibold text-slate-700">
+                        {div.stock_code}
+                      </span>
+                      <span className="truncate text-slate-500">
+                        {div.stock_name}
                       </span>
                     </button>
                     <span
-                      className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-black ${
+                      className={`ml-1 rounded px-1.5 py-0.5 text-[10px] font-black ${
                         div.yield_rate > 0
                           ? div.yield_rate >= localYield
                             ? "bg-amber-50 text-amber-600"
