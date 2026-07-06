@@ -19,6 +19,7 @@ import DividendModal from "./DividendModal";
 import StockModal from "./StockModal";
 import WatchlistModal from "./WatchlistModal";
 import YieldListModal from "./YieldListModal";
+import PortfolioModal from "./PortfolioModal";
 import AdUnit from "./AdUnit";
 import Loading from "./Loading";
 import FilterBar from "./FilterBar";
@@ -56,8 +57,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [loading, setLoading] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [watchlist, setWatchlist] = useState([]);
+  const [sharesMap, setSharesMap] = useState({});
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
+  const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [yieldListOpen, setYieldListOpen] = useState(false);
   const [localYield, setLocalYield] = useState(yieldThreshold);
   const [selectedDate, setSelectedDate] = useState(null);
@@ -80,6 +83,15 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         setWatchlist(JSON.parse(savedWatchlist));
       } catch (err) {
         console.error("Failed to parse watchlist", err);
+      }
+    }
+
+    const savedShares = localStorage.getItem("mySharesMap");
+    if (savedShares) {
+      try {
+        setSharesMap(JSON.parse(savedShares));
+      } catch (err) {
+        console.error("Failed to parse shares map", err);
       }
     }
   }, []);
@@ -212,6 +224,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     localStorage.setItem("myWatchlist", JSON.stringify(updated));
   };
 
+  const updateShares = (code, shares) => {
+    setSharesMap((prev) => {
+      const updated = { ...prev, [code]: shares };
+      localStorage.setItem("mySharesMap", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const watchlistSet = useMemo(() => new Set(watchlist), [watchlist]);
 
   const suggestions = useMemo(() => {
@@ -308,12 +328,20 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   {filteredDividends.length}
                 </p>
               </div>
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
-                <p className="text-[11px] font-semibold text-emerald-700">自選股</p>
+              <button
+                type="button"
+                onClick={() => setPortfolioOpen(true)}
+                className="group rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-left transition hover:border-emerald-300 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                title="試算自選股年領股息"
+              >
+                <p className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
+                  自選股
+                  <span className="text-emerald-500 transition group-hover:translate-x-0.5">›</span>
+                </p>
                 <p className="mt-1 text-lg font-black tracking-tight text-slate-950">
                   {watchlist.length}
                 </p>
-              </div>
+              </button>
             </div>
           </div>
         </div>
@@ -431,6 +459,18 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         allStocks={allStocks}
         onRemove={toggleWatchlist}
         onStockClick={handleListStockClick}
+      />
+
+      <PortfolioModal
+        isOpen={portfolioOpen}
+        onClose={() => setPortfolioOpen(false)}
+        watchlist={watchlist}
+        sharesMap={sharesMap}
+        onSharesChange={updateShares}
+        onStockClick={(code) => {
+          setPortfolioOpen(false);
+          handleListStockClick(code);
+        }}
       />
 
       <YieldListModal

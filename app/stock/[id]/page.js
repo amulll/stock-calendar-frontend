@@ -7,8 +7,9 @@ import { cache } from "react";
 import DividendCalculator from "../../../components/DividendCalculator";
 import DividendChart from "../../../components/DividendChart";
 
-// 設定 ISR 快取時間 (例如 1 小時更新一次)
-export const revalidate = 0;
+// 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
+// 大幅降低後端負載並加快 SEO 頁面的 TTFB
+export const revalidate = 3600;
 
 const STOCK_META_IMAGE = "https://ugoodly.com/ugoodly_1200x630.png";
 
@@ -31,7 +32,7 @@ const getStockData = cache(async (id) => {
 
   try {
     const res = await fetch(`${API_URL}/api/stock/${id}`, {
-      cache: 'no-store',
+      next: { revalidate: 3600 },
       headers: {
           "X-Service-Token": SERVICE_TOKEN
       }

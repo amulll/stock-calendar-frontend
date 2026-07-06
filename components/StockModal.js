@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import axios from "axios";
 import Link from "next/link";
 import AdUnit from "./AdUnit";
 import ModalContainer from "./ModalContainer";
@@ -21,6 +20,7 @@ import {
   getCachedStockDetail,
   setCachedStockDetail,
 } from "../lib/cache";
+import { proxyGet } from "../lib/proxy-client";
 
 const GOOGLE_CALENDAR_URL = "https://calendar.google.com/calendar/render";
 
@@ -55,11 +55,11 @@ export default function StockModal({
       setInfo(null);
       setHistory([]);
       try {
-        const res = await axios.get(`${apiUrl}/api/stock/${stockCode}`);
+        const data = await proxyGet(`api/stock/${stockCode}`);
         if (cancelled) return;
         const payload = {
-          info: res.data.info,
-          history: Array.isArray(res.data.history) ? res.data.history : [],
+          info: data.info,
+          history: Array.isArray(data.history) ? data.history : [],
         };
         setInfo(payload.info);
         setHistory(payload.history);
@@ -67,11 +67,7 @@ export default function StockModal({
       } catch (error) {
         if (cancelled) return;
         console.error("Failed to fetch stock modal data", error);
-        const message =
-          error?.response?.data?.detail ||
-          error?.response?.data?.error ||
-          "無法載入個股資料，請稍後再試";
-        addToast(message, "error");
+        addToast(error?.message || "無法載入個股資料，請稍後再試", "error");
       } finally {
         if (!cancelled) {
           setLoading(false);
@@ -83,7 +79,7 @@ export default function StockModal({
     return () => {
       cancelled = true;
     };
-  }, [apiUrl, isOpen, stockCode, addToast]);
+  }, [isOpen, stockCode, addToast]);
 
   const prioritizedHistory = useMemo(() => {
     const withDividend = history.filter(
