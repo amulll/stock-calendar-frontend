@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import {
   X,
   Wallet,
@@ -12,10 +13,6 @@ import {
 
 import ModalContainer from "./ModalContainer";
 import { proxyGet } from "../lib/proxy-client";
-import {
-  getCachedStockDetail,
-  setCachedStockDetail,
-} from "../lib/cache";
 import { useToast } from "../hooks/useToast";
 
 const DEFAULT_SHARES = 1000; // 未設定時預設 1 張
@@ -78,16 +75,39 @@ function computeStockIncome(detail, shares, currentYear, costPrice) {
   };
 }
 
-async function fetchStockDetail(code) {
-  const cached = getCachedStockDetail(code);
-  if (cached) return cached;
-  const data = await proxyGet(`api/stock/${code}`);
-  const payload = {
-    info: data?.info || null,
-    history: Array.isArray(data?.history) ? data.history : [],
+// 只在失焦或按 Enter 時才提交，避免每打一個字就更新父層 state 導致重繪、游標跳掉
+function EditableNumber({ value, onCommit, className, ...props }) {
+  const [local, setLocal] = useState(value === "" || value == null ? "" : String(value));
+  const [editing, setEditing] = useState(false);
+
+  // 非編輯中時，跟著外部值同步 (例如「帶回現價」清空、或程式改動)
+  useEffect(() => {
+    if (!editing) {
+      setLocal(value === "" || value == null ? "" : String(value));
+    }
+  }, [value, editing]);
+
+  const commit = () => {
+    setEditing(false);
+    onCommit(local);
   };
-  setCachedStockDetail(code, payload);
-  return payload;
+
+  return (
+    <input
+      {...props}
+      className={className}
+      value={local}
+      onFocus={() => setEditing(true)}
+      onChange={(e) => setLocal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          e.currentTarget.blur();
+        }
+      }}
+    />
+  );
 }
 
 export default function PortfolioModal({
@@ -100,62 +120,52 @@ export default function PortfolioModal({
   onCostChange,
   onStockClick,
 }) {
-  const [details, setDetails] = useState({});
-  const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
+  const { mutate } = useSWRConfig();
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    if (!isOpen || watchlist.length === 0) return;
+  // 用「整個自選清單」當 key，一次平行抓取所有個股詳情並快取整包結果。
+  // 抓到後順手 mutate 各檔 api/stock/{code}，讓之後開啟個股視窗能命中同一份 SWR 快取。
+  const swrKey =
+    isOpen && watchlist.length > 0 ? ["portfolio", ...watchlist] : null;
 
-    let cancelled = false;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const results = await Promise.all(
-          watchlist.map(async (code) => {
-            try {
-              return [code, await fetchStockDetail(code)];
-            } catch (error) {
-              return [code, null];
-            }
-          })
-        );
-        if (cancelled) return;
-        const next = {};
-        let failed = 0;
-        results.forEach(([code, detail]) => {
-          next[code] = detail;
-          if (!detail) failed += 1;
-        });
-        setDetails(next);
-        if (failed > 0) {
-          addToast(`有 ${failed} 檔資料載入失敗，試算可能不完整`, "info");
+  const { data: details, isLoading: loading } = useSWR(swrKey, async (key) => {
+    const codes = key.slice(1);
+    const entries = await Promise.all(
+      codes.map(async (code) => {
+        try {
+          const detail = await proxyGet(`api/stock/${code}`);
+          mutate(`api/stock/${code}`, detail, { revalidate: false });
+          return [code, detail];
+        } catch (error) {
+          return [code, null];
         }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    };
+      })
+    );
+    return Object.fromEntries(entries);
+  });
 
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, watchlist, addToast]);
+  // 有個股載入失敗時提醒一次 (details 每次抓取才會換 reference)
+  useEffect(() => {
+    if (!details) return;
+    const failed = Object.values(details).filter((d) => !d).length;
+    if (failed > 0) {
+      addToast(`有 ${failed} 檔資料載入失敗，試算可能不完整`, "info");
+    }
+  }, [details, addToast]);
 
   const rows = useMemo(() => {
+    const detailsMap = details || {};
     return watchlist.map((code) => {
       const shares = Number(sharesMap[code] ?? DEFAULT_SHARES);
       const customCost = costMap[code];
-      const detail = details[code];
+      const detail = detailsMap[code];
       const computed = detail
         ? computeStockIncome(detail, shares, currentYear, customCost)
         : null;
-      // 成本輸入框的顯示值：優先使用者設定，其次帶入現價
+      // 成本輸入框：有自訂就顯示自訂值，否則留空 (以現價當 placeholder，避免只是聚焦就鎖定成本)
       const costInputValue =
-        customCost !== undefined && customCost !== ""
-          ? customCost
-          : computed?.marketPrice || "";
+        customCost !== undefined && customCost !== "" ? customCost : "";
       return { code, shares, computed, costInputValue };
     });
   }, [watchlist, sharesMap, costMap, details, currentYear]);
@@ -336,13 +346,14 @@ export default function PortfolioModal({
                     <div className="mt-2 grid grid-cols-2 gap-2">
                       <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
                         持有
-                        <input
+                        <EditableNumber
                           type="number"
                           min="0"
                           step="1000"
+                          inputMode="numeric"
                           value={shares}
-                          onChange={(e) =>
-                            onSharesChange(code, Math.max(0, Number(e.target.value) || 0))
+                          onCommit={(raw) =>
+                            onSharesChange(code, Math.max(0, Number(raw) || 0))
                           }
                           className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
                         />
@@ -350,13 +361,13 @@ export default function PortfolioModal({
                       </label>
                       <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
                         成本
-                        <input
+                        <EditableNumber
                           type="number"
                           min="0"
                           step="0.01"
                           inputMode="decimal"
                           value={costInputValue}
-                          onChange={(e) => onCostChange(code, e.target.value)}
+                          onCommit={(raw) => onCostChange(code, raw.trim())}
                           placeholder={computed ? String(computed.marketPrice) : ""}
                           className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
                         />

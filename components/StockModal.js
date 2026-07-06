@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
 import AdUnit from "./AdUnit";
 import ModalContainer from "./ModalContainer";
@@ -16,11 +16,7 @@ import {
 import Loading from "./Loading";
 import { startOfDay, parseISO } from "date-fns";
 import { useToast } from "../hooks/useToast";
-import {
-  getCachedStockDetail,
-  setCachedStockDetail,
-} from "../lib/cache";
-import { proxyGet } from "../lib/proxy-client";
+import { useStockDetail } from "../hooks/useStockDetail";
 
 const GOOGLE_CALENDAR_URL = "https://calendar.google.com/calendar/render";
 
@@ -28,58 +24,30 @@ export default function StockModal({
   isOpen,
   onClose,
   stockCode,
-  apiUrl,
   isTracked,
   onToggleTrack,
   onHistoryDateClick,
 }) {
-  const [history, setHistory] = useState([]);
-  const [info, setInfo] = useState(null);
-  const [loading, setLoading] = useState(false);
   const { addToast } = useToast();
   const today = useMemo(() => startOfDay(new Date()), []);
 
+  // 只在開啟時才帶 key 發送；SWR 會與 PortfolioModal 共用同一份快取
+  const { detail, error, isLoading } = useStockDetail(
+    isOpen && stockCode ? stockCode : null
+  );
+  const info = detail?.info || null;
+  const history = useMemo(
+    () => (Array.isArray(detail?.history) ? detail.history : []),
+    [detail]
+  );
+  const loading = isLoading;
+
   useEffect(() => {
-    if (!isOpen || !stockCode) return;
-
-    let cancelled = false;
-    const fetchStock = async () => {
-      const cached = getCachedStockDetail(stockCode);
-      if (cached) {
-        setInfo(cached.info);
-        setHistory(cached.history);
-        return;
-      }
-
-      setLoading(true);
-      setInfo(null);
-      setHistory([]);
-      try {
-        const data = await proxyGet(`api/stock/${stockCode}`);
-        if (cancelled) return;
-        const payload = {
-          info: data.info,
-          history: Array.isArray(data.history) ? data.history : [],
-        };
-        setInfo(payload.info);
-        setHistory(payload.history);
-        setCachedStockDetail(stockCode, payload);
-      } catch (error) {
-        if (cancelled) return;
-        console.error("Failed to fetch stock modal data", error);
-        addToast(error?.message || "無法載入個股資料，請稍後再試", "error");
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    };
-
-    fetchStock();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, stockCode, addToast]);
+    if (error) {
+      console.error("Failed to fetch stock modal data", error);
+      addToast(error?.message || "無法載入個股資料，請稍後再試", "error");
+    }
+  }, [error, addToast]);
 
   const prioritizedHistory = useMemo(() => {
     const withDividend = history.filter(

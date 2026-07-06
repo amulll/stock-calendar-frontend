@@ -1,11 +1,13 @@
 import Link from "next/link";
-import { ArrowLeft, Calendar, Banknote, Info } from "lucide-react";
+import { ArrowLeft, Banknote } from "lucide-react";
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit";
 import { startOfDay, parseISO } from "date-fns";
 import { cache } from "react";
 import DividendCalculator from "../../../components/DividendCalculator";
 import DividendChart from "../../../components/DividendChart";
+import StockHistoryTable from "../../../components/stock/StockHistoryTable";
+import StockSeoArticle from "../../../components/stock/StockSeoArticle";
 
 // 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
 // 大幅降低後端負載並加快 SEO 頁面的 TTFB
@@ -126,82 +128,6 @@ export async function generateMetadata({ params }) {
   };
 }
 
-// 自動產生 SEO 描述文字的函式
-function generateSeoArticle(info, latestDividend, historicalRecords) {
-    // info: 最新基本面, latestDividend: 最新一筆配息資料
-    const { stock_name, stock_code, daily_price } = info;
-    const { cash_dividend, pay_date, ex_date } = latestDividend || {};
-
-    // 即時計算殖利率
-    let realtimeYield = 0;
-    if (cash_dividend && daily_price > 0) {
-        realtimeYield = ((cash_dividend / daily_price) * 100).toFixed(2);
-    }
-
-    // 計算平均配息
-    const avgDividend = historicalRecords.length > 0
-        ? (historicalRecords.reduce((acc, cur) => acc + (cur.cash_dividend || 0), 0) / historicalRecords.length).toFixed(3)
-        : 0;
-
-    // 計算平均填息天數
-    const validFillRecords = historicalRecords.filter(r =>
-        r.days_to_fill !== null &&
-        r.days_to_fill !== undefined &&
-        r.days_to_fill >= 0
-    );
-    const avgFillDays = validFillRecords.length > 0
-        ? (validFillRecords.reduce((acc, cur) => acc + cur.days_to_fill, 0) / validFillRecords.length).toFixed(1)
-        : null;
-
-    return (
-        <article className="prose prose-slate max-w-none">
-            <h3 className="text-xl font-bold text-slate-800 mb-3 flex items-center gap-2">
-                <Info size={20} className="text-slate-500"/>
-                關於 {stock_name} ({stock_code}) 配息概況
-            </h3>
-            <p className="text-slate-600 leading-relaxed mb-4">
-                <strong>{stock_name} ({stock_code})</strong>
-                根據最新資料，該公司最新一期的現金股利為 <strong>{Number(cash_dividend).toFixed(3)} 元</strong>。
-                以目前的最新收盤價 <strong>{daily_price || "--"} 元</strong> 計算，
-                其預估單次殖利率約為 <span className="font-bold text-slate-800">{realtimeYield}%</span>。
-            </p>
-            <p className="text-slate-600 leading-relaxed mb-4">
-                投資人若有意參與本次除權息，須注意<strong>除息交易日為 {ex_date || "尚未公告"}</strong>，
-                配息日: <strong>{pay_date || "尚未公告"}</strong>。
-                {historicalRecords.length > 1 && (
-                    <span>
-                        回顧過去紀錄，{stock_name} 的歷史平均配息金額約為 {avgDividend} 元
-                        {avgFillDays ? (
-                            <>
-                                ，平均填息天數約為 <strong className="text-slate-700">{avgFillDays} 天</strong>。
-                            </>
-                        ) : (
-                            <>。</>
-                        )}
-                    </span>
-                )}
-            </p>
-
-            <h3 className="text-lg font-bold text-slate-700 mt-6 mb-2">
-                如何使用 {stock_name} 股利計算機？
-            </h3>
-            <p className="text-slate-600 leading-relaxed mb-4">
-                不想手動按計算機嗎？使用上方的<strong>「{stock_name} 股利計算機」</strong>，
-                您只需輸入預計持有的張數（例如 10 張 = 10,000 股），系統即會根據最新現金股利
-                <strong>{Number(cash_dividend).toFixed(3)} 元</strong>，自動計算出您可領取的總股利金額。
-                此外，您也可以輸入預計投入的資金，系統會依據目前股價
-                <strong>{daily_price || "--"} 元</strong>，反推您可以買進的股數與預估回報。
-            </p>
-
-            <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700">
-                <p>
-                    <strong>投資小撇步：</strong>
-                    想要領取 {stock_name} 的股利，必須在除息日 ({ex_date || "--"}) 的<strong>前一個交易日</strong>持有。
-                </p>
-            </div>
-        </article>
-    );
-}
 
 // 3. 頁面主體
 export default async function StockPage({ params }) {
@@ -243,11 +169,6 @@ export default async function StockPage({ params }) {
   if (latestEvent.cash_dividend && info.daily_price > 0) {
       currentYieldRate = ((latestEvent.cash_dividend / info.daily_price) * 100).toFixed(2);
   }
-
-  // 統一格式化函式，強制顯示 3 位小數
-  const formatDividend = (val) => {
-      return Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-  };
 
   // 準備結構化資料 (使用 info)
   const jsonLd = {
@@ -396,127 +317,16 @@ export default async function StockPage({ params }) {
               </section>
             </div>
 
-            {/* 歷史紀錄區塊 (資料來自 history) */}
-            <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
-              <h2 className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-base font-black tracking-tight text-slate-900">
-                <Calendar className="text-slate-500" /> 歷史發放紀錄
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] text-left text-xs md:text-sm">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600">
-                    <tr>
-                      <th className="px-2 py-2 whitespace-nowrap">年度</th>
-                      <th className="px-2 py-2 whitespace-nowrap">股利</th>
-                      <th className="px-2 py-2 whitespace-nowrap">發放日</th>
-                      <th className="px-2 py-2 whitespace-nowrap">除息日</th>
-                      <th className="px-2 py-2 whitespace-nowrap">股利(年)</th>
-                      <th className="px-2 py-2 whitespace-nowrap">殖利率(年)</th>
-                      <th className="px-2 py-2 whitespace-nowrap">填息天數</th>
-                      <th className="px-2 py-2 whitespace-nowrap">除息前股價</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {history.length === 0 ? (
-                      <tr><td colSpan="8" className="px-2 py-8 text-center text-slate-400">無過去紀錄</td></tr>
-                    ) : (
-                      history.map((item, index) => {
-                        const getYear = (record) => {
-                            if (record.pay_date) return record.pay_date.split("-")[0];
-                            if (record.ex_date) return record.ex_date.split("-")[0];
-                            return "-";
-                        };
-                        const currentYear = getYear(item);
-                        const prevYear = index > 0 ? getYear(history[index - 1]) : null;
-                        const isFirstOfGroup = currentYear !== prevYear;
+            {/* 歷史發放紀錄 */}
+            <StockHistoryTable history={history} />
 
-                        let rowSpanCount = 1;
-                        let totalCash = 0;
-                        let totalYield = 0;
-
-                        if (isFirstOfGroup) {
-                            totalCash += Number(item.cash_dividend || 0);
-                            totalYield += Number(item.yield_rate || 0);
-                            for (let i = index + 1; i < history.length; i++) {
-                                if (getYear(history[i]) === currentYear) {
-                                    rowSpanCount++;
-                                    totalCash += Number(history[i].cash_dividend || 0);
-                                    totalYield += Number(history[i].yield_rate || 0);
-                                } else {
-                                    break;
-                                }
-                            }
-                        }
-
-                        const formatSmartDate = (dateStr) => {
-                            if (!dateStr) return null;
-                            const [y, m, d] = dateStr.split("-");
-                            if (y === currentYear) return `${m}/${d}`;
-                            return `${y}/${m}/${d}`;
-                        };
-
-                        return (
-                        <tr key={item.id} className="transition hover:bg-slate-50">
-                          {isFirstOfGroup && (
-                              <td rowSpan={rowSpanCount} className="px-2 py-2 text-slate-600 font-bold whitespace-nowrap text-center align-middle border-r border-slate-200 bg-slate-50">
-                                {currentYear}
-                              </td>
-                          )}
-                          <td className="px-2 py-2 font-mono font-bold text-slate-900 whitespace-nowrap">
-                            {formatDividend(item.cash_dividend)}
-                          </td>
-                          <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">
-                            {item.pay_date ? (
-                                <a href={`/?date=${item.pay_date}&openModal=true`} className="text-blue-600 hover:underline hover:text-blue-800 decoration-blue-400 underline-offset-2">
-                                    {formatSmartDate(item.pay_date)}
-                                </a>
-                            ) : "未定"}
-                          </td>
-                          <td className="px-2 py-2 text-slate-500 whitespace-nowrap">
-                            {item.ex_date ? (
-                                <a href={`/?date=${item.ex_date}`} className="hover:text-blue-600 hover:underline decoration-slate-300 underline-offset-2">
-                                    {formatSmartDate(item.ex_date)}
-                                </a>
-                            ) : "-"}
-                          </td>
-                          {isFirstOfGroup && (
-                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-mono font-bold text-slate-900 whitespace-nowrap text-center align-middle bg-slate-50 border-l border-slate-200">
-                              {formatDividend(totalCash)}
-                              {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 block font-normal">(合計)</span>}
-                            </td>
-                          )}
-                          {isFirstOfGroup && (
-                            <td rowSpan={rowSpanCount} className="px-2 py-2 font-medium whitespace-nowrap text-center align-middle bg-white/50">
-                              {totalYield > 0 ? (
-                                  <div className="flex flex-col items-center">
-                                    <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700">
-                                        {formatDividend(totalYield)}%
-                                    </span>
-                                    {rowSpanCount > 1 && <span className="text-[10px] text-slate-400 mt-0.5">(合計)</span>}
-                                  </div>
-                              ) : "-"}
-                            </td>
-                          )}
-                          <td className="px-2 py-2 text-slate-400 whitespace-nowrap text-center">
-                            {item.days_to_fill && item.days_to_fill > 0 ? (
-                                <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                                    {item.days_to_fill} 天
-                                </span>
-                            ) : "-"}
-                          </td>
-                          <td className="px-2 py-2 text-slate-600 whitespace-nowrap">
-                            {item.stock_price > 0 ? `$${item.stock_price}` : "-"}
-                          </td>
-                        </tr>
-                      )})
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </section>
-
-            {/* SEO 描述文章 (傳入 info) */}
+            {/* SEO 描述文章 */}
             <section className="rounded-lg border border-slate-200 bg-slate-50 p-4 md:p-5">
-                {generateSeoArticle(info, latestEvent, history)}
+              <StockSeoArticle
+                info={info}
+                latestDividend={latestEvent}
+                historicalRecords={history}
+              />
             </section>
 
             <div className="mt-8">

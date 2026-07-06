@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import Script from "next/script";
 import Footer from "../components/Footer";
 import ToastProvider from "../components/ToastProvider";
+import Providers from "../components/Providers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -69,12 +70,14 @@ export default function RootLayout({ children }) {
           `}
         </Script>
 
-        <ToastProvider>
-          <div className="flex-grow">
-            {children}
-          </div>
-          <Footer />
-        </ToastProvider>
+        <Providers>
+          <ToastProvider>
+            <div className="flex-grow">
+              {children}
+            </div>
+            <Footer />
+          </ToastProvider>
+        </Providers>
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import SeoContent from "./SeoContent";
 import { useState, useEffect, useMemo, useRef } from "react";
+import useSWR from "swr";
 import {
   format,
   startOfMonth,
@@ -24,18 +25,12 @@ import AdUnit from "./AdUnit";
 import Loading from "./Loading";
 import FilterBar from "./FilterBar";
 import CalendarGrid from "./CalendarGrid";
+import CalendarSummary from "./CalendarSummary";
 import { useCalendarQueryState } from "../hooks/useCalendarQueryState";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
-import {
-  getCachedDividends,
-  setCachedDividends,
-  getCachedStockLatest,
-  setCachedStockLatest,
-} from "../lib/cache";
+import { useWatchlist } from "../hooks/useWatchlist";
 import { proxyGet } from "../lib/proxy-client";
 import { useToast } from "../hooks/useToast";
-
-const API_URL = "/api/proxy";
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const searchParams = useSearchParams();
@@ -52,13 +47,19 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     setShowHighYieldOnly,
   } = useCalendarQueryState({ searchParams, router, pathname });
 
-  const [dividends, setDividends] = useState(initialDividends || []);
-  const [allStocks, setAllStocks] = useState(initialAllStocks || []);
-  const [loading, setLoading] = useState(false);
+  const {
+    watchlist,
+    sharesMap,
+    costMap,
+    watchlistSet,
+    toggleWatchlist,
+    updateShares,
+    updateCost,
+  } = useWatchlist();
+
+  const [allStocks] = useState(initialAllStocks || []);
+  const [jumpLoading, setJumpLoading] = useState(false);
   const [filterText, setFilterText] = useState("");
-  const [watchlist, setWatchlist] = useState([]);
-  const [sharesMap, setSharesMap] = useState({});
-  const [costMap, setCostMap] = useState({});
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
@@ -68,43 +69,36 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [dateModalOpen, setDateModalOpen] = useState(false);
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
-  const isFirstRender = useRef(true);
   const hasHandledJump = useRef(false);
   const debouncedFilter = useDebouncedValue(filterText, 250);
   const { addToast } = useToast();
 
+  // 月股利改由 SWR 管理：key 隨當前月份變動，首月沿用 SSR 預抓的 initialDividends
+  const dividendsKey = `api/dividends?year=${format(currentDate, "yyyy")}&month=${format(
+    currentDate,
+    "M"
+  )}`;
+  const initialDividendsKey = useRef(dividendsKey);
+  const {
+    data: dividendsData,
+    isLoading: dividendsLoading,
+    error: dividendsError,
+  } = useSWR(dividendsKey, {
+    fallbackData:
+      dividendsKey === initialDividendsKey.current ? initialDividends || [] : undefined,
+  });
+  const dividends = useMemo(() => dividendsData || [], [dividendsData]);
+  const loading = dividendsLoading || jumpLoading;
+
+  useEffect(() => {
+    if (dividendsError) {
+      addToast("股利資料載入失敗，請稍後再試。", "error");
+    }
+  }, [dividendsError, addToast]);
+
   useEffect(() => {
     setLocalYield(yieldThreshold);
   }, [yieldThreshold]);
-
-  useEffect(() => {
-    const savedWatchlist = localStorage.getItem("myWatchlist");
-    if (savedWatchlist) {
-      try {
-        setWatchlist(JSON.parse(savedWatchlist));
-      } catch (err) {
-        console.error("Failed to parse watchlist", err);
-      }
-    }
-
-    const savedShares = localStorage.getItem("mySharesMap");
-    if (savedShares) {
-      try {
-        setSharesMap(JSON.parse(savedShares));
-      } catch (err) {
-        console.error("Failed to parse shares map", err);
-      }
-    }
-
-    const savedCost = localStorage.getItem("myCostMap");
-    if (savedCost) {
-      try {
-        setCostMap(JSON.parse(savedCost));
-      } catch (err) {
-        console.error("Failed to parse cost map", err);
-      }
-    }
-  }, []);
 
   useEffect(() => {
     const dateParam = searchParams.get("date");
@@ -132,50 +126,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   }, [searchParamsString, searchParams, setCurrentDate, pathname, router]);
 
-  const fetchDividends = async (date) => {
-    const year = format(date, "yyyy");
-    const month = format(date, "M");
-    const cacheKey = `${year}-${month}`;
-    const cached = getCachedDividends(cacheKey);
-    if (cached) {
-      setDividends(cached);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const data = await proxyGet("api/dividends", { year, month });
-      setDividends(data);
-      setCachedDividends(cacheKey, data);
-    } catch (error) {
-      addToast("股利資料載入失敗，請稍後再試。", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      if (!initialDividends || initialDividends.length === 0) {
-        fetchDividends(currentDate);
-      }
-      return;
-    }
-    fetchDividends(currentDate);
-  }, [currentDate]);
-
+  // 跳轉用：查某檔最近一次股利以決定要切到哪個月 (SWR 快取由代理層/後端 Redis 負責)
   const fetchStockLatest = async (code) => {
-    const cached = getCachedStockLatest(code);
-    if (cached) return cached;
-    const data = await proxyGet(`api/stock/${code}/latest`);
-    setCachedStockLatest(code, data);
-    return data;
+    return proxyGet(`api/stock/${code}/latest`);
   };
 
   const handleSuggestionClick = async (stock) => {
     setFilterText(stock.stock_code);
-    setLoading(true);
+    setJumpLoading(true);
     try {
       const latest = await fetchStockLatest(stock.stock_code);
       if (latest && (latest.pay_date || latest.ex_date)) {
@@ -189,7 +147,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     } catch (error) {
       addToast("切換股票時發生錯誤，稍後再試。", "error");
     } finally {
-      setLoading(false);
+      setJumpLoading(false);
     }
   };
 
@@ -224,39 +182,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     setSelectedStockCode(code);
     setStockModalOpen(true);
   };
-
-  const toggleWatchlist = (code) => {
-    const exists = watchlist.includes(code);
-    const updated = exists
-      ? watchlist.filter((item) => item !== code)
-      : [...watchlist, code];
-    setWatchlist(updated);
-    localStorage.setItem("myWatchlist", JSON.stringify(updated));
-  };
-
-  const updateShares = (code, shares) => {
-    setSharesMap((prev) => {
-      const updated = { ...prev, [code]: shares };
-      localStorage.setItem("mySharesMap", JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  const updateCost = (code, price) => {
-    setCostMap((prev) => {
-      const updated = { ...prev };
-      // 空字串 = 使用者清除自訂成本，退回帶入現價
-      if (price === "" || price === null || price === undefined) {
-        delete updated[code];
-      } else {
-        updated[code] = price;
-      }
-      localStorage.setItem("myCostMap", JSON.stringify(updated));
-      return updated;
-    });
-  };
-
-  const watchlistSet = useMemo(() => new Set(watchlist), [watchlist]);
 
   const suggestions = useMemo(() => {
     if (!debouncedFilter) return [];
@@ -326,51 +251,12 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     <main className="mx-auto min-h-screen max-w-7xl px-3 pb-14 pt-3 md:px-8 md:pb-20 md:pt-6">
       <section className="rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-4 py-4 md:px-5">
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-            <div>
-              <p className="text-xs font-semibold text-slate-500">
-                台股股利日曆
-              </p>
-              <h1 className="mt-1 text-2xl font-black tracking-tight text-slate-950 md:text-3xl">
-                股利工作區
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                搜尋股票、切換月份、篩選自選與高殖利率，集中在同一個資料視圖。
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:min-w-[420px]">
-              <div className="col-span-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 sm:col-span-1">
-                <p className="text-[11px] font-semibold text-slate-500">目前月份</p>
-                <p className="mt-1 whitespace-nowrap text-lg font-black tracking-tight text-slate-950">
-                  {format(currentDate, "yyyy年 M月")}
-                </p>
-              </div>
-              <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
-                <p className="text-[11px] font-semibold text-slate-500">符合筆數</p>
-                <p className="mt-1 text-lg font-black tracking-tight text-slate-950">
-                  {filteredDividends.length}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setPortfolioOpen(true)}
-                className="group rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-left transition hover:border-emerald-300 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
-                title="試算自選股年領股息"
-              >
-                <p className="flex items-center justify-between text-[11px] font-semibold text-emerald-700">
-                  <span>我的自選股</span>
-                  <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black text-white">
-                    {watchlist.length}
-                  </span>
-                </p>
-                <p className="mt-1 flex items-center gap-1 text-sm font-black tracking-tight text-emerald-800">
-                  試算年領股息
-                  <span className="transition group-hover:translate-x-0.5">→</span>
-                </p>
-              </button>
-            </div>
-          </div>
+          <CalendarSummary
+            currentDate={currentDate}
+            filteredCount={filteredDividends.length}
+            watchlistCount={watchlist.length}
+            onOpenPortfolio={() => setPortfolioOpen(true)}
+          />
         </div>
 
         <div className="px-4 py-3 md:px-5 md:py-4">
@@ -473,7 +359,6 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         isOpen={stockModalOpen}
         onClose={() => setStockModalOpen(false)}
         stockCode={selectedStockCode}
-        apiUrl={API_URL}
         isTracked={watchlist.includes(selectedStockCode)}
         onToggleTrack={toggleWatchlist}
         onHistoryDateClick={handleHistoryDateClick}

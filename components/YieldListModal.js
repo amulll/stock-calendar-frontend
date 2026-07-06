@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { X, TrendingUp, Loader2, ArrowUpDown } from "lucide-react";
 
-import { proxyGet } from "../lib/proxy-client";
 import ModalContainer from "./ModalContainer";
 import { useToast } from "../hooks/useToast";
 
@@ -13,46 +13,21 @@ export default function YieldListModal({
   onStockClick,
   onClose,
 }) {
-  const [dividends, setDividends] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [sortAsc, setSortAsc] = useState(true);
   const { addToast } = useToast();
-  const requestVersionRef = useRef(0);
+
+  const year = new Date().getFullYear();
+  const { data, error, isLoading } = useSWR(
+    isOpen ? `api/dividends/high-yield?threshold=${threshold}&year=${year}` : null
+  );
+  const dividends = Array.isArray(data) ? data : [];
+  const loading = isLoading;
 
   useEffect(() => {
-    if (!isOpen) {
-      requestVersionRef.current += 1;
-      setLoading(false);
-      return;
-    }
-
-    const requestVersion = requestVersionRef.current + 1;
-    requestVersionRef.current = requestVersion;
-    fetchHighYieldStocks(requestVersion);
-  }, [isOpen, threshold]);
-
-  const fetchHighYieldStocks = async (requestVersion) => {
-    setLoading(true);
-    setError("");
-    try {
-      const data = await proxyGet("api/dividends/high-yield", {
-        threshold,
-        year: new Date().getFullYear(),
-      });
-      if (requestVersion !== requestVersionRef.current) return;
-      setDividends(Array.isArray(data) ? data : []);
-    } catch (error) {
-      if (requestVersion !== requestVersionRef.current) return;
-      setDividends([]);
-      setError(error.message || "載入高殖利率清單失敗");
+    if (error) {
       addToast("載入高殖利率清單失敗", "error");
-    } finally {
-      if (requestVersion === requestVersionRef.current) {
-        setLoading(false);
-      }
     }
-  };
+  }, [error, addToast]);
 
   if (!isOpen) return null;
 
@@ -110,7 +85,9 @@ export default function YieldListModal({
           ) : error ? (
             <div className="text-center text-rose-500 py-12 flex flex-col items-center">
               <TrendingUp size={48} className="mb-3 opacity-30" />
-              <p className="font-medium">{error}</p>
+              <p className="font-medium">
+                {error?.message || "載入高殖利率清單失敗"}
+              </p>
             </div>
           ) : sortedList.length === 0 ? (
             <div className="text-center text-slate-400 py-12 flex flex-col items-center">
