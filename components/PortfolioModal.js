@@ -26,10 +26,12 @@ function formatMoney(value) {
 }
 
 // 從單一個股的詳情計算「年度領息」相關數字
-function computeStockIncome(detail, shares, currentYear) {
+// costPrice：使用者自訂的每股成本；未設定 (0/空) 時退回最新收盤價
+function computeStockIncome(detail, shares, currentYear, costPrice) {
   const info = detail?.info || null;
   const history = Array.isArray(detail?.history) ? detail.history : [];
-  const price = Number(info?.daily_price) || 0;
+  const marketPrice = Number(info?.daily_price) || 0;
+  const effectiveCost = Number(costPrice) > 0 ? Number(costPrice) : marketPrice;
 
   // 一檔股票一年可能配息多次 (季配/月配)，取當年度全部現金股利加總
   const thisYear = history.filter((record) => {
@@ -63,11 +65,13 @@ function computeStockIncome(detail, shares, currentYear) {
 
   return {
     name: info?.stock_name || null,
-    price,
+    marketPrice,
+    costPrice: effectiveCost,
+    isCustomCost: Number(costPrice) > 0,
     annualCash,
     income: annualCash * shares,
-    cost: price * shares,
-    yieldRate: price > 0 ? (annualCash / price) * 100 : 0,
+    cost: effectiveCost * shares,
+    yieldRate: effectiveCost > 0 ? (annualCash / effectiveCost) * 100 : 0,
     monthly,
     usedEstimate: thisYear.length === 0 && records.length > 0,
     hasData: annualCash > 0,
@@ -92,6 +96,8 @@ export default function PortfolioModal({
   watchlist,
   sharesMap,
   onSharesChange,
+  costMap,
+  onCostChange,
   onStockClick,
 }) {
   const [details, setDetails] = useState({});
@@ -140,13 +146,19 @@ export default function PortfolioModal({
   const rows = useMemo(() => {
     return watchlist.map((code) => {
       const shares = Number(sharesMap[code] ?? DEFAULT_SHARES);
+      const customCost = costMap[code];
       const detail = details[code];
       const computed = detail
-        ? computeStockIncome(detail, shares, currentYear)
+        ? computeStockIncome(detail, shares, currentYear, customCost)
         : null;
-      return { code, shares, computed };
+      // 成本輸入框的顯示值：優先使用者設定，其次帶入現價
+      const costInputValue =
+        customCost !== undefined && customCost !== ""
+          ? customCost
+          : computed?.marketPrice || "";
+      return { code, shares, computed, costInputValue };
     });
-  }, [watchlist, sharesMap, details, currentYear]);
+  }, [watchlist, sharesMap, costMap, details, currentYear]);
 
   const totals = useMemo(() => {
     let income = 0;
@@ -224,7 +236,7 @@ export default function PortfolioModal({
               </div>
               <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
                 <div className="text-[11px] font-semibold text-slate-500">
-                  投入成本市值
+                  投入總成本
                 </div>
                 <div className="mt-1 text-xl font-black tracking-tight text-slate-900">
                   ${formatMoney(totals.cost)}
@@ -290,7 +302,7 @@ export default function PortfolioModal({
                 </div>
               )}
               <div className="space-y-2">
-                {rows.map(({ code, shares, computed }) => (
+                {rows.map(({ code, shares, computed, costInputValue }) => (
                   <div
                     key={code}
                     className="rounded-lg border border-slate-200 bg-white p-3"
@@ -320,8 +332,9 @@ export default function PortfolioModal({
                       </div>
                     </div>
 
-                    <div className="mt-2 flex items-center justify-between gap-2">
-                      <label className="flex items-center gap-1.5 text-xs text-slate-500">
+                    {/* 持有股數 + 每股成本 (可自訂，預設帶入現價) */}
+                    <div className="mt-2 grid grid-cols-2 gap-2">
+                      <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
                         持有
                         <input
                           type="number"
@@ -331,11 +344,28 @@ export default function PortfolioModal({
                           onChange={(e) =>
                             onSharesChange(code, Math.max(0, Number(e.target.value) || 0))
                           }
-                          className="w-24 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-right font-mono text-sm font-bold text-slate-700 outline-none focus:bg-white focus:ring-2 focus:ring-emerald-400"
+                          className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
                         />
                         股
                       </label>
-                      <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                      <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
+                        成本
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          inputMode="decimal"
+                          value={costInputValue}
+                          onChange={(e) => onCostChange(code, e.target.value)}
+                          placeholder={computed ? String(computed.marketPrice) : ""}
+                          className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
+                        />
+                        元
+                      </label>
+                    </div>
+
+                    <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400">
+                      <div className="flex items-center gap-3">
                         <span>
                           現金股利{" "}
                           <span className="font-semibold text-slate-600">
@@ -343,12 +373,21 @@ export default function PortfolioModal({
                           </span>
                         </span>
                         <span>
-                          殖利率{" "}
+                          {computed?.isCustomCost ? "投報率" : "殖利率"}{" "}
                           <span className="font-semibold text-amber-600">
                             {computed ? `${computed.yieldRate.toFixed(2)}%` : "--"}
                           </span>
                         </span>
                       </div>
+                      {computed && computed.isCustomCost && (
+                        <button
+                          type="button"
+                          onClick={() => onCostChange(code, "")}
+                          className="text-blue-500 transition hover:underline"
+                        >
+                          帶回現價 ${computed.marketPrice || "--"}
+                        </button>
+                      )}
                     </div>
 
                     {computed?.usedEstimate && (
@@ -362,8 +401,8 @@ export default function PortfolioModal({
             </div>
 
             <div className="px-4 pb-4 text-[11px] leading-5 text-slate-400">
-              試算以最新收盤價與當年度現金股利估算，未計入交易成本與稅費，僅供參考。
-              張數設定僅儲存在此裝置瀏覽器。
+              成本價預設帶入最新收盤價，可自行改成你的實際買入均價，殖利率會即時換算為投報率。
+              試算未計入交易成本與稅費，僅供參考；張數與成本設定僅儲存在此裝置瀏覽器。
             </div>
           </div>
         )}

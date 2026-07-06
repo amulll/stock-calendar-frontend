@@ -58,6 +58,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [filterText, setFilterText] = useState("");
   const [watchlist, setWatchlist] = useState([]);
   const [sharesMap, setSharesMap] = useState({});
+  const [costMap, setCostMap] = useState({});
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
@@ -92,6 +93,15 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         setSharesMap(JSON.parse(savedShares));
       } catch (err) {
         console.error("Failed to parse shares map", err);
+      }
+    }
+
+    const savedCost = localStorage.getItem("myCostMap");
+    if (savedCost) {
+      try {
+        setCostMap(JSON.parse(savedCost));
+      } catch (err) {
+        console.error("Failed to parse cost map", err);
       }
     }
   }, []);
@@ -232,6 +242,20 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     });
   };
 
+  const updateCost = (code, price) => {
+    setCostMap((prev) => {
+      const updated = { ...prev };
+      // 空字串 = 使用者清除自訂成本，退回帶入現價
+      if (price === "" || price === null || price === undefined) {
+        delete updated[code];
+      } else {
+        updated[code] = price;
+      }
+      localStorage.setItem("myCostMap", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const watchlistSet = useMemo(() => new Set(watchlist), [watchlist]);
 
   const suggestions = useMemo(() => {
@@ -334,12 +358,15 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                 className="group rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-left transition hover:border-emerald-300 hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                 title="試算自選股年領股息"
               >
-                <p className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700">
-                  自選股
-                  <span className="text-emerald-500 transition group-hover:translate-x-0.5">›</span>
+                <p className="flex items-center justify-between text-[11px] font-semibold text-emerald-700">
+                  <span>我的自選股</span>
+                  <span className="rounded-full bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black text-white">
+                    {watchlist.length}
+                  </span>
                 </p>
-                <p className="mt-1 text-lg font-black tracking-tight text-slate-950">
-                  {watchlist.length}
+                <p className="mt-1 flex items-center gap-1 text-sm font-black tracking-tight text-emerald-800">
+                  試算年領股息
+                  <span className="transition group-hover:translate-x-0.5">→</span>
                 </p>
               </button>
             </div>
@@ -467,6 +494,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         watchlist={watchlist}
         sharesMap={sharesMap}
         onSharesChange={updateShares}
+        costMap={costMap}
+        onCostChange={updateCost}
         onStockClick={(code) => {
           setPortfolioOpen(false);
           handleListStockClick(code);

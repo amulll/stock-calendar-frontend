@@ -10,6 +10,22 @@ export default function SeoContent() {
         </h2>
         
         <div className="mt-8 space-y-5">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-5">
+            <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-white px-2.5 py-0.5 text-[11px] font-black tracking-wide text-emerald-700">
+              ⭐ 主打功能
+            </div>
+            <h3 className="mb-3 text-lg font-black tracking-tight text-emerald-900">
+              我的存股組合：一鍵試算「一年能領多少股息」
+            </h3>
+            <p className="text-slate-700">
+              把股票加入自選股後，點擊頁面上方的<strong>「我的自選股」綠色卡片</strong>，即可打開專屬的存股儀表板。
+              只要輸入每檔的<strong>持有股數</strong>與<strong>買入成本價</strong>（預設帶入最新收盤價，可自行修改為你的實際均價），
+              系統會立刻算出你整個投資組合的<strong>年度預估總股息</strong>、<strong>加權平均殖利率（投報率）</strong>，
+              以及一張<strong>每月現金流分布圖</strong>，讓你一眼看出哪幾個月會有股息入帳。季配、月配 ETF 的多次配息也會自動加總，
+              是專為台股存股族打造的領息規劃工具。
+            </p>
+          </div>
+
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
             <h3 className="mb-3 text-lg font-black tracking-tight text-slate-800">
               什麼是股利日曆？存股族必備的領錢行事曆
@@ -51,6 +67,9 @@ export default function SeoContent() {
               如何使用本網站查詢除權息與殖利率？
             </h3>
             <ul className="list-disc space-y-3 pl-5">
+              <li>
+                <strong>我的存股組合試算（主打）：</strong>將股票加入自選後，點上方「我的自選股」卡片開啟儀表板，輸入持有股數與買入成本，即可試算全組合的年度總股息、投報率與每月現金流。成本價可自訂為你的實際均價，讓殖利率更貼近真實報酬。
+              </li>
               <li>
                 <strong>視覺化月曆：</strong>日曆上的每一個綠色圓點，都代表當天有公司發放現金股利。點擊日期即可查看詳細的發放清單與金額。
               </li>
