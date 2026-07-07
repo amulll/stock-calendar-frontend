@@ -3,6 +3,12 @@
 import { format, isSameDay, isSameMonth } from "date-fns";
 import { Heart } from "lucide-react";
 
+const DEFAULT_SHARES = 1000;
+
+function formatMoney(value) {
+  return "$" + Math.round(value).toLocaleString("en-US");
+}
+
 export default function CalendarGrid({
   calendarDays,
   monthStart,
@@ -11,7 +17,13 @@ export default function CalendarGrid({
   onDateSelect,
   onStockSelect,
   localYield,
+  showAmounts = false,
+  sharesMap = {},
 }) {
+  // 自選模式下：入帳金額 = 現金股利 × 使用者設定的持有股數 (未設定以 1 張計)
+  const amountOf = (div) =>
+    (Number(div.cash_dividend) || 0) *
+    Number(sharesMap[div.stock_code] ?? DEFAULT_SHARES);
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-1.5 md:p-2">
       <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200">
@@ -92,14 +104,22 @@ export default function CalendarGrid({
                       <Heart size={12} className="fill-rose-500 text-rose-500" />
                     </span>
                   )}
-                  {dayDividends.length > 0 && (
-                    <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-700">
-                      <span className="hidden md:inline">
-                        {dayDividends.length} 檔
+                  {dayDividends.length > 0 &&
+                    (showAmounts ? (
+                      // 自選模式：直接顯示「當天我的入帳金額」
+                      <span className="max-w-full truncate rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] font-black text-white">
+                        {formatMoney(
+                          dayDividends.reduce((sum, div) => sum + amountOf(div), 0)
+                        )}
                       </span>
-                      <span className="inline md:hidden">●</span>
-                    </span>
-                  )}
+                    ) : (
+                      <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-700">
+                        <span className="hidden md:inline">
+                          {dayDividends.length} 檔
+                        </span>
+                        <span className="inline md:hidden">●</span>
+                      </span>
+                    ))}
                 </div>
               </div>
 
@@ -127,17 +147,23 @@ export default function CalendarGrid({
                         {div.stock_name}
                       </span>
                     </button>
-                    <span
-                      className={`ml-1 rounded px-1.5 py-0.5 text-[10px] font-black ${
-                        div.yield_rate > 0
-                          ? div.yield_rate >= localYield
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-white text-slate-400"
-                          : "bg-white text-slate-300"
-                      }`}
-                    >
-                      {div.yield_rate > 0 ? `${div.yield_rate}%` : "--"}
-                    </span>
+                    {showAmounts ? (
+                      <span className="ml-1 whitespace-nowrap rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-700">
+                        +{formatMoney(amountOf(div))}
+                      </span>
+                    ) : (
+                      <span
+                        className={`ml-1 rounded px-1.5 py-0.5 text-[10px] font-black ${
+                          div.yield_rate > 0
+                            ? div.yield_rate >= localYield
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-white text-slate-400"
+                            : "bg-white text-slate-300"
+                        }`}
+                      >
+                        {div.yield_rate > 0 ? `${div.yield_rate}%` : "--"}
+                      </span>
+                    )}
                   </div>
                 ))}
                 {dayDividends.length > 3 && (

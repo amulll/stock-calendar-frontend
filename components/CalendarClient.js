@@ -26,6 +26,8 @@ import Loading from "./Loading";
 import FilterBar from "./FilterBar";
 import CalendarGrid from "./CalendarGrid";
 import CalendarSummary from "./CalendarSummary";
+import AgendaList from "./AgendaList";
+import UpcomingFocus from "./UpcomingFocus";
 import { useCalendarQueryState } from "../hooks/useCalendarQueryState";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useWatchlist } from "../hooks/useWatchlist";
@@ -61,6 +63,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [jumpLoading, setJumpLoading] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
+  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [yieldListOpen, setYieldListOpen] = useState(false);
@@ -238,6 +241,13 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     });
   }, [monthStart]);
 
+  // 清單視圖只需要當月的日子 (不含前後月的補滿格)
+  const monthDays = useMemo(
+    () =>
+      eachDayOfInterval({ start: monthStart, end: endOfMonth(monthStart) }),
+    [monthStart]
+  );
+
   const selectedDividends = useMemo(() => {
     if (!selectedDate) return [];
     const key = format(selectedDate, "yyyy-MM-dd");
@@ -282,6 +292,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         </div>
       </section>
 
+      <UpcomingFocus watchlistSet={watchlistSet} onStockClick={handleStockClick} />
+
       <div className="mt-4 flex w-full justify-center">
         <AdUnit type="horizontal" />
       </div>
@@ -302,43 +314,85 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                 {showHighYieldOnly
                   ? `殖利率 > ${localYield}%`
                   : "未限制殖利率"}
+                {showWatchlistOnly && " · 顯示我的入帳金額"}
               </p>
             </div>
 
-            <div className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1.5 md:min-w-[260px]">
-              <button
-                onClick={prevMonth}
-                className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
-                aria-label="上一個月"
-              >
-                ‹
-              </button>
-              <span className="min-w-[132px] whitespace-nowrap text-center text-sm font-black text-slate-900 md:min-w-[168px]">
-                {format(currentDate, "yyyy年 M月")}
-              </span>
-              <button
-                onClick={nextMonth}
-                className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
-                aria-label="下一個月"
-              >
-                ›
-              </button>
+            <div className="flex items-center gap-2">
+              {/* 月曆 / 清單 視圖切換 */}
+              <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-1">
+                <button
+                  onClick={() => setViewMode("grid")}
+                  aria-pressed={viewMode === "grid"}
+                  className={`rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
+                    viewMode === "grid"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  月曆
+                </button>
+                <button
+                  onClick={() => setViewMode("list")}
+                  aria-pressed={viewMode === "list"}
+                  className={`rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
+                    viewMode === "list"
+                      ? "bg-white text-slate-900 shadow-sm"
+                      : "text-slate-500 hover:text-slate-700"
+                  }`}
+                >
+                  清單
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1.5 md:min-w-[240px]">
+                <button
+                  onClick={prevMonth}
+                  className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
+                  aria-label="上一個月"
+                >
+                  ‹
+                </button>
+                <span className="min-w-[104px] whitespace-nowrap text-center text-sm font-black text-slate-900 md:min-w-[148px]">
+                  {format(currentDate, "yyyy年 M月")}
+                </span>
+                <button
+                  onClick={nextMonth}
+                  className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
+                  aria-label="下一個月"
+                >
+                  ›
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <CalendarGrid
-          calendarDays={calendarDays}
-          monthStart={monthStart}
-          watchlistSet={watchlistSet}
-          dividendsByDate={dividendsByDate}
-          localYield={localYield}
-          onDateSelect={(day) => {
-            setSelectedDate(day);
-            setDateModalOpen(true);
-          }}
-          onStockSelect={handleStockClick}
-        />
+        {viewMode === "grid" ? (
+          <CalendarGrid
+            calendarDays={calendarDays}
+            monthStart={monthStart}
+            watchlistSet={watchlistSet}
+            dividendsByDate={dividendsByDate}
+            localYield={localYield}
+            showAmounts={showWatchlistOnly}
+            sharesMap={sharesMap}
+            onDateSelect={(day) => {
+              setSelectedDate(day);
+              setDateModalOpen(true);
+            }}
+            onStockSelect={handleStockClick}
+          />
+        ) : (
+          <AgendaList
+            monthDays={monthDays}
+            dividendsByDate={dividendsByDate}
+            watchlistSet={watchlistSet}
+            showAmounts={showWatchlistOnly}
+            sharesMap={sharesMap}
+            onStockSelect={handleStockClick}
+          />
+        )}
       </section>
 
       {loading && (

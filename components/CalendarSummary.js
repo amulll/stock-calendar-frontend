@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { format } from "date-fns";
 
 // 日曆頂部：標題 + 月份/符合筆數/自選股統計卡 (自選股卡即存股儀表板入口)
@@ -18,7 +19,18 @@ export default function CalendarSummary({
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
           搜尋股票、切換月份、篩選自選與高殖利率，集中在同一個資料視圖。
+          <Link
+            href="/screener"
+            className="ml-2 inline-flex items-center gap-0.5 font-semibold text-blue-600 hover:underline"
+          >
+            📊 存股選股表 →
+          </Link>
         </p>
+        {watchlistCount === 0 && (
+          <p className="mt-2 inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+            💡 點股票旁的 ♥ 加入自選，右側即可試算你的年領股息
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:min-w-[420px]">

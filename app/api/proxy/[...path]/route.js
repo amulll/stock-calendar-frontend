@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 
-const ALLOWED_PREFIXES = ["api/dividends", "api/stocks", "api/stock"];
+const ALLOWED_PREFIXES = [
+  "api/dividends",
+  "api/stocks",
+  "api/stock",
+  "api/screener",
+  "api/calendar.ics",
+];
 
 export async function GET(request, { params }) {
   const path = params.path.join("/"); // 取得網址路徑 (例如: stocks/list)
@@ -38,10 +44,20 @@ export async function GET(request, { params }) {
     });
 
     const contentType = res.headers.get("content-type") || "";
+
+    // ICS 行事曆訂閱：原樣透傳文字內容，Google/Apple 行事曆才能訂閱
+    if (contentType.includes("text/calendar")) {
+      const text = await res.text();
+      return new NextResponse(text, {
+        status: res.status,
+        headers: { "content-type": "text/calendar; charset=utf-8" },
+      });
+    }
+
     const data = contentType.includes("application/json")
       ? await res.json()
       : { error: "Invalid upstream response" };
-    
+
     // 回傳給瀏覽器
     return NextResponse.json(data, { status: res.status });
 

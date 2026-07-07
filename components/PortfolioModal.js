@@ -10,6 +10,7 @@ import {
   PiggyBank,
   ChevronRight,
   Share2,
+  CalendarPlus,
 } from "lucide-react";
 
 import ModalContainer from "./ModalContainer";
@@ -194,6 +195,21 @@ export default function PortfolioModal({
     };
   }, [rows]);
 
+  // 行事曆訂閱：自選股編在網址裡 (無需帳號)，Google/Apple 行事曆訂閱後自動更新
+  const handleSubscribeCalendar = async () => {
+    const url = `${window.location.origin}/api/proxy/api/calendar.ics?codes=${watchlist.join(",")}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      addToast(
+        "已複製訂閱連結！到 Google/Apple 行事曆選「新增訂閱行事曆」貼上，除息與入帳日會自動同步",
+        "success"
+      );
+    } catch (err) {
+      // 剪貼簿權限被拒時直接開啟連結下載 .ics
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+
   const handleShare = async () => {
     setSharing(true);
     try {
@@ -287,19 +303,30 @@ export default function PortfolioModal({
               </div>
 
               {totals.income > 0 && !loading && (
-                <button
-                  type="button"
-                  onClick={handleShare}
-                  disabled={sharing}
-                  className="col-span-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60 sm:col-span-3"
-                >
-                  {sharing ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Share2 size={16} />
-                  )}
-                  分享我的存股成績單
-                </button>
+                <div className="col-span-2 grid grid-cols-[1fr_auto] gap-2 sm:col-span-3">
+                  <button
+                    type="button"
+                    onClick={handleShare}
+                    disabled={sharing}
+                    className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                  >
+                    {sharing ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Share2 size={16} />
+                    )}
+                    分享我的存股成績單
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSubscribeCalendar}
+                    title="複製訂閱連結，除息與入帳日自動同步到你的行事曆"
+                    className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
+                  >
+                    <CalendarPlus size={16} />
+                    <span className="hidden sm:inline">訂閱行事曆</span>
+                  </button>
+                </div>
               )}
             </div>
 
