@@ -73,7 +73,11 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
   // --- 4. 游標管理 Hook (核心魔法 🪄) ---
   // 在 DOM 更新後，立即計算並恢復游標位置
   useLayoutEffect(() => {
-    if (cursorRef.current && cursorRef.current.element) {
+    if (
+      cursorRef.current &&
+      cursorRef.current.element &&
+      typeof cursorRef.current.element.setSelectionRange === "function"
+    ) {
         const { element, start, lengthBefore } = cursorRef.current;
         const lengthAfter = element.value.length;
         
@@ -90,11 +94,17 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
   const handleChangeWithCursor = (e, setValue, callback) => {
     const element = e.target;
     // 1. 記錄變更前的游標與長度
-    cursorRef.current = {
+    // 滾輪微調傳入的是模擬 event ({ target: { value } })，不是真的 DOM 節點，
+    // 沒有 setSelectionRange 可用，這種情況跳過游標記錄以免後續呼叫時報錯
+    if (element && typeof element.setSelectionRange === "function") {
+      cursorRef.current = {
         element,
         start: element.selectionStart,
         lengthBefore: element.value.length
-    };
+      };
+    } else {
+      cursorRef.current = null;
+    }
 
     // 2. 格式化新值
     const newStr = formatInput(e.target.value);

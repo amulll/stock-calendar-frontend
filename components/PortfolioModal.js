@@ -9,10 +9,12 @@ import {
   TrendingUp,
   PiggyBank,
   ChevronRight,
+  Share2,
 } from "lucide-react";
 
 import ModalContainer from "./ModalContainer";
 import { proxyGet } from "../lib/proxy-client";
+import { shareCard } from "../lib/shareCard";
 import { useToast } from "../hooks/useToast";
 
 const DEFAULT_SHARES = 1000; // 未設定時預設 1 張
@@ -122,6 +124,7 @@ export default function PortfolioModal({
 }) {
   const { addToast } = useToast();
   const { mutate } = useSWRConfig();
+  const [sharing, setSharing] = useState(false);
   const currentYear = new Date().getFullYear();
 
   // 用「整個自選清單」當 key，一次平行抓取所有個股詳情並快取整包結果。
@@ -190,6 +193,27 @@ export default function PortfolioModal({
       maxMonth: Math.max(...monthly, 0),
     };
   }, [rows]);
+
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      const result = await shareCard({
+        year: currentYear,
+        income: totals.income,
+        yieldRate: totals.yieldRate,
+        stockCount: watchlist.length,
+        monthly: totals.monthly,
+      });
+      if (result === "downloaded") {
+        addToast("成績單圖片已下載", "success");
+      }
+    } catch (err) {
+      console.error("Share card failed", err);
+      addToast("圖片產生失敗，請稍後再試", "error");
+    } finally {
+      setSharing(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -261,6 +285,22 @@ export default function PortfolioModal({
                   {totals.yieldRate.toFixed(2)}%
                 </div>
               </div>
+
+              {totals.income > 0 && !loading && (
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  disabled={sharing}
+                  className="col-span-2 flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60 sm:col-span-3"
+                >
+                  {sharing ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Share2 size={16} />
+                  )}
+                  分享我的存股成績單
+                </button>
+              )}
             </div>
 
             {/* 每月現金流 */}
