@@ -98,7 +98,11 @@ export default function AgendaList({
                   <span className="flex-shrink-0 text-sm font-bold text-slate-700">
                     {showAmounts
                       ? `+${formatMoney(amountOf(div))}`
-                      : `${Number(div.cash_dividend || 0)} 元`}
+                      : Number(div.cash_dividend) > 0
+                      ? `${Number(div.cash_dividend)} 元`
+                      : Number(div.stock_dividend) > 0
+                      ? `配股 ${Number(div.stock_dividend)}`
+                      : "未公告"}
                   </span>
                 </button>
               ))}

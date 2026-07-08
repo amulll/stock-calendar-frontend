@@ -46,7 +46,7 @@ export default function PrivacyPage() {
         <section>
           <h2 className="mb-2 text-lg font-black tracking-tight text-slate-800">4. 聯絡我們</h2>
           <p>
-            若您對本隱私權政策有任何疑問，請透過電子郵件與我們聯繫：contact@ugoodli.com
+            若您對本隱私權政策有任何疑問，請透過電子郵件與我們聯繫：contact@ugoodly.com
           </p>
         </section>
       </div>

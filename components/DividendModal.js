@@ -55,13 +55,37 @@ export default function DividendModal({
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium text-slate-500">
-                      現金股利
-                    </div>
-                    <div className="flex items-center justify-end gap-1 text-lg font-bold text-emerald-600">
-                      <DollarSign size={14} />
-                      {Number(div.cash_dividend).toFixed(4)}
-                    </div>
+                    {Number(div.cash_dividend) > 0 ? (
+                      <>
+                        <div className="text-sm font-medium text-slate-500">
+                          現金股利
+                        </div>
+                        <div className="flex items-center justify-end gap-1 text-lg font-bold text-emerald-600">
+                          <DollarSign size={14} />
+                          {Number(div.cash_dividend).toFixed(4)}
+                        </div>
+                      </>
+                    ) : Number(div.stock_dividend) > 0 ? (
+                      // 純配股場次：現金股利為 0，顯示股票股利避免誤導
+                      <>
+                        <div className="text-sm font-medium text-slate-500">
+                          股票股利
+                        </div>
+                        <div className="text-lg font-bold text-blue-600">
+                          {Number(div.stock_dividend).toFixed(4)}
+                        </div>
+                      </>
+                    ) : (
+                      // ETF 常見：日程已公告、金額尚未公佈
+                      <>
+                        <div className="text-sm font-medium text-slate-500">
+                          現金股利
+                        </div>
+                        <div className="text-sm font-bold text-slate-400">
+                          金額未公告
+                        </div>
+                      </>
+                    )}
                   </div>
                 </button>
               ))}

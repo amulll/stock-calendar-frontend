@@ -206,7 +206,13 @@ export default function StockModal({
         </div>
         <div className="flex items-center gap-3">
           <div className="font-bold text-slate-800">
-            {Number(item.cash_dividend).toFixed(4)} 元
+            {Number(item.cash_dividend) > 0 || Number(item.stock_dividend) <= 0 ? (
+              `${Number(item.cash_dividend).toFixed(4)} 元`
+            ) : (
+              <span className="text-blue-600">
+                配股 {Number(item.stock_dividend).toFixed(4)}
+              </span>
+            )}
           </div>
           <ChevronRight
             size={14}

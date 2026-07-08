@@ -148,9 +148,16 @@ export default function CalendarGrid({
                       </span>
                     </button>
                     {showAmounts ? (
-                      <span className="ml-1 whitespace-nowrap rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-700">
-                        +{formatMoney(amountOf(div))}
-                      </span>
+                      Number(div.cash_dividend) > 0 ? (
+                        <span className="ml-1 whitespace-nowrap rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-black text-emerald-700">
+                          +{formatMoney(amountOf(div))}
+                        </span>
+                      ) : (
+                        // 純配股：現金入帳為 0，標示配股避免顯示 +$0
+                        <span className="ml-1 whitespace-nowrap rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-black text-blue-600">
+                          {Number(div.stock_dividend) > 0 ? "配股" : "--"}
+                        </span>
+                      )
                     ) : (
                       <span
                         className={`ml-1 rounded px-1.5 py-0.5 text-[10px] font-black ${
