@@ -24,12 +24,9 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // 轉發使用者真實 IP，後端限流才能按個別使用者計算，
-  // 而不是把所有人算在代理伺服器的同一個 IP 上
-  const clientIp =
-    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    request.ip ||
-    "";
+  // 只使用 Next/runtime 提供的 IP，不轉發瀏覽器可偽造的 x-forwarded-for。
+  // 若部署平台未提供 request.ip，後端會退回代理來源 IP 做限流。
+  const clientIp = request.ip || "";
 
   try {
     const url = `${BACKEND_URL}/${path}${searchParams ? `?${searchParams}` : ""}`;
@@ -37,7 +34,7 @@ export async function GET(request, { params }) {
     const res = await fetch(url, {
       headers: {
         "X-Service-Token": SERVICE_TOKEN, // 🔥 關鍵：在這裡偷加密碼
-        ...(clientIp ? { "X-Forwarded-For": clientIp } : {}),
+        ...(clientIp ? { "X-Proxy-Client-IP": clientIp } : {}),
       },
       cache: 'no-store', // 代理本身不快取，依賴後端 Redis
       signal: AbortSignal.timeout(15000), // 後端卡住時不讓請求無限掛著

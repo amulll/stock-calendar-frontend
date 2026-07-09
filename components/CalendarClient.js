@@ -193,7 +193,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
       .filter(
         (stock) =>
           stock.stock_code.toLowerCase().startsWith(query) ||
-          stock.stock_name.toLowerCase().includes(query)
+          (stock.stock_name || "").toLowerCase().includes(query)
       )
       .sort((a, b) => a.stock_code.localeCompare(b.stock_code));
   }, [debouncedFilter, allStocks]);
