@@ -8,6 +8,7 @@ import DividendCalculator from "../../../components/DividendCalculator";
 import DividendChart from "../../../components/DividendChart";
 import StockHistoryTable from "../../../components/stock/StockHistoryTable";
 import StockSeoArticle from "../../../components/stock/StockSeoArticle";
+import IncomeCompositionBar from "../../../components/stock/IncomeCompositionBar";
 
 // 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
 // 大幅降低後端負載並加快 SEO 頁面的 TTFB
@@ -164,6 +165,11 @@ export default async function StockPage({ params }) {
   // 防呆
   if (!latestEvent) latestEvent = { cash_dividend: 0, ex_date: null, pay_date: null };
 
+  // 最近一筆「有配息組成資料」的場次 (僅 ETF 有；一般個股為 null)
+  const latestComposition = [...history]
+    .filter((item) => item.income_composition && item.ex_date)
+    .sort((a, b) => new Date(b.ex_date) - new Date(a.ex_date))[0] || null;
+
   // 使用 info.daily_price 計算即時殖利率
   let currentYieldRate = "--";
   if (latestEvent.cash_dividend && info.daily_price > 0) {
@@ -316,6 +322,14 @@ export default async function StockPage({ params }) {
                   <DividendChart history={history} />
               </section>
             </div>
+
+            {/* ETF 配息組成 (突顯收益平準金) */}
+            {latestComposition && (
+              <IncomeCompositionBar
+                composition={latestComposition.income_composition}
+                exDate={latestComposition.ex_date}
+              />
+            )}
 
             {/* 歷史發放紀錄 */}
             <StockHistoryTable history={history} />
