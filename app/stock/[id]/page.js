@@ -10,6 +10,7 @@ import StockHistoryTable from "../../../components/stock/StockHistoryTable";
 import StockSeoArticle from "../../../components/stock/StockSeoArticle";
 import IncomeCompositionBar from "../../../components/stock/IncomeCompositionBar";
 import { DEFAULT_BACKEND_URL } from "../../../lib/backend";
+import { getDividendType, exDateLabel } from "../../../lib/dividendEvent";
 
 // 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
 // 大幅降低後端負載並加快 SEO 頁面的 TTFB
@@ -146,9 +147,13 @@ export default async function StockPage({ params }) {
   const displayMarket = (info.market_type === "TPEX" || info.market_type === "上櫃") ? "上櫃" : "上市";
   const today = startOfDay(new Date());
 
-  // 找出「最新一期」配息 (用於顯示 Header 的殖利率與股利)
-  const validHistory = history.filter(item => Number(item.cash_dividend) > 0 || Number(item.stock_dividend) > 0);
-  const sourceList = validHistory.length > 0 ? validHistory : history;
+  // 找出「最新一期」配息 (用於顯示 Header 的殖利率、股利與試算機)。
+  // 領息站定位：headline 以「有配發現金股利」的場次為主；純除權(配股、無現金)不主導
+  // headline，只有當該股從未配過現金時才退而顯示。純除權事件仍完整保留在下方歷史發放紀錄表。
+  const cashHistory = history.filter(item => Number(item.cash_dividend) > 0);
+  const dividendHistory = history.filter(item => Number(item.cash_dividend) > 0 || Number(item.stock_dividend) > 0);
+  const sourceList =
+    cashHistory.length > 0 ? cashHistory : dividendHistory.length > 0 ? dividendHistory : history;
 
   const futureEvents = sourceList.filter(item => {
       if (!item.ex_date) return false;
@@ -254,9 +259,13 @@ export default async function StockPage({ params }) {
                   </div>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-slate-700">
-                  <div className="mb-1 text-[11px] font-semibold text-slate-500">現金股利</div>
+                  <div className="mb-1 text-[11px] font-semibold text-slate-500">
+                    {getDividendType(latestEvent) === "stock" ? "股票股利" : "現金股利"}
+                  </div>
                   <div className="text-xl font-black tracking-tight text-slate-950">
-                    {Number(latestEvent.cash_dividend).toFixed(3)}
+                    {getDividendType(latestEvent) === "stock"
+                      ? `配股 ${Number(latestEvent.stock_dividend || 0)}`
+                      : Number(latestEvent.cash_dividend).toFixed(3)}
                   </div>
                 </div>
                 <div className={`rounded-lg border px-3 py-2.5
@@ -282,16 +291,24 @@ export default async function StockPage({ params }) {
               </h2>
               <div className="grid gap-4 p-4 md:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)]">
                 <div>
-                  <div className="mb-1 text-sm font-semibold text-slate-500">現金股利</div>
+                  <div className="mb-1 text-sm font-semibold text-slate-500">
+                    {getDividendType(latestEvent) === "stock" ? "股票股利" : "現金股利"}
+                  </div>
                   <div className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">
-                    {Number(latestEvent.cash_dividend).toFixed(3)} <span className="text-base font-normal text-slate-500">元</span>
+                    {getDividendType(latestEvent) === "stock" ? (
+                      <>配股 {Number(latestEvent.stock_dividend || 0)}</>
+                    ) : (
+                      <>
+                        {Number(latestEvent.cash_dividend).toFixed(3)} <span className="text-base font-normal text-slate-500">元</span>
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <div className="mb-3 text-sm font-semibold text-slate-500">股利時程</div>
                   <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
                     <div>
-                      <div className="text-xs font-semibold text-slate-500">除息交易日</div>
+                      <div className="text-xs font-semibold text-slate-500">{exDateLabel(latestEvent)}</div>
                       <div className="mt-1 whitespace-nowrap text-base font-black text-slate-900">
                         {latestEvent.ex_date || "尚未公布"}
                       </div>

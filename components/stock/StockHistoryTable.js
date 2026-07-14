@@ -28,7 +28,7 @@ export default function StockHistoryTable({ history }) {
               <th className="px-2 py-2 whitespace-nowrap">年度</th>
               <th className="px-2 py-2 whitespace-nowrap">股利</th>
               <th className="px-2 py-2 whitespace-nowrap">發放日</th>
-              <th className="px-2 py-2 whitespace-nowrap">除息日</th>
+              <th className="px-2 py-2 whitespace-nowrap">除權息日</th>
               <th className="px-2 py-2 whitespace-nowrap">股利(年)</th>
               <th className="px-2 py-2 whitespace-nowrap">殖利率(年)</th>
               <th className="px-2 py-2 whitespace-nowrap">填息天數</th>

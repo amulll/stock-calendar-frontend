@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { differenceInCalendarDays, parseISO, format } from "date-fns";
 import { Hourglass, Banknote, Heart, ChevronDown } from "lucide-react";
+import { getDividendType } from "../lib/dividendEvent";
 
 const MAX_ITEMS = 5; // 展開後每欄上限
 const STRIP_ITEMS = 3; // 收合時單行顯示幾筆
@@ -210,13 +211,13 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
               <Hourglass size={14} className="text-amber-500" />
               最後買進倒數
               <span className="text-[10px] font-normal text-slate-400">
-                (除息前一交易日 · 週末順延估算)
+                (除權息前一交易日 · 週末順延估算)
               </span>
             </h3>
             <div className="mt-2 space-y-1.5">
               {exSorted.length === 0 ? (
                 <p className="py-3 text-center text-xs text-slate-400">
-                  近期沒有即將除息的股票
+                  近期沒有即將除權息的股票
                 </p>
               ) : (
                 exSorted.map(({ item, dateObj, days }) => (
@@ -226,7 +227,11 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
                     dateObj={dateObj}
                     days={days}
                     tracked={watchlistSet.has(item.stock_code)}
-                    amountLabel={`配 ${Number(item.cash_dividend || 0)} 元`}
+                    amountLabel={
+                      getDividendType(item) === "stock"
+                        ? `配股 ${Number(item.stock_dividend || 0)}`
+                        : `配 ${Number(item.cash_dividend || 0)} 元`
+                    }
                     onStockClick={onStockClick}
                   />
                 ))

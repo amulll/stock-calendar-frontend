@@ -17,6 +17,7 @@ import Loading from "./Loading";
 import { startOfDay, parseISO } from "date-fns";
 import { useToast } from "../hooks/useToast";
 import { useStockDetail } from "../hooks/useStockDetail";
+import { getDividendType, exDateLabel, dividendAmountLabel } from "../lib/dividendEvent";
 
 const GOOGLE_CALENDAR_URL = "https://calendar.google.com/calendar/render";
 
@@ -118,7 +119,7 @@ export default function StockModal({
       `股利提醒 - ${info.stock_name} (${info.stock_code})`
     );
     const details = encodeURIComponent(
-      `現金股利：${currentEvent.cash_dividend} 元\n除息日：${currentEvent.ex_date}`
+      `配發：${dividendAmountLabel(currentEvent)}\n${exDateLabel(currentEvent)}：${currentEvent.ex_date}`
     );
 
     const url = `${GOOGLE_CALENDAR_URL}?action=TEMPLATE&text=${title}&dates=${start}/${endStr}&details=${details}`;
@@ -134,7 +135,7 @@ export default function StockModal({
       "BEGIN:VEVENT",
       `SUMMARY:股利提醒 - ${info.stock_name}`,
       `DTSTART;VALUE=DATE:${dateStr}`,
-      `DESCRIPTION:現金股利：${currentEvent.cash_dividend} 元\\n除息日：${currentEvent.ex_date}`,
+      `DESCRIPTION:配發：${dividendAmountLabel(currentEvent)}\\n${exDateLabel(currentEvent)}：${currentEvent.ex_date}`,
       "END:VEVENT",
       "END:VCALENDAR",
     ].join("\n");
@@ -161,13 +162,15 @@ export default function StockModal({
           <strong>
             {info.stock_name} ({info.stock_code})
           </strong>{" "}
-          最新現金股利
+          最新{getDividendType(currentEvent) === "stock" ? "股票股利" : "現金股利"}
           <strong className="ml-1">
-            {Number(currentEvent.cash_dividend || 0).toFixed(2)} 元
+            {getDividendType(currentEvent) === "stock"
+              ? `配股 ${Number(currentEvent.stock_dividend || 0)}`
+              : `${Number(currentEvent.cash_dividend || 0).toFixed(2)} 元`}
           </strong>
         </p>
         <p>
-          除息日：<strong>{currentEvent.ex_date || "尚未公布"}</strong>
+          {exDateLabel(currentEvent)}：<strong>{currentEvent.ex_date || "尚未公布"}</strong>
         </p>
         <p>
           發放日：<strong>{currentEvent.pay_date || "尚未公布"}</strong>
@@ -332,11 +335,17 @@ export default function StockModal({
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-xs text-slate-500 mb-1">
-                        現金股利
+                        {getDividendType(currentEvent) === "stock" ? "股票股利" : "現金股利"}
                       </div>
                       <div className="text-2xl font-bold text-emerald-700">
-                        {Number(currentEvent.cash_dividend).toFixed(4)}{" "}
-                        <span className="text-sm">元</span>
+                        {getDividendType(currentEvent) === "stock" ? (
+                          <>配股 {Number(currentEvent.stock_dividend || 0)}</>
+                        ) : (
+                          <>
+                            {Number(currentEvent.cash_dividend).toFixed(4)}{" "}
+                            <span className="text-sm">元</span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -365,7 +374,7 @@ export default function StockModal({
                       )}
 
                       <div className="text-xs text-slate-400 mt-2">
-                        除息日：{currentEvent.ex_date || "尚未公布"}
+                        {exDateLabel(currentEvent)}：{currentEvent.ex_date || "尚未公布"}
                       </div>
                     </div>
                   </div>

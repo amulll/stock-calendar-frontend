@@ -6,6 +6,7 @@ import { X, TrendingUp, Loader2, ArrowUpDown } from "lucide-react";
 
 import ModalContainer from "./ModalContainer";
 import { useToast } from "../hooks/useToast";
+import { exDateLabel } from "../lib/dividendEvent";
 
 export default function YieldListModal({
   isOpen,
@@ -116,7 +117,7 @@ export default function YieldListModal({
                         {div.stock_name}
                       </div>
                       <div className="text-xs text-slate-400">
-                        除息: {div.ex_date}
+                        {exDateLabel(div)}: {div.ex_date}
                       </div>
                     </div>
                   </div>
