@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import {
   X,
@@ -11,11 +11,14 @@ import {
   ChevronRight,
   Share2,
   CalendarPlus,
+  Download,
+  Upload,
 } from "lucide-react";
 
 import ModalContainer from "./ModalContainer";
 import { proxyGet } from "../lib/proxy-client";
 import { shareCard } from "../lib/shareCard";
+import { subscribeToCalendar } from "../lib/calendarSubscribe";
 import { useToast } from "../hooks/useToast";
 
 const DEFAULT_SHARES = 1000; // 未設定時預設 1 張
@@ -121,11 +124,15 @@ export default function PortfolioModal({
   onSharesChange,
   costMap,
   onCostChange,
+  onExportData,
+  onImportData,
+  onAddSampleWatchlist,
   onStockClick,
 }) {
   const { addToast } = useToast();
   const { mutate } = useSWRConfig();
   const [sharing, setSharing] = useState(false);
+  const importInputRef = useRef(null);
   const currentYear = new Date().getFullYear();
 
   // 用「整個自選清單」當 key，一次平行抓取所有個股詳情並快取整包結果。
@@ -195,21 +202,6 @@ export default function PortfolioModal({
     };
   }, [rows]);
 
-  // 行事曆訂閱：自選股編在網址裡 (無需帳號)，Google/Apple 行事曆訂閱後自動更新
-  const handleSubscribeCalendar = async () => {
-    const url = `${window.location.origin}/api/proxy/api/calendar.ics?codes=${watchlist.join(",")}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      addToast(
-        "已複製訂閱連結！到 Google/Apple 行事曆選「新增訂閱行事曆」貼上，除息與入帳日會自動同步",
-        "success"
-      );
-    } catch (err) {
-      // 剪貼簿權限被拒時直接開啟連結下載 .ics
-      window.open(url, "_blank", "noopener,noreferrer");
-    }
-  };
-
   const handleShare = async () => {
     setSharing(true);
     try {
@@ -230,6 +222,75 @@ export default function PortfolioModal({
       setSharing(false);
     }
   };
+
+  const handleExport = () => {
+    try {
+      const blob = new Blob([onExportData()], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "ugoodly-watchlist-backup.json";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      addToast("自選股備份已下載", "success");
+    } catch (error) {
+      addToast("備份匯出失敗，請稍後再試", "error");
+    }
+  };
+
+  const handleImport = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const result = onImportData(await file.text());
+      if (result.ok) {
+        addToast("備份匯入成功，已覆蓋目前自選資料", "success");
+      } else {
+        addToast(`備份匯入失敗：${result.error}`, "error");
+      }
+    } catch (error) {
+      addToast("無法讀取備份檔案", "error");
+    } finally {
+      event.target.value = "";
+    }
+  };
+
+  const backupActions = (
+    <>
+      <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+        <button
+          type="button"
+          onClick={handleExport}
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+        >
+          <Download size={15} />
+          匯出備份
+        </button>
+        <button
+          type="button"
+          onClick={() => importInputRef.current?.click()}
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+        >
+          <Upload size={15} />
+          匯入還原
+        </button>
+        <input
+          ref={importInputRef}
+          type="file"
+          accept="application/json,.json"
+          onChange={handleImport}
+          className="sr-only"
+          aria-label="選擇 uGoodly 自選股備份檔案"
+        />
+      </div>
+      <p className="mt-2 text-[11px] font-medium text-rose-500">
+        匯入會覆蓋目前的自選股、持股張數與成本設定。
+      </p>
+    </>
+  );
 
   if (!isOpen) return null;
 
@@ -271,6 +332,16 @@ export default function PortfolioModal({
             <p className="text-sm">
               先在日曆或個股視窗點愛心加入追蹤，再回來試算年領股息。
             </p>
+            <button
+              type="button"
+              onClick={onAddSampleWatchlist}
+              className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
+            >
+              試試看：一鍵加入 0056 / 00878 / 台積電（2330）
+            </button>
+            <div className="mt-3 border-t border-slate-200 pt-4">
+              {backupActions}
+            </div>
           </div>
         ) : (
           <div className="flex-grow overflow-y-auto">
@@ -319,7 +390,7 @@ export default function PortfolioModal({
                   </button>
                   <button
                     type="button"
-                    onClick={handleSubscribeCalendar}
+                    onClick={() => subscribeToCalendar(watchlist, addToast)}
                     title="複製訂閱連結，除息與入帳日自動同步到你的行事曆"
                     className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
                   >
@@ -478,9 +549,12 @@ export default function PortfolioModal({
               </div>
             </div>
 
-            <div className="px-4 pb-4 text-[11px] leading-5 text-slate-400">
-              成本價預設帶入最新收盤價，可自行改成你的實際買入均價，殖利率會即時換算為投報率。
-              試算未計入交易成本與稅費，僅供參考；張數與成本設定僅儲存在此裝置瀏覽器。
+            <div className="border-t border-slate-200 px-4 py-4">
+              {backupActions}
+              <p className="mt-2 text-[11px] leading-5 text-slate-400">
+                成本價預設帶入最新收盤價，可自行改成你的實際買入均價，殖利率會即時換算為投報率。
+                試算未計入交易成本與稅費，僅供參考；張數與成本設定僅儲存在此裝置瀏覽器。
+              </p>
             </div>
           </div>
         )}

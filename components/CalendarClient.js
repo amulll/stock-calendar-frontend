@@ -34,6 +34,8 @@ import { useWatchlist } from "../hooks/useWatchlist";
 import { proxyGet } from "../lib/proxy-client";
 import { useToast } from "../hooks/useToast";
 
+const SAMPLE_WATCHLIST = ["0056", "00878", "2330"];
+
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -57,6 +59,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     toggleWatchlist,
     updateShares,
     updateCost,
+    exportData,
+    importData,
   } = useWatchlist();
 
   const [allStocks] = useState(initialAllStocks || []);
@@ -73,6 +77,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
   const hasHandledJump = useRef(false);
+  const userChoseViewRef = useRef(false);
   const debouncedFilter = useDebouncedValue(filterText, 250);
   const { addToast } = useToast();
 
@@ -102,6 +107,15 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   useEffect(() => {
     setLocalYield(yieldThreshold);
   }, [yieldThreshold]);
+
+  useEffect(() => {
+    if (
+      !userChoseViewRef.current &&
+      window.matchMedia("(max-width: 768px)").matches
+    ) {
+      setViewMode("list");
+    }
+  }, []);
 
   useEffect(() => {
     const dateParam = searchParams.get("date");
@@ -186,6 +200,32 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     setStockModalOpen(true);
   };
 
+  const handleViewModeChange = (mode) => {
+    userChoseViewRef.current = true;
+    setViewMode(mode);
+  };
+
+  const handleAddSampleWatchlist = () => {
+    const missingCodes = SAMPLE_WATCHLIST.filter(
+      (code) => !watchlistSet.has(code)
+    );
+    missingCodes.forEach((code) => toggleWatchlist(code));
+    if (missingCodes.length > 0) {
+      addToast("已加入 3 檔範例自選，可立即試算年領股息", "success");
+    }
+  };
+
+  const handleSuggestionWatchlistToggle = (stock) => {
+    const isTracked = watchlistSet.has(stock.stock_code);
+    toggleWatchlist(stock.stock_code);
+    addToast(
+      isTracked
+        ? `已將 ${stock.stock_code} 移出自選`
+        : `已將 ${stock.stock_code} 加入自選`,
+      isTracked ? "info" : "success"
+    );
+  };
+
   const suggestions = useMemo(() => {
     if (!debouncedFilter) return [];
     const query = debouncedFilter.toLowerCase();
@@ -266,6 +306,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             filteredCount={filteredDividends.length}
             watchlistCount={watchlist.length}
             onOpenPortfolio={() => setPortfolioOpen(true)}
+            onAddSampleWatchlist={handleAddSampleWatchlist}
           />
         </div>
 
@@ -275,6 +316,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             onFilterChange={setFilterText}
             suggestions={suggestions}
             onSuggestionClick={handleSuggestionClick}
+            watchlistSet={watchlistSet}
+            onSuggestionWatchlistToggle={handleSuggestionWatchlistToggle}
             showWatchlistOnly={showWatchlistOnly}
             onToggleWatchlistOnly={() => setShowWatchlistOnly((prev) => !prev)}
             onOpenWatchlistModal={() => setWatchlistModalOpen(true)}
@@ -322,7 +365,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
               {/* 月曆 / 清單 視圖切換 */}
               <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-1">
                 <button
-                  onClick={() => setViewMode("grid")}
+                  onClick={() => handleViewModeChange("grid")}
                   aria-pressed={viewMode === "grid"}
                   className={`rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
                     viewMode === "grid"
@@ -333,7 +376,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   月曆
                 </button>
                 <button
-                  onClick={() => setViewMode("list")}
+                  onClick={() => handleViewModeChange("list")}
                   aria-pressed={viewMode === "list"}
                   className={`rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
                     viewMode === "list"
@@ -435,6 +478,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         onSharesChange={updateShares}
         costMap={costMap}
         onCostChange={updateCost}
+        onExportData={exportData}
+        onImportData={importData}
+        onAddSampleWatchlist={handleAddSampleWatchlist}
         onStockClick={(code) => {
           setPortfolioOpen(false);
           handleListStockClick(code);

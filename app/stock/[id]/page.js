@@ -9,6 +9,7 @@ import DividendChart from "../../../components/DividendChart";
 import StockHistoryTable from "../../../components/stock/StockHistoryTable";
 import StockSeoArticle from "../../../components/stock/StockSeoArticle";
 import IncomeCompositionBar from "../../../components/stock/IncomeCompositionBar";
+import { DEFAULT_BACKEND_URL } from "../../../lib/backend";
 
 // 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
 // 大幅降低後端負載並加快 SEO 頁面的 TTFB
@@ -30,7 +31,7 @@ function buildStockFallbackDescription(stockCode) {
 
 // 資料抓取函式
 const getStockData = cache(async (id) => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL;
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
   try {

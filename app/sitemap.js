@@ -1,4 +1,5 @@
 // app/sitemap.js
+import { DEFAULT_BACKEND_URL } from "../lib/backend";
 
 export default async function sitemap() {
   const baseUrl = 'https://ugoodly.com';
@@ -6,7 +7,7 @@ export default async function sitemap() {
   // 1. 讀取環境變數
   // API_URL: 後端網址 (建議在 Zeabur 設定環境變數，或在此寫死)
   // SERVICE_TOKEN: 通行證密碼 (必須與後端一致)
-  const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
+  const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL;
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
   console.log(`[Sitemap] Starting generation... Target API: ${API_URL}`);

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import ScreenerClient from "../../components/screener/ScreenerClient";
+import { DEFAULT_BACKEND_URL } from "../../lib/backend";
 
 export const revalidate = 3600;
 
@@ -25,7 +26,7 @@ export const metadata = {
 };
 
 async function getScreenerData() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL;
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
   try {

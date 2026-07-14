@@ -1,4 +1,5 @@
 import CalendarClient from "../components/CalendarClient";
+import { DEFAULT_BACKEND_URL } from "../lib/backend";
 import Loading from "../components/Loading"; // 1. 引入
 import { format } from "date-fns";
 import { Suspense } from "react";
@@ -11,7 +12,7 @@ export const metadata = {
 };
 // 資料抓取函式 (加入參數)
 async function getData(searchParams) {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ggo.zeabur.app";
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL;
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN; // 讀取密碼
   const now = new Date();
   

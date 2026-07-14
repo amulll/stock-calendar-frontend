@@ -33,8 +33,8 @@ export const metadata = {
     images: [
       {
         url: "https://ugoodly.com/ugoodly_1200x630.png", // 使用您的 Logo 或專屬封面圖
-        width: 192,
-        height: 192,
+        width: 1200,
+        height: 630,
         alt: "uGoodly 股利日曆 Logo",
       },
     ],

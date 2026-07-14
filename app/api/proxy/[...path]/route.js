@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { DEFAULT_BACKEND_URL } from "../../../../lib/backend";
 
 const ALLOWED_PREFIXES = [
   "api/dividends",
@@ -13,7 +14,7 @@ export async function GET(request, { params }) {
   const searchParams = request.nextUrl.searchParams.toString(); // 取得查詢參數 (例如: ?year=2024)
   
   // 後端真實網址 (內網或外網皆可)
-  const BACKEND_URL = process.env.BACKEND_INTERNAL_URL || "https://ggo.zeabur.app";
+  const BACKEND_URL = process.env.BACKEND_INTERNAL_URL || DEFAULT_BACKEND_URL;
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN; // 從環境變數讀取密碼
 
   const isAllowed = ALLOWED_PREFIXES.some((prefix) => {

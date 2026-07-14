@@ -389,6 +389,36 @@
 - Impact: 新增 `README.md`，明確記錄首頁與個股頁的 SSR 直連路徑、`/api/proxy` 的轉發角色、`SERVICE_TOKEN` 的伺服器邊界，以及目前 `BACKEND_INTERNAL_URL`、`NEXT_PUBLIC_API_URL`、`API_URL` 的分工，降低後續回看專案時的理解成本。
 - Next: 若後續將所有 client 請求完全收斂到 `proxyGet`，同步更新 README 中的資料流與環境變數說明。
 
+## 2026-07-14 – Activation and Retention UX
+- Status: done
+- Priority: high
+- Area: Frontend UX
+- Files:
+  - app/layout.js
+  - components/CalendarClient.js
+  - components/CalendarSummary.js
+  - components/FilterBar.js
+  - components/PortfolioModal.js
+  - components/WatchlistModal.js
+  - hooks/useWatchlist.js
+  - lib/calendarSubscribe.js
+  - DEVELOPMENT_LOG.md
+- Why: 降低新使用者建立自選股的門檻、改善手機日曆可讀性，並把行事曆訂閱與本機資料備份提升為容易找到的留存入口。
+- Impact: 修正 OG 圖片尺寸；手機掛載後預設使用清單視圖；空狀態可一鍵加入三檔範例；搜尋建議可直接切換自選；ICS 訂閱共用同一行為；自選股、持股數與成本可用版本化 JSON 匯出及覆蓋匯入。
+- Next: T6 已另案完成；目前環境無 Node/npm，需在可用環境補跑 lint、production build 與瀏覽器互動驗證。
+
+## 2026-07-14 – Share Card QR Code
+- Status: done
+- Priority: medium
+- Area: Frontend Sharing
+- Files:
+  - package.json
+  - lib/shareCard.js
+  - DEVELOPMENT_LOG.md
+- Why: 分享成績單原本只有純文字網址，轉貼到社群後缺少可直接回站的入口。
+- Impact: 新增 `qrcode` 1.5.4；分享卡會先產生並載入指向 uGoodly 首頁的 QR code，再繪製完整 Canvas，讓 Web Share 與下載 PNG 都包含相同的可掃描入口。
+- Next: 在具備 Node/npm 的環境安裝依賴並執行 lint、production build；實際產生 PNG 後以手機掃描 QR，並驗證 Web Share 與桌機下載結果。
+
 ## Backlog
 
 ### Item 1

@@ -9,6 +9,7 @@ export default function CalendarSummary({
   filteredCount,
   watchlistCount,
   onOpenPortfolio,
+  onAddSampleWatchlist,
 }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
@@ -27,9 +28,18 @@ export default function CalendarSummary({
           </Link>
         </p>
         {watchlistCount === 0 && (
-          <p className="mt-2 inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-            💡 點股票旁的 ♥ 加入自選，右側即可試算你的年領股息
-          </p>
+          <div className="mt-2 flex flex-col items-start gap-2">
+            <p className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+              💡 點股票旁的 ♥ 加入自選，右側即可試算你的年領股息
+            </p>
+            <button
+              type="button"
+              onClick={onAddSampleWatchlist}
+              className="rounded-lg bg-emerald-600 px-3 py-2 text-left text-xs font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
+            >
+              試試看：一鍵加入 0056 / 00878 / 台積電（2330）
+            </button>
+          </div>
         )}
       </div>
 

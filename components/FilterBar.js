@@ -10,6 +10,8 @@ export default function FilterBar({
   onFilterChange,
   suggestions,
   onSuggestionClick,
+  watchlistSet,
+  onSuggestionWatchlistToggle,
   showWatchlistOnly,
   onToggleWatchlistOnly,
   onOpenWatchlistModal,
@@ -158,12 +160,35 @@ export default function FilterBar({
                   activeIndex === index ? "bg-blue-50" : "hover:bg-slate-50"
                 }`}
               >
-                <span className="font-mono text-base font-bold text-slate-800">
-                  {stock.stock_code}
+                <span className="flex min-w-0 items-center">
+                  <span className="font-mono text-base font-bold text-slate-800">
+                    {stock.stock_code}
+                  </span>
+                  <span className="ml-2 truncate text-slate-600">
+                    {stock.stock_name}
+                  </span>
                 </span>
-                <span className="ml-2 truncate text-slate-600">
-                  {stock.stock_name}
-                </span>
+                <button
+                  type="button"
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onSuggestionWatchlistToggle(stock);
+                  }}
+                  className={`ml-3 flex-shrink-0 rounded-md border px-2 py-1 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                    watchlistSet.has(stock.stock_code)
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
+                  }`}
+                  aria-label={`${
+                    watchlistSet.has(stock.stock_code) ? "移出" : "加入"
+                  }自選：${stock.stock_code} ${stock.stock_name || ""}`}
+                >
+                  {watchlistSet.has(stock.stock_code) ? "✓ 已加入" : "＋ 加入"}
+                </button>
               </li>
             ))}
           </ul>

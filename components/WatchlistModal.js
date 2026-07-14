@@ -1,5 +1,9 @@
-import { X, Trash2, ExternalLink } from "lucide-react";
+"use client";
+
+import { X, Trash2, ExternalLink, CalendarPlus } from "lucide-react";
 import ModalContainer from "./ModalContainer";
+import { useToast } from "../hooks/useToast";
+import { subscribeToCalendar } from "../lib/calendarSubscribe";
 
 export default function WatchlistModal({
   isOpen,
@@ -9,6 +13,8 @@ export default function WatchlistModal({
   onRemove,
   onStockClick,
 }) {
+  const { addToast } = useToast();
+
   if (!isOpen) return null;
 
   const getStockName = (code) => {
@@ -82,6 +88,18 @@ export default function WatchlistModal({
             </div>
           )}
         </div>
+        {watchlist.length > 0 && (
+          <div className="flex-shrink-0 border-t border-slate-200 p-3">
+            <button
+              type="button"
+              onClick={() => subscribeToCalendar(watchlist, addToast)}
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
+              <CalendarPlus size={17} />
+              訂閱到我的行事曆
+            </button>
+          </div>
+        )}
       </div>
     </ModalContainer>
   );
