@@ -84,7 +84,18 @@ export default function StockHistoryTable({ history }) {
                       </td>
                     )}
                     <td className="px-2 py-2 font-mono font-bold text-slate-900 whitespace-nowrap">
-                      {formatDividend(item.cash_dividend)}
+                      <span className="inline-flex items-center gap-1">
+                        {Number(item.cash_dividend) > 0 && (
+                          <span>{formatDividend(item.cash_dividend)}</span>
+                        )}
+                        {Number(item.stock_dividend) > 0 && (
+                          <span className="rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">
+                            配股 {formatDividend(item.stock_dividend)}
+                          </span>
+                        )}
+                        {!(Number(item.cash_dividend) > 0) &&
+                          !(Number(item.stock_dividend) > 0) && <span>-</span>}
+                      </span>
                     </td>
                     <td className="px-2 py-2 font-medium text-slate-700 whitespace-nowrap">
                       {item.pay_date ? (
