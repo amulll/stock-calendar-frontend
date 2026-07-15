@@ -64,6 +64,12 @@
   - Stock detail page Primer-style unification is complete: stock detail colors are reduced to white/slate surfaces with blue reserved for links, focus, and selected controls.
 - `components/CalendarClient.js`
   - Homepage month navigation is now placed directly above the calendar grid, with the active filter summary and visible entry count in the same calendar toolbar.
+- `components/CalendarClient.js`, `components/CalendarSummary.js`, `components/UpcomingFocus.js`, `components/Loading.js`
+  - P0 trust and activation pass is complete: API-backed freshness is visible, homepage copy is outcome-led, mobile view preference is persisted without hydration-unsafe initialization, and month changes use localized loading instead of a full-screen blocker.
+- `lib/analytics.js`, `components/PortfolioModal.js`, `lib/calendarSubscribe.js`
+  - Privacy-limited GA4 product events are complete for sample activation, search, watchlist addition, portfolio use, subscription, backup, sharing, and stock-detail opening; no stock codes, holdings, costs, or calculated amounts are sent.
+- `components/ModalContainer.js`, modal components, `components/CalendarGrid.js`, `components/FilterBar.js`, `app/layout.js`
+  - P0 accessibility pass is complete: dialogs have programmatic names, primary touch targets are enlarged, missing button types and icon labels are filled, and a skip link reaches the main content.
 
 ## Remaining Work
 
@@ -97,3 +103,5 @@
 
 ## Verification Focus
 - Regression against existing month navigation, search suggestions, and stock modal opening
+- Validate GA4 events with DebugView while confirming analytics blocking never breaks product actions.
+- Validate 375px and 768px layouts, keyboard-only modal flows, stored view preference, localStorage failure fallback, and reduced-motion loading.

@@ -19,6 +19,7 @@ import ModalContainer from "./ModalContainer";
 import { proxyGet } from "../lib/proxy-client";
 import { shareCard } from "../lib/shareCard";
 import { subscribeToCalendar } from "../lib/calendarSubscribe";
+import { trackEvent } from "../lib/analytics";
 import { useToast } from "../hooks/useToast";
 
 const DEFAULT_SHARES = 1000; // 未設定時預設 1 張
@@ -215,8 +216,10 @@ export default function PortfolioModal({
       if (result === "downloaded") {
         addToast("成績單圖片已下載", "success");
       }
+      trackEvent("share_card", { result });
     } catch (err) {
       console.error("Share card failed", err);
+      trackEvent("share_card", { result: "error" });
       addToast("圖片產生失敗，請稍後再試", "error");
     } finally {
       setSharing(false);
@@ -234,8 +237,10 @@ export default function PortfolioModal({
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
+      trackEvent("backup_export", { result: "success" });
       addToast("自選股備份已下載", "success");
     } catch (error) {
+      trackEvent("backup_export", { result: "error" });
       addToast("備份匯出失敗，請稍後再試", "error");
     }
   };
@@ -298,6 +303,7 @@ export default function PortfolioModal({
     <ModalContainer
       isOpen={isOpen}
       onClose={onClose}
+      ariaLabelledby="portfolio-modal-title"
       contentClassName="max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[88vh]"
     >
       <div className="flex max-h-[88vh] flex-col rounded-xl border border-slate-200 bg-white">
@@ -308,7 +314,7 @@ export default function PortfolioModal({
               <Wallet size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-black tracking-tight text-slate-900">
+              <h2 id="portfolio-modal-title" className="text-lg font-black tracking-tight text-slate-900">
                 我的存股組合
               </h2>
               <p className="text-xs font-medium text-slate-500">
@@ -317,8 +323,9 @@ export default function PortfolioModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="關閉"
           >
             <X size={20} />
@@ -335,7 +342,7 @@ export default function PortfolioModal({
             <button
               type="button"
               onClick={onAddSampleWatchlist}
-              className="rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
+              className="min-h-11 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
             >
               試試看：一鍵加入 0056 / 00878 / 台積電（2330）
             </button>
@@ -390,7 +397,9 @@ export default function PortfolioModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() => subscribeToCalendar(watchlist, addToast)}
+                    onClick={() =>
+                      subscribeToCalendar(watchlist, addToast, "portfolio_modal")
+                    }
                     title="複製訂閱連結，除息與入帳日自動同步到你的行事曆"
                     className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
                   >

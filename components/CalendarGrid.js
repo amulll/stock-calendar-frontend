@@ -78,7 +78,7 @@ export default function CalendarGrid({
                       handleDayActivate();
                     }}
                     aria-label={dayButtonLabel}
-                    className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 md:h-8 md:w-8 md:text-sm ${
+                    className={`flex h-11 w-11 items-center justify-center rounded-md text-xs font-black transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 focus-visible:ring-offset-2 md:h-8 md:w-8 md:text-sm ${
                       isToday
                         ? "bg-blue-600 text-white"
                         : "text-slate-700 hover:bg-blue-50"

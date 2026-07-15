@@ -26,16 +26,18 @@ export default function WatchlistModal({
     <ModalContainer
       isOpen={isOpen}
       onClose={onClose}
+      ariaLabelledby="watchlist-modal-title"
       contentClassName="max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[80vh]"
     >
       <div className="flex max-h-[80vh] flex-col rounded-xl border border-slate-200 bg-white">
         <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
-          <h2 className="text-lg font-black tracking-tight text-slate-900">
+          <h2 id="watchlist-modal-title" className="text-lg font-black tracking-tight text-slate-900">
             我的追蹤清單 ({watchlist.length})
           </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="關閉"
           >
             <X size={20} />
@@ -55,6 +57,7 @@ export default function WatchlistModal({
                   className="group flex items-center justify-between rounded-lg border border-slate-200 bg-white p-3 transition hover:border-blue-300 hover:bg-slate-50"
                 >
                   <button
+                    type="button"
                     className="flex flex-grow cursor-pointer items-center gap-3 text-left"
                     onClick={() => {
                       onStockClick(code);
@@ -74,12 +77,14 @@ export default function WatchlistModal({
                     </div>
                   </button>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       onRemove(code);
                     }}
-                    className="rounded-lg p-2 text-slate-400 transition hover:bg-rose-50 hover:text-rose-500"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 transition hover:bg-rose-50 hover:text-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
                     title="移除追蹤"
+                    aria-label={`移除追蹤：${code} ${getStockName(code)}`}
                   >
                     <Trash2 size={18} />
                   </button>
@@ -92,7 +97,9 @@ export default function WatchlistModal({
           <div className="flex-shrink-0 border-t border-slate-200 p-3">
             <button
               type="button"
-              onClick={() => subscribeToCalendar(watchlist, addToast)}
+              onClick={() =>
+                subscribeToCalendar(watchlist, addToast, "watchlist_modal")
+              }
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <CalendarPlus size={17} />

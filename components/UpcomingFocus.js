@@ -31,6 +31,13 @@ function countdownTone(days) {
   return "border-slate-200 bg-slate-50 text-slate-500";
 }
 
+function updatedAtLabel(updatedAt) {
+  if (!updatedAt) return "更新時間未提供";
+  const parsed = parseISO(updatedAt);
+  if (Number.isNaN(parsed.getTime())) return "更新時間未提供";
+  return `更新 ${format(parsed, "M/d HH:mm")}`;
+}
+
 // 自選股優先，其次按日期近的排前面
 function prioritize(entries, watchlistSet) {
   return [...entries].sort((a, b) => {
@@ -53,7 +60,7 @@ function FocusPill({ entry, tracked, onStockClick }) {
       type="button"
       onClick={() => onStockClick(item.stock_code)}
       title={kind === "ex" ? "最後買進倒數" : "即將入帳"}
-      className="flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1 pl-1 pr-2.5 transition hover:border-blue-200 hover:bg-blue-50/40"
+      className="flex min-h-11 flex-shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1 pl-1 pr-2.5 transition hover:border-blue-200 hover:bg-blue-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
     >
       <span
         className={`rounded border px-1.5 py-0.5 text-[11px] font-black ${countdownTone(days)}`}
@@ -83,7 +90,7 @@ function FocusRow({ item, dateObj, days, tracked, amountLabel, onStockClick }) {
     <button
       type="button"
       onClick={() => onStockClick(item.stock_code)}
-      className="flex w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left transition hover:border-blue-200 hover:bg-blue-50/40"
+      className="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-left transition hover:border-blue-200 hover:bg-blue-50/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
     >
       <div className="flex min-w-0 items-center gap-2">
         <span
@@ -166,9 +173,14 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
     <section className="mt-4 rounded-xl border border-slate-200 bg-white px-3 py-2.5 md:px-4">
       {/* 收合單行：近期重點 */}
       <div className="flex items-center gap-2">
-        <div className="flex flex-shrink-0 items-center gap-1.5 text-sm font-black text-slate-900">
-          <Hourglass size={15} className="text-amber-500" />
-          近期重點
+        <div className="flex flex-shrink-0 flex-col">
+          <div className="flex items-center gap-1.5 text-sm font-black text-slate-900">
+            <Hourglass size={15} className="text-amber-500" aria-hidden="true" />
+            近期重點
+          </div>
+          <span className="text-[10px] font-medium text-slate-400">
+            {updatedAtLabel(data.updated_at)}
+          </span>
         </div>
 
         <div className="min-w-0 flex-1 overflow-x-auto">
@@ -193,7 +205,7 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="flex flex-shrink-0 items-center gap-0.5 rounded-md px-1.5 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+          className="flex min-h-11 flex-shrink-0 items-center gap-0.5 rounded-md px-2 py-1 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
         >
           {expanded ? "收合" : "查看全部"}
           <ChevronDown
@@ -265,11 +277,6 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
             </div>
           </div>
 
-          {data.updated_at && (
-            <p className="text-right text-[10px] text-slate-400 md:col-span-2">
-              資料更新於 {format(parseISO(data.updated_at), "M/d HH:mm")}
-            </p>
-          )}
         </div>
       )}
     </section>

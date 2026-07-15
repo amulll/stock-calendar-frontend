@@ -12,18 +12,23 @@ export default function DividendModal({
   if (!isOpen) return null;
 
   return (
-    <ModalContainer isOpen={isOpen} onClose={onClose}>
+    <ModalContainer
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledby="dividend-modal-title"
+    >
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
           <div>
-            <h2 className="text-lg font-black tracking-tight text-slate-900">發放清單</h2>
+            <h2 id="dividend-modal-title" className="text-lg font-black tracking-tight text-slate-900">發放清單</h2>
             <p className="text-sm text-slate-500">
               {date && format(date, "yyyy年 M月 d日 (eeee)")}
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="關閉"
           >
             <X size={20} />
@@ -37,6 +42,7 @@ export default function DividendModal({
             <div className="space-y-2">
               {dividends.map((div) => (
                 <button
+                  type="button"
                   key={div.id}
                   onClick={() => onStockClick(div.stock_code)}
                   className="group flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-blue-300 hover:bg-slate-50"

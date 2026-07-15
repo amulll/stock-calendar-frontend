@@ -419,6 +419,39 @@
 - Impact: 新增 `qrcode` 1.5.4；分享卡會先產生並載入指向 uGoodly 首頁的 QR code，再繪製完整 Canvas，讓 Web Share 與下載 PNG 都包含相同的可掃描入口。
 - Next: 在具備 Node/npm 的環境安裝依賴並執行 lint、production build；實際產生 PNG 後以手機掃描 QR，並驗證 Web Share 與桌機下載結果。
 
+## 2026-07-15 – P0 Trust, Activation, and Accessibility
+- Status: done
+- Priority: high
+- Area: Frontend UX
+- Files:
+  - app/layout.js
+  - components/AdUnit.js
+  - components/AgendaList.js
+  - components/CalendarClient.js
+  - components/CalendarGrid.js
+  - components/CalendarSummary.js
+  - components/DividendCalculator.js
+  - components/DividendChart.js
+  - components/DividendModal.js
+  - components/FilterBar.js
+  - components/Loading.js
+  - components/Loading.module.css
+  - components/ModalContainer.js
+  - components/PortfolioModal.js
+  - components/SeoContent.js
+  - components/StockModal.js
+  - components/UpcomingFocus.js
+  - components/WatchlistModal.js
+  - components/YieldListModal.js
+  - lib/analytics.js
+  - lib/calendarSubscribe.js
+  - lib/shareCard.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: 首頁更新時間、啟用文案、手機初始視圖、觸控尺寸、Dialog 命名與全頁 loading 仍會影響資料可信度、首次啟用與無障礙體驗，且 GA4 缺少產品漏斗事件。
+- Impact: 更新資訊改用 API 時間並修正排程文案；首頁改為結果導向 CTA；新增不含投資組合敏感值的 GA4 事件；保存 grid/list 偏好並以 SSR 安全 placeholder 避免手機閃動；Modal、skip link 與主要觸控目標完成可及性補強；月份更新改為保留內容的局部 loading，並移除 cm 動畫文字。
+- Next: 目前環境沒有 Node/npm；合併前須在可用環境執行 lint、production build、GA DebugView，以及 375px、768px、鍵盤與 reduced-motion 瀏覽器驗證。
+
 ## Backlog
 
 ### Item 1

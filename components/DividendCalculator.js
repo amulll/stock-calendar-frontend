@@ -262,7 +262,8 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
                 <span className="absolute right-4 top-3 text-sm text-slate-400 md:top-3.5">元</span>
             </div>
             <div className="flex gap-2 mt-1 justify-end">
-                <button 
+                <button
+                    type="button"
                     onClick={() => {
                         const pStr = formatValue(stockPrice);
                         setPriceStr(pStr);
@@ -293,9 +294,9 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
                 <span className="absolute right-4 top-3 text-sm text-slate-400 md:top-3.5">股</span>
             </div>
             <div className="flex gap-2 mt-2">
-                <button onClick={() => handleSharesChange(1000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">1張</button>
-                <button onClick={() => handleSharesChange(5000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">5張</button>
-                <button onClick={() => handleSharesChange(10000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">10張</button>
+                <button type="button" onClick={() => handleSharesChange(1000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">1張</button>
+                <button type="button" onClick={() => handleSharesChange(5000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">5張</button>
+                <button type="button" onClick={() => handleSharesChange(10000)} className="rounded-md bg-slate-100 px-3 py-1 text-xs text-slate-600 transition hover:bg-slate-200">10張</button>
             </div>
           </div>
 

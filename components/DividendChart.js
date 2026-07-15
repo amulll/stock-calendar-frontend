@@ -74,6 +74,7 @@ export default function DividendChart({ history }) {
         {/* 切換按鈕 (Tab Switcher) */}
         <div className="flex rounded-lg bg-slate-100 p-1">
           <button
+            type="button"
             onClick={() => setViewMode("annual")}
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               viewMode === "annual"
@@ -84,6 +85,7 @@ export default function DividendChart({ history }) {
             年度
           </button>
           <button
+            type="button"
             onClick={() => setViewMode("detail")}
             className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${
               viewMode === "detail"

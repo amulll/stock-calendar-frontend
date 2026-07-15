@@ -55,6 +55,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="zh-TW">
       <body className={`${inter.className} flex flex-col min-h-screen bg-slate-50 text-slate-900`}>
+        <a
+          href="#main-content"
+          className="fixed left-3 top-3 z-[100] -translate-y-24 rounded-lg bg-blue-600 px-4 py-2.5 font-bold text-white shadow-lg transition focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2 motion-reduce:transition-none"
+        >
+          跳到主要內容
+        </a>
 
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -72,7 +78,7 @@ export default function RootLayout({ children }) {
 
         <Providers>
           <ToastProvider>
-            <div className="flex-grow">
+            <div id="main-content" tabIndex={-1} className="flex-grow focus:outline-none">
               {children}
             </div>
             <Footer />

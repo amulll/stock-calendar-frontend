@@ -230,13 +230,15 @@ export default function StockModal({
     <ModalContainer
       isOpen={isOpen}
       onClose={onClose}
+      ariaLabelledby="stock-modal-title"
       contentClassName="max-w-lg animate-in slide-in-from-bottom-5 duration-300"
     >
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="relative border-b border-slate-200 bg-white p-4 text-slate-900">
           <button
+            type="button"
             onClick={onClose}
-            className="absolute right-3 top-3 z-20 rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="關閉"
           >
             <X size={20} />
@@ -245,7 +247,7 @@ export default function StockModal({
           <div className="flex items-start justify-between gap-3 pr-12">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-2xl font-black tracking-tight text-slate-950">
+                <h2 id="stock-modal-title" className="text-2xl font-black tracking-tight text-slate-950">
                   {info?.stock_name || stockCode}
                 </h2>
                 {stockCode && (
@@ -253,6 +255,7 @@ export default function StockModal({
                     href={`/stock/${stockCode}`}
                     className="rounded-md border border-slate-200 bg-slate-50 p-1.5 text-slate-500 transition hover:bg-slate-100 hover:text-blue-600"
                     title="檢視個股頁面"
+                    aria-label="開啟完整個股頁面"
                   >
                     <ExternalLink size={16} />
                   </Link>
@@ -270,9 +273,11 @@ export default function StockModal({
 
             {stockCode && (
               <button
+                type="button"
                 onClick={() => onToggleTrack(stockCode)}
-                className="mr-1 rounded-lg border border-slate-200 bg-white p-2.5 text-slate-500 transition hover:bg-slate-50 active:scale-95"
+                className="mr-1 flex h-11 w-11 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-300"
                 title={isTracked ? "移除追蹤" : "加入追蹤"}
+                aria-label={isTracked ? "移除追蹤" : "加入追蹤"}
               >
                 <Heart
                   size={20}
@@ -359,12 +364,14 @@ export default function StockModal({
                       {currentEvent.pay_date && (
                         <div className="flex gap-2 mt-2">
                           <button
+                            type="button"
                             onClick={addToGoogleCalendar}
                             className="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-700 transition hover:bg-slate-100"
                           >
                             <CalendarPlus size={12} /> Google
                           </button>
                           <button
+                            type="button"
                             onClick={downloadIcsFile}
                             className="flex items-center gap-1 rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-700 transition hover:bg-slate-100"
                           >

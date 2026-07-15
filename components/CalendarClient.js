@@ -33,8 +33,27 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useWatchlist } from "../hooks/useWatchlist";
 import { proxyGet } from "../lib/proxy-client";
 import { useToast } from "../hooks/useToast";
+import { trackEvent } from "../lib/analytics";
 
 const SAMPLE_WATCHLIST = ["0056", "00878", "2330"];
+const VIEW_MODE_STORAGE_KEY = "calendarViewMode";
+
+function CalendarViewPlaceholder() {
+  return (
+    <div
+      className="min-h-[420px] animate-pulse rounded-xl border border-slate-200 bg-white p-3 motion-reduce:animate-none md:min-h-[640px]"
+      role="status"
+      aria-label="正在準備日曆檢視"
+    >
+      <div className="h-9 rounded-lg bg-slate-100" />
+      <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-7">
+        {Array.from({ length: 14 }).map((_, index) => (
+          <div key={index} className="h-20 rounded-lg bg-slate-100 md:h-28" />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const searchParams = useSearchParams();
@@ -67,7 +86,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [jumpLoading, setJumpLoading] = useState(false);
   const [filterText, setFilterText] = useState("");
   const [showWatchlistOnly, setShowWatchlistOnly] = useState(false);
-  const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
+  const [viewMode, setViewMode] = useState(null); // null | "grid" | "list"
   const [watchlistModalOpen, setWatchlistModalOpen] = useState(false);
   const [portfolioOpen, setPortfolioOpen] = useState(false);
   const [yieldListOpen, setYieldListOpen] = useState(false);
@@ -77,7 +96,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const [selectedStockCode, setSelectedStockCode] = useState(null);
   const [stockModalOpen, setStockModalOpen] = useState(false);
   const hasHandledJump = useRef(false);
-  const userChoseViewRef = useRef(false);
+  const trackedPortfolioEditsRef = useRef(new Set());
   const debouncedFilter = useDebouncedValue(filterText, 250);
   const { addToast } = useToast();
 
@@ -94,6 +113,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   } = useSWR(dividendsKey, {
     fallbackData:
       dividendsKey === initialDividendsKey.current ? initialDividends || [] : undefined,
+    keepPreviousData: true,
   });
   const dividends = useMemo(() => dividendsData || [], [dividendsData]);
   const loading = dividendsLoading || jumpLoading;
@@ -109,12 +129,19 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   }, [yieldThreshold]);
 
   useEffect(() => {
-    if (
-      !userChoseViewRef.current &&
-      window.matchMedia("(max-width: 768px)").matches
-    ) {
-      setViewMode("list");
+    let storedMode = null;
+    try {
+      storedMode = window.localStorage.getItem(VIEW_MODE_STORAGE_KEY);
+    } catch {
+      storedMode = null;
     }
+
+    if (storedMode === "grid" || storedMode === "list") {
+      setViewMode(storedMode);
+      return;
+    }
+
+    setViewMode(window.matchMedia("(max-width: 768px)").matches ? "list" : "grid");
   }, []);
 
   useEffect(() => {
@@ -149,6 +176,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   };
 
   const handleSuggestionClick = async (stock) => {
+    trackEvent("search_stock", { source: "search_suggestion" });
     setFilterText(stock.stock_code);
     setJumpLoading(true);
     try {
@@ -179,7 +207,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  const handleListStockClick = async (code) => {
+  const handleListStockClick = async (code, source = "list") => {
+    trackEvent("stock_detail_open", { source });
     setSelectedStockCode(code);
     setStockModalOpen(true);
     try {
@@ -195,35 +224,79 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     }
   };
 
-  const handleStockClick = (code) => {
+  const handleStockClick = (code, source = "calendar") => {
+    trackEvent("stock_detail_open", { source });
     setSelectedStockCode(code);
     setStockModalOpen(true);
   };
 
   const handleViewModeChange = (mode) => {
-    userChoseViewRef.current = true;
     setViewMode(mode);
+    try {
+      window.localStorage.setItem(VIEW_MODE_STORAGE_KEY, mode);
+    } catch {
+      // View switching must still work when storage is unavailable.
+    }
   };
 
-  const handleAddSampleWatchlist = () => {
+  const handleOpenPortfolio = (source) => {
+    trackEvent("portfolio_open", {
+      source,
+      has_watchlist: watchlist.length > 0,
+    });
+    setPortfolioOpen(true);
+  };
+
+  const handleAddSampleWatchlist = (source = "calendar_summary") => {
     const missingCodes = SAMPLE_WATCHLIST.filter(
       (code) => !watchlistSet.has(code)
     );
     missingCodes.forEach((code) => toggleWatchlist(code));
     if (missingCodes.length > 0) {
-      addToast("已加入 3 檔範例自選，可立即試算年領股息", "success");
+      trackEvent("sample_watchlist_add", { source });
+      addToast(
+        `已加入 ${missingCodes.length} 檔範例自選，可立即試算年領股息`,
+        "success"
+      );
     }
   };
 
   const handleSuggestionWatchlistToggle = (stock) => {
     const isTracked = watchlistSet.has(stock.stock_code);
     toggleWatchlist(stock.stock_code);
+    if (!isTracked) {
+      trackEvent("watchlist_add", { source: "search_suggestion" });
+    }
     addToast(
       isTracked
         ? `已將 ${stock.stock_code} 移出自選`
         : `已將 ${stock.stock_code} 加入自選`,
       isTracked ? "info" : "success"
     );
+  };
+
+  const handleStockModalWatchlistToggle = (code) => {
+    const isTracked = watchlistSet.has(code);
+    toggleWatchlist(code);
+    if (!isTracked) {
+      trackEvent("watchlist_add", { source: "stock_modal" });
+    }
+  };
+
+  const trackPortfolioEditOnce = (field) => {
+    if (trackedPortfolioEditsRef.current.has(field)) return;
+    trackedPortfolioEditsRef.current.add(field);
+    trackEvent("portfolio_value_edit", { field });
+  };
+
+  const handlePortfolioSharesChange = (code, value) => {
+    updateShares(code, value);
+    trackPortfolioEditOnce("shares");
+  };
+
+  const handlePortfolioCostChange = (code, value) => {
+    updateCost(code, value);
+    trackPortfolioEditOnce("cost");
   };
 
   const suggestions = useMemo(() => {
@@ -305,8 +378,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             currentDate={currentDate}
             filteredCount={filteredDividends.length}
             watchlistCount={watchlist.length}
-            onOpenPortfolio={() => setPortfolioOpen(true)}
-            onAddSampleWatchlist={handleAddSampleWatchlist}
+            onOpenPortfolio={() => handleOpenPortfolio("calendar_summary")}
+            onAddSampleWatchlist={() => handleAddSampleWatchlist("calendar_summary")}
           />
         </div>
 
@@ -335,7 +408,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         </div>
       </section>
 
-      <UpcomingFocus watchlistSet={watchlistSet} onStockClick={handleStockClick} />
+      <UpcomingFocus
+        watchlistSet={watchlistSet}
+        onStockClick={(code) => handleStockClick(code, "upcoming_focus")}
+      />
 
       <div className="mt-4 flex w-full justify-center">
         <AdUnit type="horizontal" />
@@ -361,13 +437,14 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {/* 月曆 / 清單 視圖切換 */}
               <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-1">
                 <button
+                  type="button"
                   onClick={() => handleViewModeChange("grid")}
                   aria-pressed={viewMode === "grid"}
-                  className={`rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
+                  className={`min-h-11 rounded-md px-3 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 ${
                     viewMode === "grid"
                       ? "bg-white text-slate-900 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
@@ -376,9 +453,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   月曆
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleViewModeChange("list")}
                   aria-pressed={viewMode === "list"}
-                  className={`rounded-md px-2.5 py-1.5 text-xs font-bold transition ${
+                  className={`min-h-11 rounded-md px-3 py-2 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 ${
                     viewMode === "list"
                       ? "bg-white text-slate-900 shadow-sm"
                       : "text-slate-500 hover:text-slate-700"
@@ -390,8 +468,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
               <div className="flex items-center justify-between gap-2 rounded-lg border border-slate-200 bg-slate-50 p-1.5 md:min-w-[240px]">
                 <button
+                  type="button"
                   onClick={prevMonth}
-                  className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
+                  className="flex h-11 w-11 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
                   aria-label="上一個月"
                 >
                   ‹
@@ -400,8 +479,9 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
                   {format(currentDate, "yyyy年 M月")}
                 </span>
                 <button
+                  type="button"
                   onClick={nextMonth}
-                  className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100"
+                  className="flex h-11 w-11 items-center justify-center rounded-md border border-slate-200 bg-white text-lg text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
                   aria-label="下一個月"
                 >
                   ›
@@ -411,45 +491,49 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
           </div>
         </div>
 
-        {viewMode === "grid" ? (
-          <CalendarGrid
-            calendarDays={calendarDays}
-            monthStart={monthStart}
-            watchlistSet={watchlistSet}
-            dividendsByDate={dividendsByDate}
-            localYield={localYield}
-            showAmounts={showWatchlistOnly}
-            sharesMap={sharesMap}
-            onDateSelect={(day) => {
-              setSelectedDate(day);
-              setDateModalOpen(true);
-            }}
-            onStockSelect={handleStockClick}
-          />
-        ) : (
-          <AgendaList
-            monthDays={monthDays}
-            dividendsByDate={dividendsByDate}
-            watchlistSet={watchlistSet}
-            showAmounts={showWatchlistOnly}
-            sharesMap={sharesMap}
-            onStockSelect={handleStockClick}
-          />
-        )}
-      </section>
+        <div className="relative" aria-busy={loading}>
+          {viewMode === null ? (
+            <CalendarViewPlaceholder />
+          ) : viewMode === "grid" ? (
+            <CalendarGrid
+              calendarDays={calendarDays}
+              monthStart={monthStart}
+              watchlistSet={watchlistSet}
+              dividendsByDate={dividendsByDate}
+              localYield={localYield}
+              showAmounts={showWatchlistOnly}
+              sharesMap={sharesMap}
+              onDateSelect={(day) => {
+                setSelectedDate(day);
+                setDateModalOpen(true);
+              }}
+              onStockSelect={(code) => handleStockClick(code, "calendar_grid")}
+            />
+          ) : (
+            <AgendaList
+              monthDays={monthDays}
+              dividendsByDate={dividendsByDate}
+              watchlistSet={watchlistSet}
+              showAmounts={showWatchlistOnly}
+              sharesMap={sharesMap}
+              onStockSelect={(code) => handleStockClick(code, "agenda_list")}
+            />
+          )}
 
-      {loading && (
-        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <Loading text="正在更新日曆..." scale={0.5} />
+          {loading && viewMode !== null && (
+            <div className="absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-white/75 pt-8 backdrop-blur-[1px]">
+              <Loading text="正在更新日曆..." compact />
+            </div>
+          )}
         </div>
-      )}
+      </section>
 
       <DividendModal
         isOpen={dateModalOpen}
         onClose={() => setDateModalOpen(false)}
         date={selectedDate}
         dividends={selectedDividends}
-        onStockClick={handleStockClick}
+        onStockClick={(code) => handleStockClick(code, "dividend_modal")}
       />
 
       <StockModal
@@ -457,7 +541,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         onClose={() => setStockModalOpen(false)}
         stockCode={selectedStockCode}
         isTracked={watchlist.includes(selectedStockCode)}
-        onToggleTrack={toggleWatchlist}
+        onToggleTrack={handleStockModalWatchlistToggle}
         onHistoryDateClick={handleHistoryDateClick}
       />
 
@@ -467,7 +551,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         watchlist={watchlist}
         allStocks={allStocks}
         onRemove={toggleWatchlist}
-        onStockClick={handleListStockClick}
+        onStockClick={(code) => handleListStockClick(code, "watchlist_modal")}
       />
 
       <PortfolioModal
@@ -475,15 +559,15 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         onClose={() => setPortfolioOpen(false)}
         watchlist={watchlist}
         sharesMap={sharesMap}
-        onSharesChange={updateShares}
+        onSharesChange={handlePortfolioSharesChange}
         costMap={costMap}
-        onCostChange={updateCost}
+        onCostChange={handlePortfolioCostChange}
         onExportData={exportData}
         onImportData={importData}
-        onAddSampleWatchlist={handleAddSampleWatchlist}
+        onAddSampleWatchlist={() => handleAddSampleWatchlist("portfolio_modal")}
         onStockClick={(code) => {
           setPortfolioOpen(false);
-          handleListStockClick(code);
+          handleListStockClick(code, "portfolio_modal");
         }}
       />
 
@@ -491,7 +575,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         isOpen={yieldListOpen}
         onClose={() => setYieldListOpen(false)}
         threshold={yieldThreshold}
-        onStockClick={handleListStockClick}
+        onStockClick={(code) => handleListStockClick(code, "yield_list_modal")}
       />
 
       <div className="mt-14">

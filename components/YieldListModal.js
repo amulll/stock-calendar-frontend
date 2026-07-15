@@ -42,6 +42,7 @@ export default function YieldListModal({
     <ModalContainer
       isOpen={isOpen}
       onClose={onClose}
+      ariaLabelledby="yield-list-modal-title"
       contentClassName="max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[80vh]"
     >
       <div className="flex max-h-[80vh] flex-col rounded-xl border border-slate-200 bg-white">
@@ -51,7 +52,7 @@ export default function YieldListModal({
               <TrendingUp size={20} />
             </div>
             <div>
-              <h2 className="text-lg font-black tracking-tight text-slate-900">
+              <h2 id="yield-list-modal-title" className="text-lg font-black tracking-tight text-slate-900">
                 全年度高殖利率清單
               </h2>
               <p className="text-xs font-medium text-amber-700">
@@ -60,8 +61,9 @@ export default function YieldListModal({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="關閉"
           >
             <X size={20} />
@@ -70,6 +72,7 @@ export default function YieldListModal({
 
         <div className="flex justify-end border-b border-slate-200 bg-slate-50 px-4 py-2">
           <button
+            type="button"
             onClick={() => setSortAsc((prev) => !prev)}
             className="flex items-center gap-1 text-xs text-slate-500 transition hover:text-slate-800"
           >
@@ -99,6 +102,7 @@ export default function YieldListModal({
             <div className="space-y-2 p-1">
               {sortedList.map((div) => (
                 <button
+                  type="button"
                   key={`${div.stock_code}-${div.ex_date}`}
                   className="group flex w-full items-center justify-between rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-amber-300 hover:bg-amber-50/40"
                   onClick={() => {

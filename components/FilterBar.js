@@ -135,7 +135,7 @@ export default function FilterBar({
           <button
             type="button"
             onClick={onClearFilter}
-            className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+            className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="清除搜尋條件"
           >
             <X size={16} aria-hidden="true" />
@@ -178,7 +178,7 @@ export default function FilterBar({
                     event.stopPropagation();
                     onSuggestionWatchlistToggle(stock);
                   }}
-                  className={`ml-3 flex-shrink-0 rounded-md border px-2 py-1 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                  className={`ml-3 min-h-11 flex-shrink-0 rounded-md border px-2 py-1 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
                     watchlistSet.has(stock.stock_code)
                       ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                       : "border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700"
@@ -198,6 +198,7 @@ export default function FilterBar({
       <div className="flex gap-2 self-end xl:self-auto">
         <div className="relative" ref={watchlistMenuRef}>
           <button
+            type="button"
             onClick={() => setWatchlistMenuOpen((open) => !open)}
             className={`flex min-h-11 min-w-[5.25rem] items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition ${
               showWatchlistOnly
@@ -236,6 +237,7 @@ export default function FilterBar({
                   僅顯示自選股
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     onToggleWatchlistOnly();
                     setWatchlistMenuOpen(false);
@@ -253,6 +255,7 @@ export default function FilterBar({
                 </button>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   onOpenWatchlistModal();
                   setWatchlistMenuOpen(false);
@@ -268,6 +271,7 @@ export default function FilterBar({
 
         <div className="relative" ref={yieldMenuRef}>
           <button
+            type="button"
             onClick={() => setYieldMenuOpen((open) => !open)}
             className={`flex min-h-11 min-w-[6.75rem] items-center justify-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-semibold transition ${
               showHighYieldOnly
@@ -308,6 +312,7 @@ export default function FilterBar({
                   高殖利率篩選
                 </span>
                 <button
+                  type="button"
                   onClick={() => {
                     onToggleHighYieldOnly();
                     setYieldMenuOpen(false);
@@ -347,6 +352,7 @@ export default function FilterBar({
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => {
                   onOpenYieldList();
                   setYieldMenuOpen(false);

@@ -40,6 +40,8 @@ export default function ModalContainer({
   onClose,
   children,
   contentClassName = "max-w-lg",
+  ariaLabelledby,
+  ariaDescribedby,
 }) {
   const containerRef = useRef(null);
 
@@ -96,6 +98,8 @@ export default function ModalContainer({
         ref={containerRef}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={ariaLabelledby}
+        aria-describedby={ariaDescribedby}
         tabIndex={-1}
         className={`w-full ${contentClassName} focus:outline-none`}
         onClick={(e) => e.stopPropagation()}
