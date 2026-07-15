@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import ModalContainer from "./ModalContainer";
+import CalendarSubscribeGuide from "./CalendarSubscribeGuide";
 import { proxyGet } from "../lib/proxy-client";
 import { shareCard } from "../lib/shareCard";
 import { subscribeToCalendar } from "../lib/calendarSubscribe";
@@ -23,6 +24,7 @@ import { trackEvent } from "../lib/analytics";
 import { useToast } from "../hooks/useToast";
 
 const DEFAULT_SHARES = 1000; // 未設定時預設 1 張
+const BACKUP_REMINDER_STORAGE_KEY = "ugoodlyBackupReminderHandledV1";
 const MONTH_LABELS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
 
 function formatMoney(value) {
@@ -133,6 +135,8 @@ export default function PortfolioModal({
   const { addToast } = useToast();
   const { mutate } = useSWRConfig();
   const [sharing, setSharing] = useState(false);
+  const [subscriptionGuideOpen, setSubscriptionGuideOpen] = useState(false);
+  const [showBackupReminder, setShowBackupReminder] = useState(false);
   const importInputRef = useRef(null);
   const currentYear = new Date().getFullYear();
 
@@ -203,6 +207,47 @@ export default function PortfolioModal({
     };
   }, [rows]);
 
+  const hasCustomizedPortfolio = useMemo(
+    () =>
+      watchlist.some(
+        (code) =>
+          (Object.prototype.hasOwnProperty.call(sharesMap, code) &&
+            Number(sharesMap[code]) !== DEFAULT_SHARES) ||
+          Object.prototype.hasOwnProperty.call(costMap, code)
+      ),
+    [watchlist, sharesMap, costMap]
+  );
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSubscriptionGuideOpen(false);
+      setShowBackupReminder(false);
+      return;
+    }
+
+    if (watchlist.length < 3 || !hasCustomizedPortfolio) {
+      setShowBackupReminder(false);
+      return;
+    }
+
+    try {
+      setShowBackupReminder(
+        window.localStorage.getItem(BACKUP_REMINDER_STORAGE_KEY) !== "1"
+      );
+    } catch {
+      setShowBackupReminder(false);
+    }
+  }, [isOpen, watchlist.length, hasCustomizedPortfolio]);
+
+  const markBackupReminderHandled = () => {
+    setShowBackupReminder(false);
+    try {
+      window.localStorage.setItem(BACKUP_REMINDER_STORAGE_KEY, "1");
+    } catch {
+      // 儲存不可用時仍讓提醒保持非阻斷，不影響主要功能。
+    }
+  };
+
   const handleShare = async () => {
     setSharing(true);
     try {
@@ -239,10 +284,25 @@ export default function PortfolioModal({
       URL.revokeObjectURL(url);
       trackEvent("backup_export", { result: "success" });
       addToast("自選股備份已下載", "success");
+      return true;
     } catch (error) {
       trackEvent("backup_export", { result: "error" });
       addToast("備份匯出失敗，請稍後再試", "error");
+      return false;
     }
+  };
+
+  const handleBackupReminderExport = () => {
+    if (handleExport()) markBackupReminderHandled();
+  };
+
+  const handleSubscribe = async () => {
+    const result = await subscribeToCalendar(
+      watchlist,
+      addToast,
+      "portfolio_modal"
+    );
+    if (result === "copied") setSubscriptionGuideOpen(true);
   };
 
   const handleImport = async (event) => {
@@ -253,6 +313,7 @@ export default function PortfolioModal({
       const result = onImportData(await file.text());
       if (result.ok) {
         addToast("備份匯入成功，已覆蓋目前自選資料", "success");
+        markBackupReminderHandled();
       } else {
         addToast(`備份匯入失敗：${result.error}`, "error");
       }
@@ -269,7 +330,7 @@ export default function PortfolioModal({
         <button
           type="button"
           onClick={handleExport}
-          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="flex min-h-11 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
         >
           <Download size={15} />
           匯出備份
@@ -277,7 +338,7 @@ export default function PortfolioModal({
         <button
           type="button"
           onClick={() => importInputRef.current?.click()}
-          className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="flex min-h-11 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
         >
           <Upload size={15} />
           匯入還原
@@ -331,6 +392,34 @@ export default function PortfolioModal({
             <X size={20} />
           </button>
         </div>
+
+        {showBackupReminder && (
+          <aside
+            className="border-b border-blue-200 bg-blue-50 px-4 py-3"
+            aria-live="polite"
+          >
+            <p className="text-sm font-bold text-slate-800">先替存股設定留一份備份</p>
+            <p className="mt-1 text-xs leading-5 text-slate-600">
+              你的自選股、持股張數與成本資料只存在此裝置。換裝置或清除瀏覽資料前，建議先下載備份。
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={handleBackupReminderExport}
+                className="min-h-11 rounded-lg bg-blue-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2"
+              >
+                立即匯出
+              </button>
+              <button
+                type="button"
+                onClick={markBackupReminderHandled}
+                className="min-h-11 rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              >
+                稍後
+              </button>
+            </div>
+          </aside>
+        )}
 
         {watchlist.length === 0 ? (
           <div className="flex flex-col items-center gap-3 px-4 py-16 text-center text-slate-400">
@@ -386,7 +475,7 @@ export default function PortfolioModal({
                     type="button"
                     onClick={handleShare}
                     disabled={sharing}
-                    className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:opacity-60"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 disabled:opacity-60"
                   >
                     {sharing ? (
                       <Loader2 size={16} className="animate-spin" />
@@ -397,15 +486,21 @@ export default function PortfolioModal({
                   </button>
                   <button
                     type="button"
-                    onClick={() =>
-                      subscribeToCalendar(watchlist, addToast, "portfolio_modal")
-                    }
+                    onClick={handleSubscribe}
+                    aria-expanded={subscriptionGuideOpen}
                     title="複製訂閱連結，除息與入帳日自動同步到你的行事曆"
-                    className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50"
+                    className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                   >
                     <CalendarPlus size={16} />
                     <span className="hidden sm:inline">訂閱行事曆</span>
                   </button>
+                  {subscriptionGuideOpen && (
+                    <div className="col-span-2 sm:col-span-3">
+                      <CalendarSubscribeGuide
+                        onClose={() => setSubscriptionGuideOpen(false)}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -413,41 +508,65 @@ export default function PortfolioModal({
             {/* 每月現金流 */}
             {totals.maxMonth > 0 && (
               <div className="border-b border-slate-200 p-4">
-                <div className="mb-2 text-xs font-semibold text-slate-500">
+                <div id="portfolio-cash-flow-title" className="mb-2 text-xs font-semibold text-slate-500">
                   每月現金流分布
                 </div>
-                <div className="flex items-end justify-between gap-1" style={{ height: 64 }}>
-                  {totals.monthly.map((value, index) => {
-                    const heightPct =
-                      totals.maxMonth > 0
-                        ? Math.max((value / totals.maxMonth) * 100, value > 0 ? 6 : 2)
-                        : 2;
-                    return (
-                      <div
-                        key={index}
-                        className="flex h-full flex-1 items-end"
-                        title={`${MONTH_LABELS[index]}月：$${formatMoney(value)}`}
-                      >
+                <p id="portfolio-cash-flow-summary" className="sr-only">
+                  全年預估現金流共 ${formatMoney(totals.income)}，最高月份為
+                  {MONTH_LABELS[totals.monthly.indexOf(totals.maxMonth)]} 月，預估
+                  ${formatMoney(totals.maxMonth)}。
+                </p>
+                <div
+                  role="img"
+                  aria-labelledby="portfolio-cash-flow-title portfolio-cash-flow-summary"
+                >
+                  <div aria-hidden="true" className="flex items-end justify-between gap-1" style={{ height: 64 }}>
+                    {totals.monthly.map((value, index) => {
+                      const heightPct =
+                        totals.maxMonth > 0
+                          ? Math.max((value / totals.maxMonth) * 100, value > 0 ? 6 : 2)
+                          : 2;
+                      return (
                         <div
-                          className={`w-full rounded-t ${
-                            value > 0 ? "bg-emerald-400" : "bg-slate-100"
-                          }`}
-                          style={{ height: `${heightPct}%` }}
-                        />
-                      </div>
-                    );
-                  })}
+                          key={index}
+                          className="flex h-full flex-1 items-end"
+                          title={`${MONTH_LABELS[index]}月：$${formatMoney(value)}`}
+                        >
+                          <div
+                            className={`w-full rounded-t ${
+                              value > 0 ? "bg-emerald-400" : "bg-slate-100"
+                            }`}
+                            style={{ height: `${heightPct}%` }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div aria-hidden="true" className="mt-1 flex justify-between gap-1">
+                    {MONTH_LABELS.map((label) => (
+                      <span
+                        key={label}
+                        className="flex-1 text-center text-[9px] text-slate-400"
+                      >
+                        {label}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="mt-1 flex justify-between gap-1">
-                  {MONTH_LABELS.map((label) => (
-                    <span
-                      key={label}
-                      className="flex-1 text-center text-[9px] text-slate-400"
-                    >
-                      {label}
-                    </span>
-                  ))}
-                </div>
+                <table className="sr-only">
+                  <caption>每月預估現金流明細</caption>
+                  <thead>
+                    <tr><th scope="col">月份</th><th scope="col">預估現金流</th></tr>
+                  </thead>
+                  <tbody>
+                    {totals.monthly.map((value, index) => (
+                      <tr key={MONTH_LABELS[index]}>
+                        <th scope="row">{MONTH_LABELS[index]} 月</th>
+                        <td>${formatMoney(value)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 

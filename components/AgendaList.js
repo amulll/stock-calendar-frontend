@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useMemo, useRef } from "react";
 import { format, isSameDay } from "date-fns";
 import { Heart } from "lucide-react";
 
@@ -18,14 +19,52 @@ export default function AgendaList({
   onStockSelect,
   showAmounts = false,
   sharesMap = {},
+  isCurrentMonth = false,
 }) {
   const amountOf = (div) =>
     (Number(div.cash_dividend) || 0) *
     Number(sharesMap[div.stock_code] ?? DEFAULT_SHARES);
 
-  const daysWithData = monthDays.filter(
-    (day) => (dividendsByDate.get(format(day, "yyyy-MM-dd")) || []).length > 0
+  const targetRef = useRef(null);
+  const lastScrolledMonthRef = useRef(null);
+  const daysWithData = useMemo(
+    () =>
+      monthDays.filter(
+        (day) => (dividendsByDate.get(format(day, "yyyy-MM-dd")) || []).length > 0
+      ),
+    [monthDays, dividendsByDate]
   );
+  const monthKey = monthDays[0] ? format(monthDays[0], "yyyy-MM") : null;
+  const todayKey = format(new Date(), "yyyy-MM-dd");
+  const targetKey = isCurrentMonth
+    ? daysWithData
+        .map((day) => format(day, "yyyy-MM-dd"))
+        .find((dayKey) => dayKey >= todayKey) || null
+    : null;
+
+  useEffect(() => {
+    if (!isCurrentMonth) {
+      lastScrolledMonthRef.current = null;
+      return undefined;
+    }
+    if (!targetKey || !monthKey || lastScrolledMonthRef.current === monthKey) {
+      return undefined;
+    }
+    if (!window.matchMedia("(max-width: 768px)").matches) return undefined;
+
+    const frame = window.requestAnimationFrame(() => {
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+      targetRef.current?.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "start",
+      });
+      lastScrolledMonthRef.current = monthKey;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isCurrentMonth, monthKey, targetKey]);
 
   if (daysWithData.length === 0) {
     return (
@@ -46,7 +85,8 @@ export default function AgendaList({
         return (
           <div
             key={key}
-            className="overflow-hidden rounded-xl border border-slate-200 bg-white"
+            ref={key === targetKey ? targetRef : undefined}
+            className="scroll-mt-24 overflow-hidden rounded-xl border border-slate-200 bg-white"
           >
             <div
               className={`flex items-center justify-between border-b border-slate-100 px-3 py-2 ${

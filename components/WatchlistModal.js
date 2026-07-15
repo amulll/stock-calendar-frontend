@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { X, Trash2, ExternalLink, CalendarPlus } from "lucide-react";
 import ModalContainer from "./ModalContainer";
+import CalendarSubscribeGuide from "./CalendarSubscribeGuide";
 import { useToast } from "../hooks/useToast";
 import { subscribeToCalendar } from "../lib/calendarSubscribe";
 
@@ -14,6 +16,21 @@ export default function WatchlistModal({
   onStockClick,
 }) {
   const { addToast } = useToast();
+  const [subscriptionGuideOpen, setSubscriptionGuideOpen] = useState(false);
+
+  const handleClose = () => {
+    setSubscriptionGuideOpen(false);
+    onClose();
+  };
+
+  const handleSubscribe = async () => {
+    const result = await subscribeToCalendar(
+      watchlist,
+      addToast,
+      "watchlist_modal"
+    );
+    if (result === "copied") setSubscriptionGuideOpen(true);
+  };
 
   if (!isOpen) return null;
 
@@ -25,7 +42,7 @@ export default function WatchlistModal({
   return (
     <ModalContainer
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       ariaLabelledby="watchlist-modal-title"
       contentClassName="max-w-md animate-in fade-in zoom-in-95 duration-200 max-h-[80vh]"
     >
@@ -36,7 +53,7 @@ export default function WatchlistModal({
           </h2>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             aria-label="關閉"
           >
@@ -61,7 +78,7 @@ export default function WatchlistModal({
                     className="flex flex-grow cursor-pointer items-center gap-3 text-left"
                     onClick={() => {
                       onStockClick(code);
-                      onClose();
+                      handleClose();
                     }}
                   >
                     <div className="flex h-10 w-14 items-center justify-center rounded-md border border-slate-200 bg-slate-50 font-mono text-sm font-bold text-slate-700">
@@ -97,14 +114,18 @@ export default function WatchlistModal({
           <div className="flex-shrink-0 border-t border-slate-200 p-3">
             <button
               type="button"
-              onClick={() =>
-                subscribeToCalendar(watchlist, addToast, "watchlist_modal")
-              }
+              onClick={handleSubscribe}
+              aria-expanded={subscriptionGuideOpen}
               className="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
               <CalendarPlus size={17} />
               訂閱到我的行事曆
             </button>
+            {subscriptionGuideOpen && (
+              <CalendarSubscribeGuide
+                onClose={() => setSubscriptionGuideOpen(false)}
+              />
+            )}
           </div>
         )}
       </div>

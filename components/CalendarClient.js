@@ -13,6 +13,7 @@ import {
   addMonths,
   subMonths,
   parseISO,
+  isSameMonth,
 } from "date-fns";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
@@ -346,6 +347,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   }, [filteredDividends]);
 
   const monthStart = useMemo(() => startOfMonth(currentDate), [currentDate]);
+  const isViewingCurrentMonth = useMemo(
+    () => isSameMonth(currentDate, new Date()),
+    [currentDate]
+  );
   const calendarDays = useMemo(() => {
     const monthEnd = endOfMonth(monthStart);
     return eachDayOfInterval({
@@ -369,6 +374,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const goToToday = () => setCurrentDate(new Date());
 
   return (
     <main className="mx-auto min-h-screen max-w-7xl px-3 pb-14 pt-3 md:px-8 md:pb-20 md:pt-6">
@@ -438,6 +444,16 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             </div>
 
             <div className="flex flex-wrap items-center justify-end gap-2">
+              {!isViewingCurrentMonth && (
+                <button
+                  type="button"
+                  onClick={goToToday}
+                  className="min-h-11 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-bold text-blue-700 transition hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                >
+                  回到今天
+                </button>
+              )}
+
               {/* 月曆 / 清單 視圖切換 */}
               <div className="flex rounded-lg border border-slate-200 bg-slate-50 p-1">
                 <button
@@ -516,6 +532,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
               watchlistSet={watchlistSet}
               showAmounts={showWatchlistOnly}
               sharesMap={sharesMap}
+              isCurrentMonth={isViewingCurrentMonth}
               onStockSelect={(code) => handleStockClick(code, "agenda_list")}
             />
           )}

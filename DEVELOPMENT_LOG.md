@@ -1,5 +1,41 @@
 # Technical Development Log
 
+## 2026-07-15 – Brand Dachshund Loading Restoration
+
+- Status: done
+- Priority: high
+- Area: UX/UI, Brand, Accessibility
+- Files:
+
+  - components/Loading.js
+  - components/Loading.module.css
+  - DEVELOPMENT_LOG.md
+  - task.md
+- Why: The dachshund loading animation is a deliberate product highlight and should remain part of uGoodly's brand experience.
+- Impact: Full-page and localized loading states again show the dachshund, without the previous `cm` measurement text. Compact contexts use a scaled version, and reduced-motion users receive a static dog.
+- Next: Verify the full and compact variants visually in a Node-enabled browser environment.
+
+
+## 2026-07-15 – P1 Calendar Utility and Retention UX
+
+- Status: done
+- Priority: high
+- Area: UX/UI, Accessibility
+- Files:
+
+  - components/AgendaList.js
+  - components/CalendarClient.js
+  - components/CalendarSubscribeGuide.js
+  - components/PortfolioModal.js
+  - components/WatchlistModal.js
+  - lib/calendarSubscribe.js
+  - task.md
+  - DEVELOPMENT_LOG.md
+- Why: Users needed faster access to current events, clearer calendar-subscription steps, a timely local-data backup reminder, and a non-visual equivalent for the monthly cash-flow chart.
+- Impact: Non-current months now offer a return-to-today action; mobile Agenda view locates the next relevant current-month date; both subscription entry points show the same dismissible Google/Apple guide; customized portfolios can show a one-time backup reminder; and the cash-flow chart exposes an accessible summary and 12-month table. APIs, routes, ad placement, and P2 discussion items are unchanged.
+- Next: Run lint and production build in a Node-enabled environment, then verify 375px/768px layouts, keyboard and screen-reader flows, reduced motion, clipboard fallback, and unavailable localStorage behavior.
+
+
 ## 2026-06-11 – Calendar Month Controls Relocation
 - Status: done
 - Priority: medium
@@ -449,7 +485,7 @@
   - task.md
   - DEVELOPMENT_LOG.md
 - Why: 首頁更新時間、啟用文案、手機初始視圖、觸控尺寸、Dialog 命名與全頁 loading 仍會影響資料可信度、首次啟用與無障礙體驗，且 GA4 缺少產品漏斗事件。
-- Impact: 更新資訊改用 API 時間並修正排程文案；首頁改為結果導向 CTA；新增不含投資組合敏感值的 GA4 事件；保存 grid/list 偏好並以 SSR 安全 placeholder 避免手機閃動；Modal、skip link 與主要觸控目標完成可及性補強；月份更新改為保留內容的局部 loading，並移除 cm 動畫文字。
+- Impact: 更新資訊改用 API 時間並修正排程文案；首頁改為結果導向 CTA；新增不含投資組合敏感值的 GA4 事件；保存 grid/list 偏好並以 SSR 安全 placeholder 避免手機閃動；Modal、skip link 與主要觸控目標完成可及性補強；月份更新改為保留內容的局部 loading，保留品牌臘腸狗並移除 cm 動畫文字。
 - Next: 目前環境沒有 Node/npm；合併前須在可用環境執行 lint、production build、GA DebugView，以及 375px、768px、鍵盤與 reduced-motion 瀏覽器驗證。
 
 ## Backlog
