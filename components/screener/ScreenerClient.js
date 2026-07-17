@@ -44,6 +44,10 @@ function num(str) {
   return Number.isNaN(n) ? 0 : n;
 }
 
+function evaluatedFillCount(row) {
+  return row.evaluated_fill_events ?? row.total_ex_events ?? 0;
+}
+
 export default function ScreenerClient({ initialRows }) {
   const [filters, setFilters] = useState(EMPTY);
   const [activePreset, setActivePreset] = useState(null);
@@ -98,7 +102,7 @@ export default function ScreenerClient({ initialRows }) {
 
     let list = (initialRows || []).filter((r) => {
       if (yMin > 0 && !((r.annual_yield || 0) >= yMin)) return false;
-      if (fMin > 0 && !(r.total_ex_events > 0 && r.fill_rate >= fMin)) return false;
+      if (fMin > 0 && !(evaluatedFillCount(r) > 0 && r.fill_rate >= fMin)) return false;
       if (cMin > 0 && r.consecutive_years < cMin) return false;
       if (filters.freqs.length && !filters.freqs.includes(r.frequency)) return false;
       if (filters.markets.length && !filters.markets.includes(normalizeMarket(r.market_type)))
@@ -289,7 +293,7 @@ export default function ScreenerClient({ initialRows }) {
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-slate-700">
-                    {r.total_ex_events > 0 ? `${r.fill_rate}%` : "--"}
+                    {evaluatedFillCount(r) > 0 ? `${r.fill_rate}%` : "--"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-slate-700">
                     {r.consecutive_years > 0 ? `${r.consecutive_years} 年` : "--"}

@@ -28,7 +28,7 @@ export default function StockSeoArticle({ info, latestDividend, historicalRecord
     (r) =>
       r.days_to_fill !== null &&
       r.days_to_fill !== undefined &&
-      r.days_to_fill >= 0
+      r.days_to_fill >= 1
   );
   const avgFillDays =
     validFillRecords.length > 0

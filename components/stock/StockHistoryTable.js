@@ -14,8 +14,36 @@ function getYear(record) {
   return "-";
 }
 
+function getTaipeiToday() {
+  return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function getFillState(record, today) {
+  if (record.days_to_fill > 0) {
+    return {
+      label: `${record.days_to_fill} 天`,
+      tone: "border-slate-200 bg-slate-100 text-slate-600",
+    };
+  }
+  if (record.days_to_fill === -1) {
+    return { label: "逾一年未填息", tone: "border-amber-200 bg-amber-50 text-amber-700" };
+  }
+  if (record.days_to_fill === 0) {
+    return { label: "資料待更新", tone: "border-amber-200 bg-amber-50 text-amber-700" };
+  }
+  if (!record.ex_date) {
+    return { label: "尚未計算", tone: "border-slate-200 bg-slate-50 text-slate-500" };
+  }
+  if (record.ex_date >= today) {
+    return { label: "尚未除權息", tone: "border-slate-200 bg-slate-50 text-slate-500" };
+  }
+  return { label: "觀察中", tone: "border-blue-200 bg-blue-50 text-blue-700" };
+}
+
 // 歷史發放紀錄表：同年度多筆會用 rowSpan 合併「年度 / 年股利 / 年殖利率」欄位
 export default function StockHistoryTable({ history }) {
+  const today = getTaipeiToday();
+
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-white">
       <h2 className="flex items-center gap-2 border-b border-slate-200 bg-slate-50 px-4 py-3 text-base font-black tracking-tight text-slate-900">
@@ -72,6 +100,7 @@ export default function StockHistoryTable({ history }) {
                   if (y === currentYear) return `${m}/${d}`;
                   return `${y}/${m}/${d}`;
                 };
+                const fillState = getFillState(item, today);
 
                 return (
                   <tr key={item.id} className="transition hover:bg-slate-50">
@@ -156,13 +185,9 @@ export default function StockHistoryTable({ history }) {
                       </td>
                     )}
                     <td className="px-2 py-2 text-slate-400 whitespace-nowrap text-center">
-                      {item.days_to_fill && item.days_to_fill > 0 ? (
-                        <span className="rounded border border-slate-200 bg-slate-100 px-2 py-0.5 text-xs text-slate-600">
-                          {item.days_to_fill} 天
-                        </span>
-                      ) : (
-                        "-"
-                      )}
+                      <span className={`rounded border px-2 py-0.5 text-xs ${fillState.tone}`}>
+                        {fillState.label}
+                      </span>
                     </td>
                     <td className="px-2 py-2 text-slate-600 whitespace-nowrap">
                       {item.stock_price > 0 ? `$${item.stock_price}` : "-"}

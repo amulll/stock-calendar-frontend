@@ -560,6 +560,21 @@
 - Impact: 更新資訊改用 API 時間並修正排程文案；首頁改為結果導向 CTA；新增不含投資組合敏感值的 GA4 事件；保存 grid/list 偏好並以 SSR 安全 placeholder 避免手機閃動；Modal、skip link 與主要觸控目標完成可及性補強；月份更新改為保留內容的局部 loading，保留品牌臘腸狗並移除 cm 動畫文字。
 - Next: 目前環境沒有 Node/npm；合併前須在可用環境執行 lint、production build、GA DebugView，以及 375px、768px、鍵盤與 reduced-motion 瀏覽器驗證。
 
+## 2026-07-17 – Fill-Day Status Clarity
+
+- Status: done
+- Priority: high
+- Area: Data Accuracy, UX/UI
+- Files:
+
+  - components/screener/ScreenerClient.js
+  - components/stock/StockHistoryTable.js
+  - components/stock/StockSeoArticle.js
+  - DEVELOPMENT_LOG.md
+- Why: 舊填息值 `0` 會進入平均值，且未評估、觀察中與逾一年未填息原本都顯示成相同的 `-`。
+- Impact: 平均填息天數只採正數；歷史表區分尚未除權息、觀察中、逾一年未填息與資料待更新；選股表以已評估場次判斷是否顯示及篩選填息率，並保留舊 API fallback。
+- Next: 目前環境沒有 Node/npm；合併前須在可用環境執行 lint、production build，並檢查窄螢幕表格標籤寬度。
+
 ## Backlog
 
 ### Item 1
