@@ -1,5 +1,38 @@
 # Technical Development Log
 
+## 2026-07-17 – Compact Homepage and External Ad Rail
+
+- Status: done
+- Priority: high
+- Area: UX/UI, Responsive Layout, Discoverability
+- Files:
+
+  - components/CalendarClient.js
+  - components/CalendarSummary.js
+  - components/FilterBar.js
+  - DEVELOPMENT_LOG.md
+  - task.md
+  - ../ugoodly_ux_optimization_execution.md
+- Why: The stacked workspace, upcoming strip, and centered ad delayed the calendar, while calendar subscription was difficult to discover inside the watchlist flow.
+- Impact: The homepage workspace is more compact, duplicate month/count cards are removed, calendar subscription is available from the first-level toolbar, and the ad placeholder no longer interrupts the primary flow. At 1920px and wider, a fixed 300×250 placeholder uses the unused space outside the unchanged centered 1280px main content; narrower layouts show the 728×90 placeholder after the calendar.
+- Next: Run lint and production build in a Node-enabled environment, then verify 375px, 768px, 1440px, and 1920px layouts plus clipboard and keyboard flows.
+
+
+## 2026-07-17 – Center Mobile Watchlist Menu
+
+- Status: done
+- Priority: high
+- Area: UX/UI, Mobile, Accessibility
+- Files:
+
+  - components/FilterBar.js
+  - DEVELOPMENT_LOG.md
+  - task.md
+- Why: The watchlist filter menu was anchored to the right-aligned toolbar button on mobile, placing the panel off-center and making the interaction feel visually unbalanced.
+- Impact: On small screens, the watchlist menu now opens in the center of the viewport with a subdued backdrop, an explicit close control, safe viewport bounds, and 44px filter/action targets. Desktop retains the existing button-anchored popover behavior.
+- Next: Verify at 375px, mobile landscape, and the 640px breakpoint in a browser-enabled environment.
+
+
 ## 2026-07-16 – Workspace-First Homepage Content
 
 - Status: done

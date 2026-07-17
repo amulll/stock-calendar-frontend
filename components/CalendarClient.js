@@ -35,6 +35,7 @@ import { useWatchlist } from "../hooks/useWatchlist";
 import { proxyGet } from "../lib/proxy-client";
 import { useToast } from "../hooks/useToast";
 import { trackEvent } from "../lib/analytics";
+import { subscribeToCalendar } from "../lib/calendarSubscribe";
 
 const SAMPLE_WATCHLIST = ["0056", "00878", "2330"];
 const VIEW_MODE_STORAGE_KEY = "calendarViewMode";
@@ -375,14 +376,26 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const goToToday = () => setCurrentDate(new Date());
+  const handleCalendarSubscribe = () => {
+    if (watchlist.length === 0) {
+      addToast("請先從搜尋結果加入至少一檔自選股，再訂閱發放日。", "info");
+      return Promise.resolve("empty");
+    }
+    return subscribeToCalendar(watchlist, addToast, "homepage_toolbar");
+  };
 
   return (
-    <main className="mx-auto min-h-screen max-w-7xl px-3 pb-14 pt-3 md:px-8 md:pb-20 md:pt-6">
+    <main className="relative mx-auto min-h-screen max-w-7xl px-3 pb-14 pt-3 md:px-8 md:pb-20 md:pt-6">
+      <aside
+        className="absolute left-[calc(100%+0.75rem)] top-6 hidden w-[300px] min-[1920px]:block"
+        aria-label="廣告預留區"
+      >
+        <AdUnit type="rectangle" />
+      </aside>
+
       <section className="rounded-xl border border-slate-200 bg-white">
-        <div className="border-b border-slate-200 px-4 py-4 md:px-5">
+        <div className="border-b border-slate-200 px-4 py-3 md:px-5 md:py-4">
           <CalendarSummary
-            currentDate={currentDate}
-            filteredCount={filteredDividends.length}
             watchlistCount={watchlist.length}
             onOpenPortfolio={() => handleOpenPortfolio("calendar_summary")}
             onAddSampleWatchlist={() => handleAddSampleWatchlist("calendar_summary")}
@@ -400,6 +413,8 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
             showWatchlistOnly={showWatchlistOnly}
             onToggleWatchlistOnly={() => setShowWatchlistOnly((prev) => !prev)}
             onOpenWatchlistModal={() => setWatchlistModalOpen(true)}
+            watchlistCount={watchlist.length}
+            onSubscribeCalendar={handleCalendarSubscribe}
             showHighYieldOnly={showHighYieldOnly}
             onToggleHighYieldOnly={() => setShowHighYieldOnly((prev) => !prev)}
             localYield={localYield}
@@ -419,11 +434,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         onStockClick={(code) => handleStockClick(code, "upcoming_focus")}
       />
 
-      <div className="mt-4 flex w-full justify-center">
-        <AdUnit type="horizontal" />
-      </div>
-
-      <section className="mt-6">
+      <section className="mt-4">
         <div className="mb-3 rounded-xl border border-slate-200 bg-white p-3 md:p-4">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -544,6 +555,10 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
           )}
         </div>
       </section>
+
+      <div className="mt-6 flex w-full justify-center min-[1920px]:hidden">
+        <AdUnit type="horizontal" />
+      </div>
 
       <DividendModal
         isOpen={dateModalOpen}

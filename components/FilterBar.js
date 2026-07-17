@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { Search, Heart, List, TrendingUp, X } from "lucide-react";
+import { Search, Heart, List, TrendingUp, X, CalendarPlus } from "lucide-react";
+import CalendarSubscribeGuide from "./CalendarSubscribeGuide";
 
 const MAX_SUGGESTIONS = 4;
 
@@ -15,6 +16,8 @@ export default function FilterBar({
   showWatchlistOnly,
   onToggleWatchlistOnly,
   onOpenWatchlistModal,
+  watchlistCount,
+  onSubscribeCalendar,
   showHighYieldOnly,
   onToggleHighYieldOnly,
   localYield,
@@ -25,8 +28,11 @@ export default function FilterBar({
 }) {
   const [watchlistMenuOpen, setWatchlistMenuOpen] = useState(false);
   const [yieldMenuOpen, setYieldMenuOpen] = useState(false);
+  const [subscriptionGuideOpen, setSubscriptionGuideOpen] = useState(false);
+  const [subscriptionPending, setSubscriptionPending] = useState(false);
   const watchlistMenuRef = useRef(null);
   const yieldMenuRef = useRef(null);
+  const subscriptionRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   const controlId = useId();
   const inputId = `${controlId}-filter`;
@@ -35,6 +41,7 @@ export default function FilterBar({
   const listboxId = `${controlId}-listbox`;
   const watchlistMenuId = `${controlId}-watchlist-menu`;
   const yieldMenuId = `${controlId}-yield-menu`;
+  const subscriptionGuideId = `${controlId}-subscription-guide`;
   const watchlistHeadingId = `${controlId}-watchlist-heading`;
   const yieldHeadingId = `${controlId}-yield-heading`;
 
@@ -52,6 +59,12 @@ export default function FilterBar({
       if (yieldMenuRef.current && !yieldMenuRef.current.contains(event.target)) {
         setYieldMenuOpen(false);
       }
+      if (
+        subscriptionRef.current &&
+        !subscriptionRef.current.contains(event.target)
+      ) {
+        setSubscriptionGuideOpen(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -63,6 +76,7 @@ export default function FilterBar({
       if (event.key !== "Escape") return;
       setWatchlistMenuOpen(false);
       setYieldMenuOpen(false);
+      setSubscriptionGuideOpen(false);
     }
 
     document.addEventListener("keydown", handleEscape);
@@ -96,6 +110,17 @@ export default function FilterBar({
     : filterText
     ? "找不到符合的建議"
     : "請輸入股票代號或名稱";
+
+  const handleSubscribe = async () => {
+    if (subscriptionPending) return;
+    setSubscriptionPending(true);
+    try {
+      const result = await onSubscribeCalendar();
+      setSubscriptionGuideOpen(result === "copied");
+    } finally {
+      setSubscriptionPending(false);
+    }
+  };
 
   return (
     <div className="sticky top-3 z-40 flex flex-col gap-2 xl:flex-row xl:items-center">
@@ -195,7 +220,7 @@ export default function FilterBar({
         )}
       </div>
 
-      <div className="flex gap-2 self-end xl:self-auto">
+      <div className="flex w-full flex-wrap gap-2 self-end sm:w-auto xl:self-auto">
         <div className="relative" ref={watchlistMenuRef}>
           <button
             type="button"
@@ -219,57 +244,133 @@ export default function FilterBar({
           </button>
 
           {watchlistMenuOpen && (
-            <div
-              id={watchlistMenuId}
-              className="absolute right-0 top-full z-[90] mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-200 bg-white p-3 shadow-lg"
-              role="dialog"
-              aria-modal="false"
-              aria-labelledby={watchlistHeadingId}
-            >
-              <p
-                id={watchlistHeadingId}
-                className="text-xs font-semibold text-slate-500"
+            <>
+              <button
+                type="button"
+                tabIndex={-1}
+                className="fixed inset-0 z-[80] bg-slate-900/30 backdrop-blur-[1px] md:hidden"
+                aria-label="關閉自選股選單"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setWatchlistMenuOpen(false);
+                }}
+              />
+              <div
+                id={watchlistMenuId}
+                className="fixed left-1/2 top-1/2 z-[90] max-h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-lg md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-64 md:max-w-[calc(100vw-2rem)] md:translate-x-0 md:translate-y-0"
+                role="dialog"
+                aria-modal="false"
+                aria-labelledby={watchlistHeadingId}
               >
-                自選股
-              </p>
-              <div className="mb-3 mt-2 flex items-center justify-between rounded-lg bg-rose-50 px-3 py-2.5">
-                <span className="text-sm font-bold text-slate-700">
-                  僅顯示自選股
-                </span>
+                <div className="flex min-h-11 items-center justify-between gap-3">
+                  <p
+                    id={watchlistHeadingId}
+                    className="text-sm font-bold text-slate-700 md:text-xs md:font-semibold md:text-slate-500"
+                  >
+                    自選股
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setWatchlistMenuOpen(false)}
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 md:hidden"
+                    aria-label="關閉自選股選單"
+                  >
+                    <X size={18} aria-hidden="true" />
+                  </button>
+                </div>
+                <div className="mb-3 mt-2 flex items-center justify-between rounded-lg bg-rose-50 px-3 py-2.5">
+                  <span className="text-sm font-bold text-slate-700">
+                    僅顯示自選股
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onToggleWatchlistOnly();
+                      setWatchlistMenuOpen(false);
+                    }}
+                    className="flex h-11 w-11 items-center justify-center rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                    aria-label="切換自選股篩選"
+                  >
+                    <span
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        showWatchlistOnly ? "bg-rose-500" : "bg-slate-200"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${
+                          showWatchlistOnly ? "translate-x-6" : "translate-x-1"
+                        }`}
+                      />
+                    </span>
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => {
-                    onToggleWatchlistOnly();
+                    onOpenWatchlistModal();
                     setWatchlistMenuOpen(false);
                   }}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    showWatchlistOnly ? "bg-rose-500" : "bg-slate-200"
-                  }`}
-                  aria-label="切換自選股篩選"
+                  className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-slate-100 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
                 >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${
-                      showWatchlistOnly ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
+                  <List size={16} aria-hidden="true" />
+                  管理自選清單
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  onOpenWatchlistModal();
-                  setWatchlistMenuOpen(false);
-                }}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
-              >
-                <List size={16} />
-                管理自選清單
-              </button>
-            </div>
+            </>
           )}
         </div>
 
-        <div className="relative" ref={yieldMenuRef}>
+        <div className="relative flex-1 sm:flex-none" ref={subscriptionRef}>
+          <button
+            type="button"
+            onClick={handleSubscribe}
+            disabled={subscriptionPending}
+            aria-expanded={subscriptionGuideOpen}
+            aria-controls={subscriptionGuideOpen ? subscriptionGuideId : undefined}
+            title={
+              watchlistCount === 0
+                ? "先加入自選股，即可訂閱發放日"
+                : "訂閱自選股發放日到行事曆"
+            }
+            className="flex min-h-11 w-full min-w-[6rem] items-center justify-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2.5 text-sm font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-400 sm:w-auto"
+          >
+            <CalendarPlus size={18} aria-hidden="true" />
+            <span className="sm:hidden">
+              {subscriptionPending ? "處理中" : "訂閱"}
+            </span>
+            <span className="hidden sm:inline">
+              {subscriptionPending ? "處理中" : "訂閱行事曆"}
+            </span>
+          </button>
+
+          {subscriptionGuideOpen && (
+            <>
+              <button
+                type="button"
+                tabIndex={-1}
+                className="fixed inset-0 z-[80] bg-slate-900/30 backdrop-blur-[1px] md:hidden"
+                aria-label="關閉行事曆訂閱教學"
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setSubscriptionGuideOpen(false);
+                }}
+              />
+              <div
+                id={subscriptionGuideId}
+                className="fixed left-1/2 top-1/2 z-[90] w-[calc(100vw-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-xl border border-slate-200 bg-white p-3 shadow-lg md:absolute md:left-auto md:right-0 md:top-full md:mt-2 md:w-96 md:max-w-[calc(100vw-2rem)] md:translate-x-0 md:translate-y-0"
+              >
+                <CalendarSubscribeGuide
+                  onClose={() => setSubscriptionGuideOpen(false)}
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="relative flex-1 sm:flex-none" ref={yieldMenuRef}>
           <button
             type="button"
             onClick={() => setYieldMenuOpen((open) => !open)}

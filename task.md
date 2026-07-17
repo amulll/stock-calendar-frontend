@@ -80,6 +80,10 @@
   - Approved P2 homepage content work is complete: the workspace remains primary, the previous long SEO article is now a concise task summary with knowledge-page links, and metadata uses neutral product descriptions.
 - `app/disclaimer/page.js`, `app/privacy/page.js`, `app/screener/page.js`, `components/screener/ScreenerClient.js`
   - Approved P2 brand-language work is complete: decorative English labels are localized and endorsement-style screener wording is replaced with condition-based labels while emoji, uGoodly Cat, and the existing financial visual direction remain.
+- `components/FilterBar.js`
+  - Mobile watchlist menu positioning is complete: the panel is centered with a dismissible backdrop and touch-sized controls, while desktop keeps its anchored popover.
+- `components/CalendarClient.js`, `components/CalendarSummary.js`, `components/FilterBar.js`
+  - Compact homepage and responsive ad placement are complete: duplicate summary metrics are consolidated into the calendar toolbar, calendar subscription is a first-level action, the unchanged 1280px main content gains an external 300×250 ad rail only at 1920px and wider, and narrower layouts place the horizontal placeholder after the calendar.
 
 ## Remaining Work
 
