@@ -65,7 +65,8 @@ export default function AgendaList({
     (Number(div.cash_dividend) || 0) *
     Number(sharesMap[div.stock_code] ?? DEFAULT_SHARES);
 
-  const targetRef = useRef(null);
+  const dayRefs = useRef(new Map());
+  const pendingScrollKeyRef = useRef(null);
   const lastScrolledMonthRef = useRef(null);
   const [expandedKey, setExpandedKey] = useState(null);
   const daysWithData = useMemo(
@@ -108,7 +109,7 @@ export default function AgendaList({
       const reduceMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)"
       ).matches;
-      targetRef.current?.scrollIntoView({
+      dayRefs.current.get(targetKey)?.scrollIntoView({
         behavior: reduceMotion ? "auto" : "smooth",
         block: "start",
       });
@@ -117,6 +118,31 @@ export default function AgendaList({
 
     return () => window.cancelAnimationFrame(frame);
   }, [isCurrentMonth, monthKey, targetKey]);
+
+  const toggleDay = (key) => {
+    const nextKey = expandedKey === key ? null : key;
+    pendingScrollKeyRef.current = nextKey;
+    setExpandedKey(nextKey);
+  };
+
+  const registerDay = (key, node) => {
+    if (!node) {
+      dayRefs.current.delete(key);
+      return;
+    }
+
+    dayRefs.current.set(key, node);
+    if (pendingScrollKeyRef.current !== key || expandedKey !== key) return;
+
+    pendingScrollKeyRef.current = null;
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    node.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
 
   if (daysWithData.length === 0) {
     return (
@@ -143,7 +169,7 @@ export default function AgendaList({
         return (
           <div
             key={key}
-            ref={key === targetKey ? targetRef : undefined}
+            ref={(node) => registerDay(key, node)}
             className={`scroll-mt-24 ${
               dayIndex < daysWithData.length - 1 ? "border-b border-slate-200" : ""
             }`}
@@ -151,11 +177,7 @@ export default function AgendaList({
             <button
               id={triggerId}
               type="button"
-              onClick={() =>
-                setExpandedKey((currentKey) =>
-                  currentKey === key ? null : key
-                )
-              }
+              onClick={() => toggleDay(key)}
               className={`flex min-h-[68px] w-full touch-manipulation items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-400 motion-reduce:transition-none md:px-4 ${
                 isToday ? "bg-blue-50/80" : "bg-white"
               } ${isExpanded ? "bg-slate-50" : ""}`}
