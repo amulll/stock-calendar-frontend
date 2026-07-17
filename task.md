@@ -84,6 +84,8 @@
   - Mobile watchlist menu positioning is complete: the panel is centered with a dismissible backdrop and touch-sized controls, while desktop keeps its anchored popover.
 - `components/CalendarClient.js`, `components/CalendarSummary.js`, `components/FilterBar.js`
   - Compact homepage and responsive ad placement are complete: duplicate summary metrics are consolidated into the calendar toolbar, calendar subscription is a first-level action, the unchanged 1280px main content gains an external 300×250 ad rail only at 1920px and wider, and narrower layouts place the horizontal placeholder after the calendar.
+- `components/AgendaList.js`
+  - Mobile agenda date groups now start collapsed and expose one stock list at a time through touch-sized, keyboard-operable disclosure buttons without changing current-date auto-positioning.
 
 ## Remaining Work
 

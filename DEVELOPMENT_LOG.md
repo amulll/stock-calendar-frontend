@@ -1,5 +1,21 @@
 # Technical Development Log
 
+## 2026-07-17 – Collapsible Mobile Agenda Dates
+
+- Status: done
+- Priority: high
+- Area: UX/UI, Mobile, Accessibility
+- Files:
+
+  - components/AgendaList.js
+  - DEVELOPMENT_LOG.md
+  - task.md
+  - ../ugoodly_ux_optimization_execution.md
+- Why: Mobile agenda dates rendered every stock row at once, making data-heavy months unnecessarily long and difficult to scan.
+- Impact: Agenda view now starts with compact date summaries and allows one date at a time to expand. Date headers retain the existing current-date auto-positioning, expose accessible disclosure state, and provide touch-sized keyboard-operable controls.
+- Next: Run lint and production build in a Node-enabled environment, then verify expansion, month changes, filters, keyboard operation, and current-date positioning at 375px and 768px.
+
+
 ## 2026-07-17 – Compact Homepage and External Ad Rail
 
 - Status: done
