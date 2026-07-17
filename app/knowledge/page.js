@@ -4,7 +4,7 @@ import { ArrowLeft, BookOpen, Calendar, Banknote, TrendingUp } from "lucide-reac
 export const metadata = {
   title: "股市新手小教室 - 搞懂除權息、殖利率與發放日 | uGoodly",
   description:
-    "除息日是什麼？股利發放日要等多久？殖利率怎麼算？uGoodly 整理了存股族必知的關鍵知識，助您輕鬆看懂股市行事曆。",
+    "除息日是什麼？股利發放日要等多久？殖利率怎麼算？uGoodly 整理除權息與股利日曆的基礎知識。",
   openGraph: {
     title: "股市新手小教室｜除權息、殖利率一次搞懂",
     description:
@@ -17,7 +17,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "股市新手小教室｜除權息、殖利率一次搞懂",
     description:
-      "存股族必備的基礎教學，搭配股利日曆工具使用，規劃每月領息現金流。",
+      "除權息、股利發放日與殖利率的基礎教學，可搭配股利日曆工具查詢。",
   },
 };
 
@@ -131,7 +131,7 @@ export default function KnowledgePage() {
                 股市新手小教室
               </h1>
               <p className="text-slate-600">
-                存股族必備的基礎知識，搞懂除權息流程，不再錯過領錢日。
+                整理除權息、股利發放日與殖利率的基礎知識。
                 建議搭配{" "}
                 <Link
                   href="/"
@@ -312,7 +312,7 @@ export default function KnowledgePage() {
             >
               uGoodly 股利日曆
             </Link>{" "}
-            ，實際查看未來幾個月的配息與入帳時間，幫自己排出穩定的領息節奏。
+            ，實際查看未來幾個月的配息與入帳時間，了解自己的領息時間分布。
           </p>
           <Link
             href="/"

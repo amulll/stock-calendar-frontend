@@ -11,7 +11,7 @@ export default function PrivacyPage() {
     <main className="mx-auto my-6 max-w-4xl px-4 md:my-8 md:px-8">
       <article className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
       <p className="mb-3 text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">
-        Privacy
+        隱私說明
       </p>
       <h1 className="mb-6 text-3xl font-black tracking-tight text-slate-950">隱私權政策 (Privacy Policy)</h1>
       

@@ -7,7 +7,7 @@ export const revalidate = 3600;
 
 const PAGE_TITLE = "台股存股選股表｜殖利率、填息率、連續配息排行 - uGoodly";
 const PAGE_DESC =
-  "免費台股選股工具：依殖利率、填息成功率、連續配息年數、配息頻率排序篩選全市場股票與 ETF。內建安心存股、月月現金流、高息機會三種選股組合，快速找出適合的定存股。";
+  "免費台股選股工具：依殖利率、填息成功率、連續配息年數與配息頻率排序篩選全市場股票及 ETF。提供長期配息、月月現金流與高殖利率三種條件起點，協助比較符合條件的標的。";
 
 export const metadata = {
   title: PAGE_TITLE,

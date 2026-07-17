@@ -72,7 +72,7 @@ export default function AdUnit({ type = "horizontal" }) {
             </span>
           </div>
           <span className="text-[10px] text-amber-400/60 mt-1 ml-1 font-mono">
-            Sponsored by uGoodly Cat
+            uGoodly 貓咪小提醒
           </span>
         </div>
 

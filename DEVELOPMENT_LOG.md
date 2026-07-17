@@ -1,5 +1,28 @@
 # Technical Development Log
 
+## 2026-07-16 – Workspace-First Homepage Content
+
+- Status: done
+- Priority: high
+- Area: UX/UI, Content, SEO
+- Files:
+
+  - app/disclaimer/page.js
+  - app/knowledge/page.js
+  - app/layout.js
+  - app/page.js
+  - app/privacy/page.js
+  - app/screener/page.js
+  - components/AdUnit.js
+  - components/SeoContent.js
+  - components/screener/ScreenerClient.js
+  - DEVELOPMENT_LOG.md
+  - task.md
+- Why: The homepage should prioritize recurring calendar and portfolio tasks while keeping detailed educational content reachable, and product language should describe data conditions without implying endorsement.
+- Impact: The long homepage SEO article is replaced by a compact task summary, topic links to the existing knowledge page, and a short data/estimate note. Decorative English labels are localized, and endorsement-style wording in metadata and screener presets is replaced with neutral condition-based language. Existing visual direction, emoji, uGoodly Cat, ad placement, routes, and data behavior are unchanged.
+- Next: Validate the homepage summary and knowledge anchor navigation at 375px and desktop widths, then monitor search performance after deployment.
+
+
 ## 2026-07-15 – Brand Dachshund Loading Restoration
 
 - Status: done

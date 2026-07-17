@@ -15,9 +15,9 @@ const EMPTY = {
 };
 
 const PRESETS = [
-  { id: "steady", label: "🛡️ 安心存股", values: { ...EMPTY, yearsMin: "10", fillMin: "80" } },
+  { id: "steady", label: "🛡️ 長期配息條件", values: { ...EMPTY, yearsMin: "10", fillMin: "80" } },
   { id: "monthly", label: "📅 月月現金流", values: { ...EMPTY, freqs: ["月配", "季配"] } },
-  { id: "hot", label: "🔥 高息機會", values: { ...EMPTY, yieldMin: "6", upcomingOnly: true } },
+  { id: "hot", label: "🔥 高殖利率條件", values: { ...EMPTY, yieldMin: "6", upcomingOnly: true } },
 ];
 
 const FREQ_OPTIONS = ["月配", "季配", "半年配", "年配"];

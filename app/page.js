@@ -97,7 +97,7 @@ export default async function Page({ searchParams }) {
         "price": "0",
         "priceCurrency": "TWD"
       },
-      "description": "最直覺的台股除權息行事曆。查詢發放日、殖利率試算，不錯過每一筆股息。",
+      "description": "台股除權息行事曆，提供發放日查詢、殖利率與組合股息試算及自選追蹤。",
       "featureList": "除息日查詢, 股利發放日行事曆, 殖利率試算"
     },
     {

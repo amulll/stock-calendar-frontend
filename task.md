@@ -76,6 +76,10 @@
   - P1 subscription guidance is complete: both ICS entry points share a dismissible Google/Apple setup guide while preserving the clipboard fallback.
 - `components/PortfolioModal.js`
   - P1 data-retention and chart accessibility work is complete: eligible customized portfolios receive a one-time backup reminder, and monthly cash flow has a screen-reader summary plus a semantic 12-month table.
+- `components/SeoContent.js`, `app/knowledge/page.js`, `app/layout.js`, `app/page.js`
+  - Approved P2 homepage content work is complete: the workspace remains primary, the previous long SEO article is now a concise task summary with knowledge-page links, and metadata uses neutral product descriptions.
+- `app/disclaimer/page.js`, `app/privacy/page.js`, `app/screener/page.js`, `components/screener/ScreenerClient.js`
+  - Approved P2 brand-language work is complete: decorative English labels are localized and endorsement-style screener wording is replaced with condition-based labels while emoji, uGoodly Cat, and the existing financial visual direction remain.
 
 ## Remaining Work
 
