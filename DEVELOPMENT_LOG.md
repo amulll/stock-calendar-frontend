@@ -575,6 +575,19 @@
 - Impact: 平均填息天數只採正數；歷史表區分尚未除權息、觀察中、逾一年未填息與資料待更新；選股表以已評估場次判斷是否顯示及篩選填息率，並保留舊 API fallback。
 - Next: 目前環境沒有 Node/npm；合併前須在可用環境執行 lint、production build，並檢查窄螢幕表格標籤寬度。
 
+## 2026-07-17 – Agenda List Visual Hierarchy
+
+- Status: done
+- Priority: high
+- Area: UX/UI, Mobile, Accessibility
+- Files:
+
+  - components/AgendaList.js
+  - DEVELOPMENT_LOG.md
+- Why: 日期收合已解決手機清單過長，但日期分類與股票明細的視覺層級仍接近一般卡片列表，不利於快速掃描大量發放資料。
+- Impact: 清單改為單一輕量 Accordion 容器；日期列加入月份日期標記、星期、事件數、自選股數與適用時的預估入帳摘要；股票列改為代號與名稱在左、股利資訊在右，並保留單一展開、今天定位、鍵盤焦點、ARIA 關聯及 reduced-motion 支援。沒有新增 UI 套件或改變資料流程。
+- Next: 目前環境沒有 Node/npm；合併前須在可用環境執行 lint、production build，並於 320px、375px、768px 驗證長股票名稱、複合股利與自選入帳顯示。
+
 ## Backlog
 
 ### Item 1
