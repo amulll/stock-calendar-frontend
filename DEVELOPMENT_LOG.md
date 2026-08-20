@@ -1,5 +1,20 @@
 # Technical Development Log
 
+## 2026-08-20 – Canonical Fill Status Consumption
+
+- Status: done
+- Priority: critical
+- Area: Data Correctness, Stock Research
+- Files:
+
+  - components/stock/StockHistoryTable.js
+  - lib/fillStatus.mjs
+  - tests/fillStatus.test.mjs
+  - ROADMAP.md
+- Why: A null `days_to_fill` could represent either active observation or a never-calculated event, so the frontend could not infer the state safely.
+- Impact: Stock history now maps the backend `fill_status` contract directly and displays filled, over-window unfilled, observing, pending calculation, and future/not-applicable states without guessing core state.
+- Verification: Pure helper cases cover the canonical matrix; Owner will perform frontend runtime/browser validation.
+
 ## 2026-08-20 – Phases 2–3 Rankings and Historical Fill Research
 
 - Status: done

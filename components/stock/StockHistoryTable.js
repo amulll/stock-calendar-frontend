@@ -1,4 +1,5 @@
 import { Calendar } from "lucide-react";
+import { getFillPresentation } from "../../lib/fillStatus.mjs";
 
 // 強制顯示 3 位小數
 function formatDividend(val) {
@@ -16,28 +17,6 @@ function getYear(record) {
 
 function getTaipeiToday() {
   return new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-
-function getFillState(record, today) {
-  if (record.days_to_fill > 0) {
-    return {
-      label: `${record.days_to_fill} 天`,
-      tone: "border-slate-200 bg-slate-100 text-slate-600",
-    };
-  }
-  if (record.days_to_fill === -1) {
-    return { label: "逾一年未填息", tone: "border-amber-200 bg-amber-50 text-amber-700" };
-  }
-  if (record.days_to_fill === 0) {
-    return { label: "資料待更新", tone: "border-amber-200 bg-amber-50 text-amber-700" };
-  }
-  if (!record.ex_date) {
-    return { label: "尚未計算", tone: "border-slate-200 bg-slate-50 text-slate-500" };
-  }
-  if (record.ex_date >= today) {
-    return { label: "尚未除權息", tone: "border-slate-200 bg-slate-50 text-slate-500" };
-  }
-  return { label: "觀察中", tone: "border-blue-200 bg-blue-50 text-blue-700" };
 }
 
 // 歷史發放紀錄表：同年度多筆會用 rowSpan 合併「年度 / 年股利」欄位。
@@ -98,7 +77,7 @@ export default function StockHistoryTable({ history }) {
                   if (y === currentYear) return `${m}/${d}`;
                   return `${y}/${m}/${d}`;
                 };
-                const fillState = getFillState(item, today);
+                const fillState = getFillPresentation(item, today);
 
                 return (
                   <tr key={item.id} className="transition hover:bg-slate-50">

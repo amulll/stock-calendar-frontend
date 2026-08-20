@@ -54,6 +54,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 - `Dividend.updated_at` is maintenance time and is not automatically official-source publication time.
 - Main calendar remains pay-date-first in Phase 0; ex-date visibility remains in UpcomingFocus and stock detail.
 - Completed 2026-08-20. Backend unit/compile checks passed; frontend runtime checks remain unverified because Node/npm are unavailable in this workspace.
+- Correctness follow-up completed 2026-08-20: stock history consumes canonical backend `fill_status` and no longer infers observing versus never-calculated from an ambiguous null result.
 
 ## Phase 1 — Conversion & Portfolio Productization
 
@@ -153,6 +154,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 ### Notes / Decisions
 
 - Completed 2026-08-20. The stock summary is descriptive, exposes partial coverage, and keeps the event table as drill-down truth.
+- Phase 3 state labels now map the backend canonical filled, unfilled-after-window, observing, not-calculated, and not-applicable values.
 - No prediction, backtest engine, or separate dashboard was added; the new ranking plus stock summary already cover the useful exploration path with less duplication.
 
 ## Later / Deferred
