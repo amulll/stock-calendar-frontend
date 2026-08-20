@@ -40,7 +40,8 @@ function getFillState(record, today) {
   return { label: "觀察中", tone: "border-blue-200 bg-blue-50 text-blue-700" };
 }
 
-// 歷史發放紀錄表：同年度多筆會用 rowSpan 合併「年度 / 年股利 / 年殖利率」欄位
+// 歷史發放紀錄表：同年度多筆會用 rowSpan 合併「年度 / 年股利」欄位。
+// 單次殖利率不可直接相加為年度殖利率，因此逐事件顯示。
 export default function StockHistoryTable({ history }) {
   const today = getTaipeiToday();
 
@@ -58,7 +59,7 @@ export default function StockHistoryTable({ history }) {
               <th className="px-2 py-2 whitespace-nowrap">發放日</th>
               <th className="px-2 py-2 whitespace-nowrap">除權息日</th>
               <th className="px-2 py-2 whitespace-nowrap">股利(年)</th>
-              <th className="px-2 py-2 whitespace-nowrap">殖利率(年)</th>
+              <th className="px-2 py-2 whitespace-nowrap">單次殖利率</th>
               <th className="px-2 py-2 whitespace-nowrap">填息天數</th>
               <th className="px-2 py-2 whitespace-nowrap">除息前股價</th>
             </tr>
@@ -78,16 +79,13 @@ export default function StockHistoryTable({ history }) {
 
                 let rowSpanCount = 1;
                 let totalCash = 0;
-                let totalYield = 0;
 
                 if (isFirstOfGroup) {
                   totalCash += Number(item.cash_dividend || 0);
-                  totalYield += Number(item.yield_rate || 0);
                   for (let i = index + 1; i < history.length; i++) {
                     if (getYear(history[i]) === currentYear) {
                       rowSpanCount++;
                       totalCash += Number(history[i].cash_dividend || 0);
-                      totalYield += Number(history[i].yield_rate || 0);
                     } else {
                       break;
                     }
@@ -163,27 +161,15 @@ export default function StockHistoryTable({ history }) {
                         )}
                       </td>
                     )}
-                    {isFirstOfGroup && (
-                      <td
-                        rowSpan={rowSpanCount}
-                        className="px-2 py-2 font-medium whitespace-nowrap text-center align-middle bg-white/50"
-                      >
-                        {totalYield > 0 ? (
-                          <div className="flex flex-col items-center">
-                            <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700">
-                              {formatDividend(totalYield)}%
-                            </span>
-                            {rowSpanCount > 1 && (
-                              <span className="text-[10px] text-slate-400 mt-0.5">
-                                (合計)
-                              </span>
-                            )}
-                          </div>
-                        ) : (
-                          "-"
-                        )}
-                      </td>
-                    )}
+                    <td className="px-2 py-2 text-center font-medium whitespace-nowrap">
+                      {Number(item.yield_rate) > 0 ? (
+                        <span className="rounded border border-slate-200 bg-white px-2 py-0.5 text-slate-700">
+                          {formatDividend(item.yield_rate)}%
+                        </span>
+                      ) : (
+                        "-"
+                      )}
+                    </td>
                     <td className="px-2 py-2 text-slate-400 whitespace-nowrap text-center">
                       <span className={`rounded border px-2 py-0.5 text-xs ${fillState.tone}`}>
                         {fillState.label}

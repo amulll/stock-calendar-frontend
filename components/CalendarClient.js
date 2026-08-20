@@ -77,6 +77,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
     sharesMap,
     costMap,
     watchlistSet,
+    hydrated: watchlistHydrated,
     toggleWatchlist,
     updateShares,
     updateCost,
@@ -397,6 +398,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
         <div className="border-b border-slate-200 px-4 py-3 md:px-5 md:py-4">
           <CalendarSummary
             watchlistCount={watchlist.length}
+            watchlistHydrated={watchlistHydrated}
             onOpenPortfolio={() => handleOpenPortfolio("calendar_summary")}
             onAddSampleWatchlist={() => handleAddSampleWatchlist("calendar_summary")}
           />

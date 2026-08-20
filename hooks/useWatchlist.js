@@ -8,9 +8,8 @@ const STORAGE_KEYS = {
   costMap: "myCostMap",
 };
 
-function loadJson(key, fallback) {
-  if (typeof window === "undefined") return fallback;
-  const raw = localStorage.getItem(key);
+function loadJson(storage, key, fallback) {
+  const raw = storage.getItem(key);
   if (!raw) return fallback;
   try {
     return JSON.parse(raw);
@@ -63,19 +62,42 @@ export function useWatchlist() {
   const [watchlist, setWatchlist] = useState([]);
   const [sharesMap, setSharesMap] = useState({});
   const [costMap, setCostMap] = useState({});
+  const [hydrated, setHydrated] = useState(false);
+  const [storageAvailable, setStorageAvailable] = useState(true);
 
   useEffect(() => {
-    setWatchlist(loadJson(STORAGE_KEYS.watchlist, []));
-    setSharesMap(loadJson(STORAGE_KEYS.sharesMap, {}));
-    setCostMap(loadJson(STORAGE_KEYS.costMap, {}));
+    try {
+      const storage = window.localStorage;
+      setWatchlist(loadJson(storage, STORAGE_KEYS.watchlist, []));
+      setSharesMap(loadJson(storage, STORAGE_KEYS.sharesMap, {}));
+      setCostMap(loadJson(storage, STORAGE_KEYS.costMap, {}));
+      setStorageAvailable(true);
+    } catch (error) {
+      console.error("Browser storage is unavailable", error);
+      setStorageAvailable(false);
+    } finally {
+      setHydrated(true);
+    }
   }, []);
+
+  const persist = (key, value) => {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value));
+      setStorageAvailable(true);
+      return true;
+    } catch (error) {
+      console.error(`Failed to persist ${key}`, error);
+      setStorageAvailable(false);
+      return false;
+    }
+  };
 
   const toggleWatchlist = (code) => {
     setWatchlist((prev) => {
       const updated = prev.includes(code)
         ? prev.filter((item) => item !== code)
         : [...prev, code];
-      localStorage.setItem(STORAGE_KEYS.watchlist, JSON.stringify(updated));
+      persist(STORAGE_KEYS.watchlist, updated);
       return updated;
     });
   };
@@ -83,7 +105,7 @@ export function useWatchlist() {
   const updateShares = (code, shares) => {
     setSharesMap((prev) => {
       const updated = { ...prev, [code]: shares };
-      localStorage.setItem(STORAGE_KEYS.sharesMap, JSON.stringify(updated));
+      persist(STORAGE_KEYS.sharesMap, updated);
       return updated;
     });
   };
@@ -97,7 +119,7 @@ export function useWatchlist() {
       } else {
         updated[code] = price;
       }
-      localStorage.setItem(STORAGE_KEYS.costMap, JSON.stringify(updated));
+      persist(STORAGE_KEYS.costMap, updated);
       return updated;
     });
   };
@@ -131,25 +153,26 @@ export function useWatchlist() {
       previousValues = Object.fromEntries(
         Object.entries(STORAGE_KEYS).map(([name, key]) => [
           name,
-          localStorage.getItem(key),
+          window.localStorage.getItem(key),
         ])
       );
-      localStorage.setItem(
+      window.localStorage.setItem(
         STORAGE_KEYS.watchlist,
         JSON.stringify(backup.watchlist)
       );
-      localStorage.setItem(
+      window.localStorage.setItem(
         STORAGE_KEYS.sharesMap,
         JSON.stringify(backup.sharesMap)
       );
-      localStorage.setItem(STORAGE_KEYS.costMap, JSON.stringify(backup.costMap));
+      window.localStorage.setItem(STORAGE_KEYS.costMap, JSON.stringify(backup.costMap));
     } catch (error) {
+      setStorageAvailable(false);
       if (previousValues) {
         try {
           Object.entries(STORAGE_KEYS).forEach(([name, key]) => {
             const previousValue = previousValues[name];
-            if (previousValue === null) localStorage.removeItem(key);
-            else localStorage.setItem(key, previousValue);
+            if (previousValue === null) window.localStorage.removeItem(key);
+            else window.localStorage.setItem(key, previousValue);
           });
         } catch (rollbackError) {
           console.error("Failed to roll back watchlist import", rollbackError);
@@ -161,6 +184,7 @@ export function useWatchlist() {
     setWatchlist(backup.watchlist);
     setSharesMap(backup.sharesMap);
     setCostMap(backup.costMap);
+    setStorageAvailable(true);
     return { ok: true };
   };
 
@@ -171,6 +195,8 @@ export function useWatchlist() {
     sharesMap,
     costMap,
     watchlistSet,
+    hydrated,
+    storageAvailable,
     toggleWatchlist,
     updateShares,
     updateCost,

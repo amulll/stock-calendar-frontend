@@ -15,31 +15,41 @@ export default async function sitemap() {
   const staticRoutes = [
     {
       url: `${baseUrl}`,
-      lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1.0,
     },
     {
       url: `${baseUrl}/screener`,
-      lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
     },
     {
+      url: `${baseUrl}/ranking/fill-rate`,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/ranking/consecutive-dividend`,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/ranking/high-yield`,
+      changeFrequency: 'daily',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/knowledge`,
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.7, // 給予較高的權重
     },
     {
       url: `${baseUrl}/privacy`,
-      lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.3,
     },
     {
       url: `${baseUrl}/disclaimer`,
-      lastModified: new Date(),
       changeFrequency: 'yearly',
       priority: 0.3,
     },
@@ -66,7 +76,6 @@ export default async function sitemap() {
       
       stockRoutes = stocks.map((stock) => ({
         url: `${baseUrl}/stock/${stock.stock_code}`,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
       }));

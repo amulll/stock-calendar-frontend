@@ -6,18 +6,19 @@ import { ListFilter } from "lucide-react";
 // 首頁精簡摘要：價值說明 + 自選股試算入口；月份與筆數統一留在月曆工具列。
 export default function CalendarSummary({
   watchlistCount,
+  watchlistHydrated,
   onOpenPortfolio,
   onAddSampleWatchlist,
 }) {
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
       <div className="min-w-0">
-        <p className="text-xs font-semibold text-slate-500">台股股利日曆</p>
+        <p className="text-xs font-semibold text-slate-500">台股股利發放日曆</p>
         <h1 className="mt-1 text-xl font-black tracking-tight text-slate-950 md:text-2xl">
           查股利何時入帳，算出今年能領多少
         </h1>
         <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
-          追蹤持股，自動整理除權息、發放日與年度預估股息。
+          追蹤持股，整理股利入帳日、近期除權息與組合領息試算。
           <Link
             href="/screener"
             className="ml-2 inline-flex items-center gap-0.5 font-semibold text-blue-600 hover:underline"
@@ -28,7 +29,13 @@ export default function CalendarSummary({
         </p>
       </div>
 
-      {watchlistCount === 0 ? (
+      {!watchlistHydrated ? (
+        <div
+          className="h-16 w-full animate-pulse rounded-lg border border-slate-200 bg-slate-100 lg:w-[180px]"
+          role="status"
+          aria-label="讀取自選股"
+        />
+      ) : watchlistCount === 0 ? (
         <div className="flex flex-col items-start gap-1 lg:flex-shrink-0 lg:items-end">
           <button
             type="button"

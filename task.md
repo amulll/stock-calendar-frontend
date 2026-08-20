@@ -1,5 +1,13 @@
 # UI / Behavior Task Status
 
+## Active Product Roadmap
+
+- The approved cross-repository plan is tracked in `ROADMAP.md`.
+- Phase 0 metric/correctness foundation completed on 2026-08-20.
+- Phase 1 conversion and portfolio productization completed on 2026-08-20.
+- Phase 2 evergreen SEO acquisition and Phase 3 historical fill research completed on 2026-08-20.
+- Remaining work is deployment validation: frontend runtime checks and production fill-sample distribution review.
+
 ## Current State
 - This task file now reflects the actual repo state instead of the original planning draft.
 - Significant frontend work has already been completed:

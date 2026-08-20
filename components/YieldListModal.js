@@ -7,6 +7,7 @@ import { X, TrendingUp, Loader2, ArrowUpDown } from "lucide-react";
 import ModalContainer from "./ModalContainer";
 import { useToast } from "../hooks/useToast";
 import { exDateLabel } from "../lib/dividendEvent";
+import { getTaipeiYear } from "../lib/stockMetadata.mjs";
 
 export default function YieldListModal({
   isOpen,
@@ -17,7 +18,7 @@ export default function YieldListModal({
   const [sortAsc, setSortAsc] = useState(true);
   const { addToast } = useToast();
 
-  const year = new Date().getFullYear();
+  const year = getTaipeiYear();
   const { data, error, isLoading } = useSWR(
     isOpen ? `api/dividends/high-yield?threshold=${threshold}&year=${year}` : null
   );
@@ -26,7 +27,7 @@ export default function YieldListModal({
 
   useEffect(() => {
     if (error) {
-      addToast("載入高殖利率清單失敗", "error");
+      addToast("載入單次殖利率清單失敗", "error");
     }
   }, [error, addToast]);
 
@@ -53,7 +54,7 @@ export default function YieldListModal({
             </div>
             <div>
               <h2 id="yield-list-modal-title" className="text-lg font-black tracking-tight text-slate-900">
-                全年度高殖利率清單
+                全年度單次殖利率清單
               </h2>
               <p className="text-xs font-medium text-amber-700">
                 篩選：&gt;{threshold}% (共 {sortedList.length} 檔)
@@ -90,7 +91,7 @@ export default function YieldListModal({
             <div className="text-center text-rose-500 py-12 flex flex-col items-center">
               <TrendingUp size={48} className="mb-3 opacity-30" />
               <p className="font-medium">
-                {error?.message || "載入高殖利率清單失敗"}
+                {error?.message || "載入單次殖利率清單失敗"}
               </p>
             </div>
           ) : sortedList.length === 0 ? (
@@ -130,7 +131,7 @@ export default function YieldListModal({
                     <div className="flex items-center justify-end gap-1 text-lg font-bold text-amber-600">
                       {div.yield_rate}%
                     </div>
-                    <div className="text-xs text-slate-400">預估殖利率</div>
+                    <div className="text-xs text-slate-400">單次殖利率</div>
                   </div>
                 </button>
               ))}

@@ -31,7 +31,7 @@ export default function SeoContent() {
             <p className="text-xs font-bold text-blue-700">01 · 查日期</p>
             <h3 className="mt-2 font-black text-slate-900">確認股利何時入帳</h3>
             <p className="mt-2 text-sm leading-6">
-              使用月份、股票搜尋與自選篩選，查看除權息和現金股利發放日。
+              使用月份、股票搜尋與自選篩選查看現金股利發放日；近期除權息資訊顯示在日曆上方。
             </p>
           </article>
 
@@ -41,6 +41,12 @@ export default function SeoContent() {
             <p className="mt-2 text-sm leading-6">
               加入自選後開啟「我的自選股」，輸入股數與成本，查看組合試算結果。
             </p>
+            <Link
+              href="/portfolio"
+              className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-emerald-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
+              開啟我的存股組合 →
+            </Link>
           </article>
 
           <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -102,7 +108,7 @@ export default function SeoContent() {
             >
               公開資訊觀測站
             </a>
-            ，系統每日清晨更新，實際時間以頁面顯示為準。預估殖利率以最近收盤價計算，組合結果僅供資料整理與試算，不構成投資建議。
+            ，系統每日清晨處理資料，頁面更新時間是本站處理時間，不代表官方公告時間。今年已公告殖利率以當年度已入庫現金股利除以最近收盤價計算；組合結果僅供資料整理與試算，不構成投資建議。
           </p>
         </div>
       </div>

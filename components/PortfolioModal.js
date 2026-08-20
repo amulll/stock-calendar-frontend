@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import useSWR, { useSWRConfig } from "swr";
 import {
   X,
@@ -21,67 +22,19 @@ import { proxyGet } from "../lib/proxy-client";
 import { shareCard } from "../lib/shareCard";
 import { subscribeToCalendar } from "../lib/calendarSubscribe";
 import { trackEvent } from "../lib/analytics";
+import { getTaipeiYear } from "../lib/stockMetadata.mjs";
+import {
+  DEFAULT_SHARES,
+  computeStockIncome,
+  summarizePortfolioRows,
+} from "../lib/portfolioMetrics.mjs";
 import { useToast } from "../hooks/useToast";
 
-const DEFAULT_SHARES = 1000; // 未設定時預設 1 張
 const BACKUP_REMINDER_STORAGE_KEY = "ugoodlyBackupReminderHandledV1";
 const MONTH_LABELS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
 
 function formatMoney(value) {
   return Math.round(Number(value) || 0).toLocaleString("en-US");
-}
-
-// 從單一個股的詳情計算「年度領息」相關數字
-// costPrice：使用者自訂的每股成本；未設定 (0/空) 時退回最新收盤價
-function computeStockIncome(detail, shares, currentYear, costPrice) {
-  const info = detail?.info || null;
-  const history = Array.isArray(detail?.history) ? detail.history : [];
-  const marketPrice = Number(info?.daily_price) || 0;
-  const effectiveCost = Number(costPrice) > 0 ? Number(costPrice) : marketPrice;
-
-  // 一檔股票一年可能配息多次 (季配/月配)，取當年度全部現金股利加總
-  const thisYear = history.filter((record) => {
-    const dateStr = record.pay_date || record.ex_date;
-    return dateStr && Number(dateStr.slice(0, 4)) === currentYear;
-  });
-
-  let records = thisYear;
-  if (records.length === 0) {
-    // 當年度尚無資料時，退而用最近一筆配息當估算
-    const latest = [...history]
-      .filter((record) => record.ex_date)
-      .sort((a, b) => new Date(b.ex_date) - new Date(a.ex_date))[0];
-    records = latest ? [latest] : [];
-  }
-
-  const annualCash = records.reduce(
-    (sum, record) => sum + (Number(record.cash_dividend) || 0),
-    0
-  );
-
-  const monthly = new Array(12).fill(0);
-  records.forEach((record) => {
-    const dateStr = record.pay_date || record.ex_date;
-    if (!dateStr) return;
-    const monthIndex = Number(dateStr.slice(5, 7)) - 1;
-    if (monthIndex >= 0 && monthIndex < 12) {
-      monthly[monthIndex] += (Number(record.cash_dividend) || 0) * shares;
-    }
-  });
-
-  return {
-    name: info?.stock_name || null,
-    marketPrice,
-    costPrice: effectiveCost,
-    isCustomCost: Number(costPrice) > 0,
-    annualCash,
-    income: annualCash * shares,
-    cost: effectiveCost * shares,
-    yieldRate: effectiveCost > 0 ? (annualCash / effectiveCost) * 100 : 0,
-    monthly,
-    usedEstimate: thisYear.length === 0 && records.length > 0,
-    hasData: annualCash > 0,
-  };
 }
 
 // 只在失焦或按 Enter 時才提交，避免每打一個字就更新父層 state 導致重繪、游標跳掉
@@ -122,6 +75,7 @@ function EditableNumber({ value, onCommit, className, ...props }) {
 export default function PortfolioModal({
   isOpen,
   onClose,
+  variant = "modal",
   watchlist,
   sharesMap,
   onSharesChange,
@@ -132,18 +86,19 @@ export default function PortfolioModal({
   onAddSampleWatchlist,
   onStockClick,
 }) {
+  const active = variant === "page" || isOpen;
   const { addToast } = useToast();
   const { mutate } = useSWRConfig();
   const [sharing, setSharing] = useState(false);
   const [subscriptionGuideOpen, setSubscriptionGuideOpen] = useState(false);
   const [showBackupReminder, setShowBackupReminder] = useState(false);
   const importInputRef = useRef(null);
-  const currentYear = new Date().getFullYear();
+  const currentYear = getTaipeiYear();
 
   // 用「整個自選清單」當 key，一次平行抓取所有個股詳情並快取整包結果。
   // 抓到後順手 mutate 各檔 api/stock/{code}，讓之後開啟個股視窗能命中同一份 SWR 快取。
   const swrKey =
-    isOpen && watchlist.length > 0 ? ["portfolio", ...watchlist] : null;
+    active && watchlist.length > 0 ? ["portfolio", ...watchlist] : null;
 
   const { data: details, isLoading: loading } = useSWR(swrKey, async (key) => {
     const codes = key.slice(1);
@@ -186,26 +141,7 @@ export default function PortfolioModal({
     });
   }, [watchlist, sharesMap, costMap, details, currentYear]);
 
-  const totals = useMemo(() => {
-    let income = 0;
-    let cost = 0;
-    const monthly = new Array(12).fill(0);
-    rows.forEach(({ computed }) => {
-      if (!computed) return;
-      income += computed.income;
-      cost += computed.cost;
-      computed.monthly.forEach((value, index) => {
-        monthly[index] += value;
-      });
-    });
-    return {
-      income,
-      cost,
-      monthly,
-      yieldRate: cost > 0 ? (income / cost) * 100 : 0,
-      maxMonth: Math.max(...monthly, 0),
-    };
-  }, [rows]);
+  const totals = useMemo(() => summarizePortfolioRows(rows), [rows]);
 
   const hasCustomizedPortfolio = useMemo(
     () =>
@@ -219,7 +155,7 @@ export default function PortfolioModal({
   );
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!active) {
       setSubscriptionGuideOpen(false);
       setShowBackupReminder(false);
       return;
@@ -237,7 +173,7 @@ export default function PortfolioModal({
     } catch {
       setShowBackupReminder(false);
     }
-  }, [isOpen, watchlist.length, hasCustomizedPortfolio]);
+  }, [active, watchlist.length, hasCustomizedPortfolio]);
 
   const markBackupReminderHandled = () => {
     setShowBackupReminder(false);
@@ -300,7 +236,7 @@ export default function PortfolioModal({
     const result = await subscribeToCalendar(
       watchlist,
       addToast,
-      "portfolio_modal"
+      variant === "page" ? "portfolio_page" : "portfolio_modal"
     );
     if (result === "copied") setSubscriptionGuideOpen(true);
   };
@@ -358,16 +294,15 @@ export default function PortfolioModal({
     </>
   );
 
-  if (!isOpen) return null;
+  if (!active) return null;
 
-  return (
-    <ModalContainer
-      isOpen={isOpen}
-      onClose={onClose}
-      ariaLabelledby="portfolio-modal-title"
-      contentClassName="max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[88vh]"
-    >
-      <div className="flex max-h-[88vh] flex-col rounded-xl border border-slate-200 bg-white">
+  const titleId = `portfolio-${variant}-title`;
+  const content = (
+      <div
+        className={`flex flex-col rounded-xl border border-slate-200 bg-white ${
+          variant === "page" ? "min-h-[32rem]" : "max-h-[88vh]"
+        }`}
+      >
         {/* Header */}
         <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
           <div className="flex items-center gap-2">
@@ -375,22 +310,40 @@ export default function PortfolioModal({
               <Wallet size={20} />
             </div>
             <div>
-              <h2 id="portfolio-modal-title" className="text-lg font-black tracking-tight text-slate-900">
+              <h2 id={titleId} className="text-lg font-black tracking-tight text-slate-900">
                 我的存股組合
               </h2>
               <p className="text-xs font-medium text-slate-500">
-                {currentYear} 年度預估領息 · 共 {watchlist.length} 檔
+                {currentYear} 年已公告與估算領息 · 共 {watchlist.length} 檔
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-            aria-label="關閉"
-          >
-            <X size={20} />
-          </button>
+          {variant === "modal" ? (
+            <div className="flex items-center gap-1">
+              <Link
+                href="/portfolio"
+                onClick={onClose}
+                className="flex min-h-11 items-center rounded-lg px-3 text-xs font-bold text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+              >
+                開啟完整頁
+              </Link>
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                aria-label="關閉"
+              >
+                <X size={20} />
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/"
+              className="flex min-h-11 items-center rounded-lg px-3 text-sm font-bold text-blue-600 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+            >
+              回股利日曆
+            </Link>
+          )}
         </div>
 
         {showBackupReminder && (
@@ -445,12 +398,13 @@ export default function PortfolioModal({
             <div className="grid grid-cols-2 gap-2 border-b border-slate-200 bg-slate-50 p-4 sm:grid-cols-3">
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
                 <div className="text-[11px] font-semibold text-emerald-700">
-                  預估年領股息
+                  {totals.estimateCount > 0 ? "已公告＋最近一次估算" : "今年已公告領息"}
                 </div>
                 <div className="mt-1 text-xl font-black tracking-tight text-emerald-800">
                   ${formatMoney(totals.income)}
                 </div>
               </div>
+
               <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
                 <div className="text-[11px] font-semibold text-slate-500">
                   投入總成本
@@ -468,6 +422,12 @@ export default function PortfolioModal({
                   {totals.yieldRate.toFixed(2)}%
                 </div>
               </div>
+
+              {totals.estimateCount > 0 && (
+                <p className="col-span-2 text-[11px] leading-5 text-slate-500 sm:col-span-3">
+                  {totals.estimateCount} 檔今年尚無配息資料，暫以最近一次事件估算；此數字不是完整全年預測。
+                </p>
+              )}
 
               {totals.income > 0 && !loading && (
                 <div className="col-span-2 grid grid-cols-[1fr_auto] gap-2 sm:col-span-3">
@@ -512,8 +472,8 @@ export default function PortfolioModal({
                   每月現金流分布
                 </div>
                 <p id="portfolio-cash-flow-summary" className="sr-only">
-                  全年預估現金流共 ${formatMoney(totals.income)}，最高月份為
-                  {MONTH_LABELS[totals.monthly.indexOf(totals.maxMonth)]} 月，預估
+                  全年已公告與估算現金流共 ${formatMoney(totals.income)}，最高月份為
+                  {MONTH_LABELS[totals.monthly.indexOf(totals.maxMonth)]} 月，金額
                   ${formatMoney(totals.maxMonth)}。
                 </p>
                 <div
@@ -554,9 +514,9 @@ export default function PortfolioModal({
                   </div>
                 </div>
                 <table className="sr-only">
-                  <caption>每月預估現金流明細</caption>
+                  <caption>每月已公告與估算現金流明細</caption>
                   <thead>
-                    <tr><th scope="col">月份</th><th scope="col">預估現金流</th></tr>
+                    <tr><th scope="col">月份</th><th scope="col">已公告與估算現金流</th></tr>
                   </thead>
                   <tbody>
                     {totals.monthly.map((value, index) => (
@@ -604,7 +564,9 @@ export default function PortfolioModal({
                         <div className="text-sm font-black text-emerald-700">
                           ${formatMoney(computed?.income || 0)}
                         </div>
-                        <div className="text-[10px] text-slate-400">年領股息</div>
+                        <div className="text-[10px] text-slate-400">
+                          {computed?.usedEstimate ? "最近一次估算領息" : "今年已公告領息"}
+                        </div>
                       </div>
                     </div>
 
@@ -687,6 +649,18 @@ export default function PortfolioModal({
           </div>
         )}
       </div>
+  );
+
+  if (variant === "page") return content;
+
+  return (
+    <ModalContainer
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledby={titleId}
+      contentClassName="max-w-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[88vh]"
+    >
+      {content}
     </ModalContainer>
   );
 }

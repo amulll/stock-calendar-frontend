@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import ScreenerClient from "../../components/screener/ScreenerClient";
-import { DEFAULT_BACKEND_URL } from "../../lib/backend";
+import { getScreenerData } from "../../lib/screenerData";
 
 export const revalidate = 3600;
 
-const PAGE_TITLE = "台股存股選股表｜殖利率、填息率、連續配息排行 - uGoodly";
+const PAGE_TITLE = "台股存股選股表｜今年已公告殖利率、填息率、連續配息 - uGoodly";
 const PAGE_DESC =
-  "免費台股選股工具：依殖利率、填息成功率、連續配息年數與配息頻率排序篩選全市場股票及 ETF。提供長期配息、月月現金流與高殖利率三種條件起點，協助比較符合條件的標的。";
+  "免費台股選股工具：依今年已公告現金股利殖利率、填息成功率、連續配息年數與歷史配息頻率排序篩選股票及 ETF。已公告殖利率不包含尚未公告的未來配息。";
 
 export const metadata = {
   title: PAGE_TITLE,
@@ -24,23 +24,6 @@ export const metadata = {
     type: "website",
   },
 };
-
-async function getScreenerData() {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL;
-  const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
-
-  try {
-    const res = await fetch(`${API_URL}/api/screener`, {
-      headers: { "X-Service-Token": SERVICE_TOKEN },
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return [];
-    return res.json();
-  } catch (error) {
-    console.error("Screener fetch error:", error);
-    return [];
-  }
-}
 
 export default async function ScreenerPage() {
   const rows = await getScreenerData();
@@ -79,12 +62,31 @@ export default async function ScreenerPage() {
             怎麼使用這張選股表？
           </h2>
           <p>
-            表格彙整全市場股票與 ETF 的<strong>年度預估殖利率</strong>（當年度現金股利 ÷ 最新收盤價）、
+            表格彙整全市場股票與 ETF 的<strong>今年已公告殖利率</strong>（當年度已入庫現金股利 ÷ 最新收盤價，不含尚未公告的未來配息）、
             <strong>填息成功率</strong>（歷史除息後回補缺口的比例）、<strong>連續配息年數</strong>與
             <strong>配息頻率</strong>。點欄位標題可排序，或直接使用上方的選股組合快速篩選。
             點任一列可進入個股頁查看歷年配息與股利計算機。資料每日更新，僅供研究參考，不構成投資建議。
           </p>
         </section>
+
+        <nav
+          className="mt-4 grid gap-3 md:grid-cols-3"
+          aria-label="研究排名"
+        >
+          {[
+            ["/ranking/fill-rate", "歷史填息率排名"],
+            ["/ranking/consecutive-dividend", "連續配息年數排名"],
+            ["/ranking/high-yield", "今年已公告殖利率排名"],
+          ].map(([href, label]) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex min-h-11 items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-blue-700 transition hover:border-blue-200 hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+            >
+              {label} <span aria-hidden="true">→</span>
+            </Link>
+          ))}
+        </nav>
       </div>
     </main>
   );

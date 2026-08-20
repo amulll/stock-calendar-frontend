@@ -2,7 +2,7 @@ import { Info } from "lucide-react";
 import { getDividendType, exDateLabel } from "../../lib/dividendEvent";
 
 // 個股頁底部的 SEO 說明文章：依最新一筆配息與歷史紀錄自動生成敘述
-export default function StockSeoArticle({ info, latestDividend, historicalRecords }) {
+export default function StockSeoArticle({ info, latestDividend, historicalRecords, metrics }) {
   const { stock_name, stock_code, daily_price } = info;
   const { cash_dividend, stock_dividend, pay_date, ex_date } = latestDividend || {};
   // 最新一期可能是純除權(配股、無現金)，措辭需區分，不可一律稱「現金股利/除息」
@@ -24,18 +24,9 @@ export default function StockSeoArticle({ info, latestDividend, historicalRecord
         ).toFixed(3)
       : 0;
 
-  const validFillRecords = historicalRecords.filter(
-    (r) =>
-      r.days_to_fill !== null &&
-      r.days_to_fill !== undefined &&
-      r.days_to_fill >= 1
-  );
   const avgFillDays =
-    validFillRecords.length > 0
-      ? (
-          validFillRecords.reduce((acc, cur) => acc + cur.days_to_fill, 0) /
-          validFillRecords.length
-        ).toFixed(1)
+    Number(metrics?.successful_fill_events || 0) > 0
+      ? Number(metrics.avg_fill_days).toFixed(1)
       : null;
 
   return (
@@ -58,7 +49,7 @@ export default function StockSeoArticle({ info, latestDividend, historicalRecord
             的現金股利為{" "}
             <strong>{Number(cash_dividend).toFixed(3)} 元</strong>。 以目前的最新收盤價{" "}
             <strong>{daily_price || "--"} 元</strong> 計算， 其預估單次殖利率約為{" "}
-            <span className="font-bold text-slate-800">{realtimeYield}%</span>。
+            <span className="font-bold text-slate-800">{realtimeYield}%</span>（依最新收盤價試算）。
           </>
         )}
       </p>

@@ -48,6 +48,8 @@ Browser -> /api/proxy/*
   - `api/dividends`
   - `api/stocks`
   - `api/stock`
+  - `api/screener`
+  - `api/calendar.ics`
 
 Practical meaning:
 

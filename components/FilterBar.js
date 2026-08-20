@@ -379,7 +379,7 @@ export default function FilterBar({
                 ? "border-amber-300 bg-amber-50 text-amber-700"
                 : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
             }`}
-            title="高殖利率篩選"
+            title="單次殖利率篩選"
             aria-pressed={showHighYieldOnly}
             aria-haspopup="dialog"
             aria-expanded={yieldMenuOpen}
@@ -406,11 +406,11 @@ export default function FilterBar({
                 id={yieldHeadingId}
                 className="text-xs font-semibold text-slate-500"
               >
-                殖利率篩選
+                單次殖利率篩選
               </p>
               <div className="mb-3 mt-2 flex items-center justify-between rounded-lg bg-amber-50 px-3 py-2.5">
                 <span className="text-sm font-bold text-slate-700">
-                  高殖利率篩選
+                  單次殖利率篩選
                 </span>
                 <button
                   type="button"
@@ -421,7 +421,7 @@ export default function FilterBar({
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     showHighYieldOnly ? "bg-amber-500" : "bg-slate-200"
                   }`}
-                  aria-label="切換高殖利率篩選"
+                  aria-label="切換單次殖利率篩選"
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-200 ${
@@ -432,7 +432,7 @@ export default function FilterBar({
               </div>
               <div className="mb-3 rounded-lg bg-slate-50 px-3 py-3">
                 <div className="mb-2 flex justify-between text-xs text-slate-500">
-                  <span>殖利率門檻</span>
+                  <span>單次殖利率門檻</span>
                   <span className="font-bold text-amber-600">{localYield}%</span>
                 </div>
                 <input
@@ -445,7 +445,7 @@ export default function FilterBar({
                   onMouseUp={() => onCommitYield(localYield)}
                   onTouchEnd={() => onCommitYield(localYield)}
                   className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-amber-500"
-                  aria-label="調整殖利率門檻"
+                  aria-label="調整單次殖利率門檻"
                 />
                 <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                   <span>1%</span>
@@ -461,7 +461,7 @@ export default function FilterBar({
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 py-2.5 text-sm font-bold text-slate-600 transition hover:bg-slate-200"
               >
                 <List size={16} />
-                檢視高殖利率清單
+                檢視單次殖利率清單
               </button>
             </div>
           )}

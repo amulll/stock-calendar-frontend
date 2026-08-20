@@ -9,8 +9,11 @@ import DividendChart from "../../../components/DividendChart";
 import StockHistoryTable from "../../../components/stock/StockHistoryTable";
 import StockSeoArticle from "../../../components/stock/StockSeoArticle";
 import IncomeCompositionBar from "../../../components/stock/IncomeCompositionBar";
+import StockWatchlistActions from "../../../components/stock/StockWatchlistActions";
+import StockFillSummary from "../../../components/stock/StockFillSummary";
 import { DEFAULT_BACKEND_URL } from "../../../lib/backend";
 import { getDividendType, exDateLabel } from "../../../lib/dividendEvent";
+import { buildStockMetadataTitle } from "../../../lib/stockMetadata.mjs";
 
 // 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
 // 大幅降低後端負載並加快 SEO 頁面的 TTFB
@@ -90,8 +93,7 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const { info } = data; // 使用 info
-  const year = new Date().getFullYear();
+  const { info, history } = data;
   const metaDescription = buildStockMetaDescription({
     stockName: info.stock_name,
     stockCode: id,
@@ -99,7 +101,11 @@ export async function generateMetadata({ params }) {
   });
 
   return {
-    title: `${info.stock_name} (${id}) ${year} 股利配息日、殖利率與股利計算 - uGoodly`,
+    title: buildStockMetadataTitle({
+      stockName: info.stock_name,
+      stockCode: id,
+      history,
+    }),
     description: metaDescription,
     keywords: [info.stock_name, id, "股利計算", "存股試算", "殖利率計算機", "股息試算",
       "股利", "發放日", "除息日", "殖利率", "存股","配息日"],
@@ -143,7 +149,7 @@ export default async function StockPage({ params }) {
   }
 
   // 解構 info 與 history
-  const { info, history } = data;
+  const { info, metrics, history } = data;
   const displayMarket = (info.market_type === "TPEX" || info.market_type === "上櫃") ? "上櫃" : "上市";
   const today = startOfDay(new Date());
 
@@ -248,6 +254,12 @@ export default async function StockPage({ params }) {
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   股利發放、殖利率、歷史配息與試算工具。
                 </p>
+                <div className="mt-3">
+                  <StockWatchlistActions
+                    stockCode={id}
+                    stockName={info.stock_name}
+                  />
+                </div>
               </div>
 
               {/* 股價與殖利率儀表板 */}
@@ -271,7 +283,9 @@ export default async function StockPage({ params }) {
                 <div className={`rounded-lg border px-3 py-2.5
                     ${currentYieldRate !== "--" && Number(currentYieldRate) > 5 ? "border-slate-300 bg-slate-50 text-slate-900" : "border-slate-200 bg-white text-slate-700"}
                 `}>
-                  <div className="mb-1 text-[11px] font-semibold opacity-80">預估殖利率</div>
+                  <div className="mb-1 text-[11px] font-semibold opacity-80">
+                    最新一期單次殖利率
+                  </div>
                   <div className="flex items-center gap-2 text-xl font-black tracking-tight">
                     {currentYieldRate !== "--" ? `${currentYieldRate}%` : "--"}
                     {currentYieldRate !== "--" && Number(currentYieldRate) > 5 && <span className="rounded border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-black text-slate-600">高</span>}
@@ -350,6 +364,8 @@ export default async function StockPage({ params }) {
             )}
 
             {/* 歷史發放紀錄 */}
+            <StockFillSummary metrics={metrics} />
+
             <StockHistoryTable history={history} />
 
             {/* SEO 描述文章 */}
@@ -358,6 +374,7 @@ export default async function StockPage({ params }) {
                 info={info}
                 latestDividend={latestEvent}
                 historicalRecords={history}
+                metrics={metrics}
               />
             </section>
 

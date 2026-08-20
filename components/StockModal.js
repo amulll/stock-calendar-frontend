@@ -320,7 +320,7 @@ export default function StockModal({
                       displayYield !== "--" ? "text-amber-700" : "text-slate-500"
                     }`}
                   >
-                    估算殖利率
+                    單次殖利率（依最新價）
                   </div>
                   <div
                     className={`text-xl font-bold ${

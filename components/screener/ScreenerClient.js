@@ -17,7 +17,7 @@ const EMPTY = {
 const PRESETS = [
   { id: "steady", label: "🛡️ 長期配息條件", values: { ...EMPTY, yearsMin: "10", fillMin: "80" } },
   { id: "monthly", label: "📅 月月現金流", values: { ...EMPTY, freqs: ["月配", "季配"] } },
-  { id: "hot", label: "🔥 高殖利率條件", values: { ...EMPTY, yieldMin: "6", upcomingOnly: true } },
+  { id: "hot", label: "🔥 今年已公告高殖利率", values: { ...EMPTY, yieldMin: "6", upcomingOnly: true } },
 ];
 
 const FREQ_OPTIONS = ["月配", "季配", "半年配", "年配"];
@@ -26,7 +26,7 @@ const MARKET_OPTIONS = ["上市", "上櫃"];
 const COLUMNS = [
   { key: "stock_code", label: "代號 / 名稱" },
   { key: "daily_price", label: "股價" },
-  { key: "annual_yield", label: "年殖利率" },
+  { key: "annual_yield", label: "今年已公告殖利率" },
   { key: "fill_rate", label: "填息率" },
   { key: "consecutive_years", label: "連配年數" },
   { key: "frequency", label: "頻率" },
@@ -186,7 +186,7 @@ export default function ScreenerClient({ initialRows }) {
 
         {/* 可調條件 */}
         <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-3">
-          {numField("殖利率", "yieldMin", "%")}
+          {numField("已公告殖利率", "yieldMin", "%")}
           {numField("填息率", "fillMin", "%")}
           {numField("連配", "yearsMin", "年")}
           <span className="mx-1 hidden h-5 w-px bg-slate-200 sm:block" />

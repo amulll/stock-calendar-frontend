@@ -75,7 +75,7 @@ export default async function Page({ searchParams }) {
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "uGoodly 股利日曆",
+      "name": "uGoodly 股利發放日曆",
       "url": "https://ugoodly.com",
       "potentialAction": {
         "@type": "SearchAction",
@@ -89,7 +89,7 @@ export default async function Page({ searchParams }) {
     {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": "uGoodly 台股除權息日曆",
+      "name": "uGoodly 台股股利發放日曆",
       "applicationCategory": "FinanceApplication",
       "operatingSystem": "Web",
       "offers": {
@@ -97,8 +97,8 @@ export default async function Page({ searchParams }) {
         "price": "0",
         "priceCurrency": "TWD"
       },
-      "description": "台股除權息行事曆，提供發放日查詢、殖利率與組合股息試算及自選追蹤。",
-      "featureList": "除息日查詢, 股利發放日行事曆, 殖利率試算"
+      "description": "台股股利發放日曆，提供入帳日查詢、近期除權息資訊、已公告殖利率與組合股息試算。",
+      "featureList": "股利發放日行事曆, 近期除權息資訊, 殖利率試算"
     },
     {
       "@context": "https://schema.org",

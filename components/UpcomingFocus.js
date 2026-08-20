@@ -9,15 +9,6 @@ import { getDividendType } from "../lib/dividendEvent";
 const MAX_ITEMS = 5; // 展開後每欄上限
 const STRIP_ITEMS = 3; // 收合時單行顯示幾筆
 
-// 除息日前一「交易日」(僅排除週末；國定假日以最近平日估算)
-function lastBuyDate(exDateStr) {
-  const d = parseISO(exDateStr);
-  do {
-    d.setDate(d.getDate() - 1);
-  } while (d.getDay() === 0 || d.getDay() === 6);
-  return d;
-}
-
 function countdownLabel(days) {
   if (days < 0) return null;
   if (days === 0) return "今天";
@@ -128,15 +119,18 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
     if (!data?.ex_soon) return [];
     return data.ex_soon
       .map((item) => {
-        const buyDate = lastBuyDate(item.ex_date);
+        if (!item.last_buy_date) return null;
+        const buyDate = parseISO(item.last_buy_date);
+        if (Number.isNaN(buyDate.getTime())) return null;
         return {
           kind: "ex",
           item,
           dateObj: buyDate,
           days: differenceInCalendarDays(buyDate, today),
+          estimated: item.last_buy_date_status !== "official_twse",
         };
       })
-      .filter(({ days }) => days >= 0);
+      .filter((entry) => entry && entry.days >= 0);
   }, [data, today]);
 
   const payItems = useMemo(() => {
@@ -168,6 +162,7 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
   if (!data || (exItems.length === 0 && payItems.length === 0)) return null;
 
   const hasWatchlist = watchlistSet.size > 0;
+  const hasEstimatedLastBuyDate = exItems.some((entry) => entry.estimated);
 
   return (
     <section className="mt-4 rounded-xl border border-slate-200 bg-white px-3 py-2.5 md:px-4">
@@ -223,7 +218,9 @@ export default function UpcomingFocus({ watchlistSet, onStockClick }) {
               <Hourglass size={14} className="text-amber-500" />
               最後買進倒數
               <span className="text-[10px] font-normal text-slate-400">
-                (除權息前一交易日 · 週末順延估算)
+                {hasEstimatedLastBuyDate
+                  ? "(官方休市資料暫不可用 · 部分為週末估算)"
+                  : "(依 TWSE 開休市資料)"}
               </span>
             </h3>
             <div className="mt-2 space-y-1.5">

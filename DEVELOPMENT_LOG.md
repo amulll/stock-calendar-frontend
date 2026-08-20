@@ -1,5 +1,66 @@
 # Technical Development Log
 
+## 2026-08-20 – Phases 2–3 Rankings and Historical Fill Research
+
+- Status: done
+- Priority: high
+- Area: SEO Acquisition, Research UX, Data Transparency
+- Files:
+
+  - app/ranking/fill-rate/page.js
+  - app/ranking/consecutive-dividend/page.js
+  - app/ranking/high-yield/page.js
+  - components/ranking/RankingPage.js
+  - components/stock/StockFillSummary.js
+  - lib/screenerData.js
+  - app/sitemap.js
+- Why: Canonical metrics were available but users had no transparent evergreen comparison pages or stock-level view of fill sample coverage.
+- Impact: Three SSR ranking pages now expose methodology, sample context, maintenance date, canonical metadata, internal links, and a focused landing event. Stock detail adds historical fill success, successful-event average days, evaluated/total coverage, unresolved counts, and a four-state legend while keeping event history as the drill-down truth.
+- Decision: Fill rankings require at least 5 evaluated events. This conservative threshold must be checked against the production distribution because this workspace has no production database. A separate fill dashboard was not added because ranking + stock summary + event table cover the approved exploration path without duplication.
+- Verification: Static route, sitemap, wording, and `git diff --check` inspections passed. Node tests, lint/build, and browser state-matrix checks remain unavailable locally.
+- Next: Validate production sample distribution and run the frontend runtime suite in a Node/browser-enabled deployment or CI environment.
+
+## 2026-08-20 – Phase 1 Watchlist-to-Portfolio Journey
+
+- Status: done
+- Priority: high
+- Area: Product Journey, Local Data, Accessibility
+- Files:
+
+  - app/portfolio/page.js
+  - app/stock/[id]/page.js
+  - components/PortfolioModal.js
+  - components/portfolio/PortfolioWorkspace.js
+  - components/stock/StockWatchlistActions.js
+  - hooks/useWatchlist.js
+  - lib/portfolioMetrics.mjs
+  - tests/portfolioMetrics.test.mjs
+- Why: Portfolio was only a homepage modal, while stock pages could not activate the shared local watchlist or deep-link users into their personalized workspace.
+- Impact: Stock pages now add/remove the same device-local watchlist and reveal a Portfolio CTA after activation. `/portfolio` is a noindex workspace with hydration and storage-failure states. Modal and page share one content/data implementation and pure metric helpers, preserving backup/import/share/calendar subscription behavior and accessible cash-flow alternatives.
+- Verification: `git diff --check` and route/import regression searches passed. Node tests, lint, build, and browser checks remain unavailable on this machine because Node/npm are not installed.
+- Next: Phase 2 adds a small set of transparent SSR research rankings from canonical screener metrics.
+
+## 2026-08-20 – Phase 0 Metric and Correctness Foundation
+
+- Status: done
+- Priority: critical
+- Area: Data Correctness, SEO, Calendar Semantics
+- Files:
+
+  - ROADMAP.md
+  - lib/stockMetadata.mjs
+  - app/sitemap.js
+  - app/stock/[id]/page.js
+  - components/UpcomingFocus.js
+  - components/stock/StockHistoryTable.js
+  - components/stock/StockSeoArticle.js
+  - components/screener/ScreenerClient.js
+  - README.md
+- Why: Event-level yield, current-year announced yield, portfolio estimates, update timestamps, and pay/ex-date concepts were not consistently distinguished across product and SEO surfaces.
+- Impact: Frontend wording now follows the canonical metric contract, stock metadata only claims a year supported by event data, manufactured sitemap freshness is removed, upcoming last-buy dates consume the backend trading calendar with fallback disclosure, and the homepage is explicitly pay-date-first. The history table no longer adds event yields into an invalid annual yield.
+- Verification: Static regression searches and `git diff --check` passed. The added Node metadata tests, lint, and build could not run because Node/npm are unavailable in this workspace.
+- Next: Phase 1 productizes the local watchlist and portfolio as a deep-linkable workspace.
+
 ## 2026-07-17 – Collapsible Mobile Agenda Dates
 
 - Status: done
