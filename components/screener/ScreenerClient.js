@@ -27,6 +27,7 @@ const COLUMNS = [
   { key: "stock_code", label: "代號 / 名稱" },
   { key: "daily_price", label: "股價" },
   { key: "annual_yield", label: "今年已公告殖利率" },
+  { key: "next_pay_date", label: "下次股利發放日" },
   { key: "fill_rate", label: "填息率" },
   { key: "consecutive_years", label: "連配年數" },
   { key: "frequency", label: "頻率" },
@@ -46,6 +47,10 @@ function num(str) {
 
 function evaluatedFillCount(row) {
   return row.evaluated_fill_events ?? row.total_ex_events ?? 0;
+}
+
+function formatShortDate(value) {
+  return value ? value.slice(5).replace("-", "/") : "—";
 }
 
 export default function ScreenerClient({ initialRows }) {
@@ -134,7 +139,7 @@ export default function ScreenerClient({ initialRows }) {
     if (sortKey === key) setSortDesc((v) => !v);
     else {
       setSortKey(key);
-      setSortDesc(true);
+      setSortDesc(key !== "next_pay_date");
     }
     setLimit(PAGE_SIZE);
   };
@@ -232,7 +237,7 @@ export default function ScreenerClient({ initialRows }) {
 
       {/* 表格 */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold text-slate-600">
             <tr>
               {COLUMNS.map((col) => (
@@ -290,6 +295,13 @@ export default function ScreenerClient({ initialRows }) {
                       </span>
                     ) : (
                       <span className="text-slate-400">--</span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2.5 font-mono text-slate-700">
+                    {r.next_pay_date ? (
+                      <time dateTime={r.next_pay_date}>{formatShortDate(r.next_pay_date)}</time>
+                    ) : (
+                      <span className="text-slate-400">—</span>
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-slate-700">

@@ -24,11 +24,6 @@ export default async function sitemap() {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/ranking/fill-rate`,
-      changeFrequency: 'daily',
-      priority: 0.8,
-    },
-    {
       url: `${baseUrl}/ranking/consecutive-dividend`,
       changeFrequency: 'daily',
       priority: 0.8,

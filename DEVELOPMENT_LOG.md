@@ -1,5 +1,24 @@
 # Technical Development Log
 
+## 2026-08-20 – Screener Next Pay Date and Ranking Visibility
+
+- Status: done
+- Priority: high
+- Area: Screener, Rankings, SEO Surface
+- Files:
+
+  - components/screener/ScreenerClient.js
+  - app/screener/page.js
+  - components/Footer.js
+  - app/ranking/fill-rate/page.js
+  - app/sitemap.js
+  - ROADMAP.md
+  - DEVELOPMENT_LOG.md
+- Why: Users need the next formally announced cash payment date in the Screener, while current historical fill-data maturity is not sufficient to support a public market-wide fill-rate ranking.
+- Impact: Screener adds a compact sortable next-pay-date column with null shown as `—`. Public fill-rate ranking links and sitemap exposure are removed, and direct requests return 404; the shared fill-rate Ranking implementation, Screener fill research, and Stock fill research remain intact.
+- Validation: Static column/sorting/import, internal-link, wording, sitemap, and diff inspections passed. Runtime/browser validation is deferred to Owner as requested.
+- Next: Owner will verify date states/sorting, both remaining ranking pages, sitemap output, and the direct fill-rate route.
+
 ## 2026-08-20 – Portfolio Partial-Coverage Aggregate Labels
 
 - Status: done

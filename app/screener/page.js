@@ -75,6 +75,7 @@ export default async function ScreenerPage() {
           </h2>
           <p>
             表格彙整全市場股票與 ETF 的<strong>今年已公告殖利率</strong>（當年度已入庫現金股利 ÷ 最新收盤價，不含尚未公告的未來配息）、
+            <strong>下次股利發放日</strong>（已公告且尚未到期的現金股利發放日）、
             <strong>填息成功率</strong>（歷史除息後回補缺口的比例）、<strong>連續配息年數</strong>與
             <strong>配息頻率</strong>。點欄位標題可排序，或直接使用上方的選股組合快速篩選。
             點任一列可進入個股頁查看歷年配息與股利計算機。資料每日更新，僅供研究參考，不構成投資建議。
@@ -82,11 +83,10 @@ export default async function ScreenerPage() {
         </section>
 
         <nav
-          className="mt-4 grid gap-3 md:grid-cols-3"
+          className="mt-4 grid gap-3 md:grid-cols-2"
           aria-label="研究排名"
         >
           {[
-            ["/ranking/fill-rate", "歷史填息率排名"],
             ["/ranking/consecutive-dividend", "連續配息年數排名"],
             ["/ranking/high-yield", "今年已公告殖利率排名"],
           ].map(([href, label]) => (

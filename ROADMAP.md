@@ -113,7 +113,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 
 ### Done Criteria
 
-- Three distinct SSR pages provide useful ranking data and sample context.
+- Two public SSR ranking pages provide useful data and sample context; the fill-rate implementation remains ready but withheld from public launch.
 - No query-parameter-generated SEO inventory or thin doorway pages.
 - ETF-specific rankings remain deferred until reliable instrument classification exists.
 
@@ -129,6 +129,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 - The local workspace has no production dataset, so the 5-event threshold is intentionally conservative and must be checked against production distribution after deployment before it is tuned.
 - Rankings use the mixed market dataset already supported by the screener; ETF-specific claims remain deferred.
 - Correctness follow-up completed 2026-08-20: successful empty responses remain legitimate empty rankings, while non-200, network, and invalid upstream responses render an explicit unavailable state. Frequency labels identify the latest complete basis year.
+- Fill-rate ranking implementation is retained but temporarily withheld from public and SEO surfaces because historical fill-data coverage and source maturity are not yet sufficient for a public ranking.
 
 ## Phase 3 — Dividend / Fill Differentiation
 
@@ -164,6 +165,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 ## Later / Deferred
 
 - Status: `DEFERRED`
+- Fill-rate ranking public launch; trigger: historical fill-data source and coverage reach Owner-accepted quality.
 - Reliable official-source `instrument_type` classification and ETF rankings.
 - Event-level provenance model with source identity, reference, fetched time, and publication time.
 - Minimal owner operations UI for crawl/source/data/cache health.
@@ -183,5 +185,5 @@ Dividend events -> stock research -> yield/fill research -> screener
 |---|---|---|---|---|
 | Phase 0 | DONE | Canonical metric/date/SEO semantics | Backend tests + compile; frontend static checks | No migration; frontend runtime unavailable. |
 | Phase 1 | DONE | Shared local Portfolio modal/page and stock activation | Static route/import/diff checks | localStorage-only; `/portfolio` noindex. |
-| Phase 2 | DONE | Three transparent SSR ranking pages | Static metadata/sitemap/internal-link checks | 5-event fill threshold; production distribution check pending; ETF-specific ranking deferred. |
+| Phase 2 | DONE | Two public rankings; fill-rate implementation retained | Static metadata/sitemap/internal-link checks | Fill-rate public launch deferred pending Owner-accepted source and coverage quality. |
 | Phase 3 | DONE | Stock fill summary, coverage, and state clarity | Backend metric tests + frontend static checks | Descriptive research only; no separate dashboard. |

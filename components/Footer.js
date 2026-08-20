@@ -27,9 +27,6 @@ export default function Footer() {
             <Link href="/screener" className="hover:text-blue-600 transition">
               存股選股表
             </Link>
-            <Link href="/ranking/fill-rate" className="hover:text-blue-600 transition">
-              填息率排名
-            </Link>
             <Link href="/knowledge" className="hover:text-blue-600 transition">
               股市小教室
             </Link>
