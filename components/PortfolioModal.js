@@ -418,7 +418,7 @@ export default function PortfolioModal({
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
                 <div className="text-[11px] font-semibold text-emerald-700">
                   {totals.excludedCount > 0
-                    ? "已納入資料領息"
+                    ? "已納入試算領息"
                     : totals.estimateCount > 0
                     ? "已公告＋最近一次估算"
                     : "今年已公告領息"}
@@ -432,7 +432,7 @@ export default function PortfolioModal({
 
               <div className="rounded-lg border border-slate-200 bg-white px-3 py-2.5">
                 <div className="text-[11px] font-semibold text-slate-500">
-                  投入總成本
+                  {totals.excludedCount > 0 ? "已納入試算成本" : "投入總成本"}
                 </div>
                 <div className="mt-1 text-xl font-black tracking-tight text-slate-900">
                   {totals.includedCount > 0
@@ -442,7 +442,9 @@ export default function PortfolioModal({
               </div>
               <div className="col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 sm:col-span-1">
                 <div className="text-[11px] font-semibold text-amber-700">
-                  加權平均殖利率
+                  {totals.excludedCount > 0
+                    ? "已納入部位殖利率"
+                    : "加權平均殖利率"}
                 </div>
                 <div className="mt-1 flex items-center gap-1 text-xl font-black tracking-tight text-amber-700">
                   <TrendingUp size={16} />
@@ -461,10 +463,16 @@ export default function PortfolioModal({
               {totals.excludedCount > 0 && (
                 <p className="col-span-2 text-[11px] leading-5 text-rose-600 sm:col-span-3">
                   {totals.excludedCount} 檔資料未納入組合試算
-                  {totals.loadFailedCount > 0
-                    ? `（${totals.loadFailedCount} 檔載入失敗）`
-                    : ""}
-                  。
+                  {`（${[
+                    totals.loadFailedCount > 0
+                      ? `${totals.loadFailedCount} 檔載入失敗`
+                      : null,
+                    totals.noDataCount > 0
+                      ? `${totals.noDataCount} 檔尚無可用股利資料`
+                      : null,
+                  ]
+                    .filter(Boolean)
+                    .join("、")}）。`}
                 </p>
               )}
 

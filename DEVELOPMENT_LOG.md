@@ -1,5 +1,20 @@
 # Technical Development Log
 
+## 2026-08-20 – Portfolio Partial-Coverage Aggregate Labels
+
+- Status: done
+- Priority: high
+- Area: Portfolio, Financial Semantics, Data States
+- Files:
+
+  - components/PortfolioModal.js
+  - ROADMAP.md
+  - DEVELOPMENT_LOG.md
+- Why: When unavailable positions were excluded, cost and weighted-yield labels could still be read as full-watchlist aggregates even though their denominator covered only included positions.
+- Impact: Full-coverage wording remains unchanged. Partial totals now use `已納入試算領息`, `已納入試算成本`, and `已納入部位殖利率`, while the existing disclosure separately counts load failures and positions without usable dividend data.
+- Validation: Static component inspection, stale wording search, and `git diff --check` passed. Frontend runtime/browser validation is deferred to Owner as requested.
+- Next: Owner will verify full-coverage and mixed excluded-position states in the Portfolio modal and page.
+
 ## 2026-08-20 – Ranking Upstream State Correctness
 
 - Status: done

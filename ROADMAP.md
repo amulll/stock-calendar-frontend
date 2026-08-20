@@ -55,6 +55,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 - Main calendar remains pay-date-first in Phase 0; ex-date visibility remains in UpcomingFocus and stock detail.
 - Completed 2026-08-20. Backend unit/compile checks passed; frontend runtime checks remain unverified because Node/npm are unavailable in this workspace.
 - Correctness follow-up completed 2026-08-20: stock history consumes canonical backend `fill_status` and no longer infers observing versus never-calculated from an ambiguous null result.
+- Taiwan market business dates are now explicitly based on `Asia/Taipei` rather than the server-local date.
 
 ## Phase 1 — Conversion & Portfolio Productization
 
@@ -93,6 +94,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 - Modal is a quick view; `/portfolio` is the deep-linkable workspace.
 - Completed 2026-08-20. Modal and page share the same Portfolio component and pure calculation helpers. Static checks passed; runtime UI checks remain pending in a Node/browser-enabled environment.
 - Correctness follow-up completed 2026-08-20: Portfolio positions explicitly distinguish current-year data, estimates, successful responses without usable history, request failures, and loading. Unavailable positions are excluded and disclosed in totals. GA4 now separates CTA intent (`portfolio_cta_click`) from rendered workspace views (`portfolio_view`).
+- Portfolio aggregate labels now disclose partial coverage whenever positions are excluded from the calculation.
 
 ## Phase 2 — Evergreen SEO Acquisition
 
