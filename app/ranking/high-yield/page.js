@@ -16,5 +16,5 @@ export const metadata = {
 };
 
 export default async function HighYieldRankingPage() {
-  return <RankingPage type="high-yield" rows={await getScreenerData()} />;
+  return <RankingPage type="high-yield" result={await getScreenerData()} />;
 }

@@ -30,15 +30,17 @@ const CONFIG = {
     eyebrow: "配息延續性研究",
     title: "台股連續配息年數排名",
     intro: "依本站已儲存的正現金或股票股利事件，整理從最近配息年度往前連續出現的年數。",
-    methodology: "以除權息日年度去重，從資料中的最近配息年度逐年往前計數，遇到缺年即停止。這是本站歷史資料的連續性描述，不代表公司承諾，也不預測未來配息。",
-    columns: ["連續配息年數", "最近年度頻率", "歷史除權息事件", "今年已公告現金股利"],
+    methodology: "以除權息日年度去重，從資料中的最近配息年度逐年往前計數，遇到缺年即停止。配息頻率只用最近一個有資料的完整曆年分類；若只有今年資料則顯示資料不足。這是本站歷史資料的連續性描述，不代表公司承諾，也不預測未來配息。",
+    columns: ["連續配息年數", "完整年度頻率", "歷史除權息事件", "今年已公告現金股利"],
     filter: (row) => Number(row.consecutive_years) > 0,
     sort: (a, b) =>
       Number(b.consecutive_years) - Number(a.consecutive_years) ||
       Number(b.total_ex_events) - Number(a.total_ex_events),
     cells: (row) => [
       `${Number(row.consecutive_years || 0)} 年`,
-      row.frequency || "未知",
+      row.frequency_basis_year
+        ? `${row.frequency || "未知"}（${row.frequency_basis_year}）`
+        : row.frequency || "資料不足",
       `${Number(row.total_ex_events || 0)} 次`,
       `${Number(row.annual_cash || 0).toFixed(3)} 元`,
     ],
@@ -55,7 +57,9 @@ const CONFIG = {
       `${Number(row.annual_yield || 0).toFixed(2)}%`,
       `${Number(row.annual_cash || 0).toFixed(3)} 元`,
       row.daily_price ? `${Number(row.daily_price).toFixed(2)} 元` : "—",
-      row.frequency || "未知",
+      row.frequency_basis_year
+        ? `${row.frequency || "未知"}（${row.frequency_basis_year}）`
+        : row.frequency || "資料不足",
     ],
   },
 };
@@ -76,8 +80,9 @@ function maintenanceLabel(rows) {
   }).format(parsed);
 }
 
-export default function RankingPage({ type, rows }) {
+export default function RankingPage({ type, result }) {
   const config = CONFIG[type];
+  const rows = result.rows;
   const rankedRows = rows.filter(config.filter).sort(config.sort).slice(0, 100);
 
   return (
@@ -111,13 +116,28 @@ export default function RankingPage({ type, rows }) {
             {config.intro}
           </p>
           <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-500">
-            <span>顯示 {rankedRows.length} 檔（最多 100 檔）</span>
-            <span>本站資料維護日：{maintenanceLabel(rows)}</span>
+            {result.ok ? (
+              <>
+                <span>顯示 {rankedRows.length} 檔（最多 100 檔）</span>
+                <span>本站資料維護日：{maintenanceLabel(rows)}</span>
+              </>
+            ) : (
+              <span className="font-semibold text-rose-700">
+                資料狀態：暫時無法取得
+              </span>
+            )}
           </div>
         </header>
 
         <section className="mt-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
-          {rankedRows.length === 0 ? (
+          {!result.ok ? (
+            <div className="px-5 py-16 text-center" role="alert">
+              <p className="font-bold text-rose-700">後端資料目前無法取得</p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                這不是零筆排名結果。請稍後重新整理頁面。
+              </p>
+            </div>
+          ) : rankedRows.length === 0 ? (
             <div className="px-5 py-16 text-center text-sm text-slate-500">
               目前沒有符合本頁樣本條件的資料，請稍後再查看。
             </div>

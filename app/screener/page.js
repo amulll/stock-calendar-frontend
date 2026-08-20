@@ -26,7 +26,7 @@ export const metadata = {
 };
 
 export default async function ScreenerPage() {
-  const rows = await getScreenerData();
+  const screenerResult = await getScreenerData();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -55,7 +55,19 @@ export default async function ScreenerPage() {
           </Link>
         </div>
 
-        <ScreenerClient initialRows={rows} />
+        {screenerResult.ok ? (
+          <ScreenerClient initialRows={screenerResult.rows} />
+        ) : (
+          <section
+            className="rounded-xl border border-rose-200 bg-rose-50 px-5 py-10 text-center"
+            role="alert"
+          >
+            <h1 className="text-xl font-black text-slate-900">存股選股表暫時無法載入</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              後端資料目前無法取得，這不是零筆結果。請稍後重新整理頁面。
+            </p>
+          </section>
+        )}
 
         <section className="mt-6 rounded-xl border border-slate-200 bg-white p-5 text-sm leading-6 text-slate-600">
           <h2 className="mb-2 text-lg font-black tracking-tight text-slate-900">

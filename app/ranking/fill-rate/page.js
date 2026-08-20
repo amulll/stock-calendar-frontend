@@ -16,5 +16,5 @@ export const metadata = {
 };
 
 export default async function FillRateRankingPage() {
-  return <RankingPage type="fill-rate" rows={await getScreenerData()} />;
+  return <RankingPage type="fill-rate" result={await getScreenerData()} />;
 }

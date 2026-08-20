@@ -1,5 +1,23 @@
 # Technical Development Log
 
+## 2026-08-20 – Ranking Upstream State Correctness
+
+- Status: done
+- Priority: high
+- Area: SSR Rankings, Error Semantics
+- Files:
+
+  - lib/screenerData.js
+  - lib/screenerData.mjs
+  - components/ranking/RankingPage.js
+  - app/ranking/*/page.js
+  - app/screener/page.js
+  - tests/screenerData.test.mjs
+  - ROADMAP.md
+- Why: The shared fetch helper returned an empty array for both successful zero-row responses and upstream failures, causing temporary outages to appear as normal empty ranking pages.
+- Impact: Fetch results now carry explicit success/failure state. Rankings and the screener distinguish unavailable upstream data from legitimate empty results, and historical frequency labels include the latest complete basis year.
+- Verification: Focused fetch-helper cases cover successful empty, non-200, and thrown network responses; static route/import and error-copy review passed. Owner will perform frontend runtime/browser validation.
+
 ## 2026-08-20 – Portfolio Data State and Analytics Correctness
 
 - Status: done

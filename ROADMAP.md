@@ -126,6 +126,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 - Completed 2026-08-20. Fill ranking requires at least 5 evaluated events and always shows success/evaluated and evaluated/total samples.
 - The local workspace has no production dataset, so the 5-event threshold is intentionally conservative and must be checked against production distribution after deployment before it is tuned.
 - Rankings use the mixed market dataset already supported by the screener; ETF-specific claims remain deferred.
+- Correctness follow-up completed 2026-08-20: successful empty responses remain legitimate empty rankings, while non-200, network, and invalid upstream responses render an explicit unavailable state. Frequency labels identify the latest complete basis year.
 
 ## Phase 3 — Dividend / Fill Differentiation
 

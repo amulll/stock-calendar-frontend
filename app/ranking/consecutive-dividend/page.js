@@ -21,7 +21,7 @@ export default async function ConsecutiveDividendRankingPage() {
   return (
     <RankingPage
       type="consecutive-dividend"
-      rows={await getScreenerData()}
+      result={await getScreenerData()}
     />
   );
 }
