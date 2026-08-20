@@ -1,5 +1,23 @@
 # Technical Development Log
 
+## 2026-08-20 – Portfolio Data State and Analytics Correctness
+
+- Status: done
+- Priority: critical
+- Area: Portfolio, Financial Semantics, Analytics
+- Files:
+
+  - components/PortfolioModal.js
+  - components/CalendarClient.js
+  - components/portfolio/PortfolioWorkspace.js
+  - components/stock/StockWatchlistActions.js
+  - lib/portfolioMetrics.mjs
+  - tests/portfolioMetrics.test.mjs
+  - ROADMAP.md
+- Why: Failed detail requests and valid responses without usable dividend history could both appear as a zero-dollar current-year position, while navigation intent and actual Portfolio views shared one GA4 event name.
+- Impact: Positions now carry explicit current-year, estimate, no-data, load-failed, and loading states. Only usable current-year/estimate rows enter totals, exclusions are disclosed, and unavailable rows show inline reasons instead of `$0`. Analytics now uses `portfolio_cta_click` for intent and `portfolio_view` for a rendered modal/page.
+- Verification: Pure helper coverage includes all four durable states and mixed totals; stale analytics event search and static diff review passed. Owner will perform frontend runtime/browser validation.
+
 ## 2026-08-20 – Canonical Fill Status Consumption
 
 - Status: done

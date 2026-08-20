@@ -33,8 +33,9 @@ export default function PortfolioWorkspace() {
   useEffect(() => {
     if (!hydrated || trackedOpenRef.current) return;
     trackedOpenRef.current = true;
-    trackEvent("portfolio_open", {
+    trackEvent("portfolio_view", {
       source: "portfolio_page",
+      surface: "page",
       has_watchlist: watchlist.length > 0,
     });
   }, [hydrated, watchlist.length]);

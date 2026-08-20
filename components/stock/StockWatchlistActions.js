@@ -59,7 +59,9 @@ export default function StockWatchlistActions({ stockCode, stockName }) {
       {tracked && (
         <Link
           href="/portfolio"
-          onClick={() => trackEvent("portfolio_open", { source: "stock_page" })}
+          onClick={() =>
+            trackEvent("portfolio_cta_click", { source: "stock_page" })
+          }
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2"
         >
           <Wallet size={18} aria-hidden="true" />

@@ -243,7 +243,7 @@ export default function CalendarClient({ initialDividends, initialAllStocks }) {
   };
 
   const handleOpenPortfolio = (source) => {
-    trackEvent("portfolio_open", {
+    trackEvent("portfolio_cta_click", {
       source,
       has_watchlist: watchlist.length > 0,
     });

@@ -131,9 +131,12 @@ export default function PortfolioModal({
       const shares = Number(sharesMap[code] ?? DEFAULT_SHARES);
       const customCost = costMap[code];
       const detail = detailsMap[code];
-      const computed = detail
-        ? computeStockIncome(detail, shares, currentYear, customCost)
-        : null;
+      const computed = computeStockIncome(
+        detail,
+        shares,
+        currentYear,
+        customCost
+      );
       // 成本輸入框：有自訂就顯示自訂值，否則留空 (以現價當 placeholder，避免只是聚焦就鎖定成本)
       const costInputValue =
         customCost !== undefined && customCost !== "" ? customCost : "";
@@ -174,6 +177,17 @@ export default function PortfolioModal({
       setShowBackupReminder(false);
     }
   }, [active, watchlist.length, hasCustomizedPortfolio]);
+
+  const trackedModalViewRef = useRef(false);
+  useEffect(() => {
+    if (variant !== "modal" || !active) {
+      trackedModalViewRef.current = false;
+      return;
+    }
+    if (trackedModalViewRef.current) return;
+    trackedModalViewRef.current = true;
+    trackEvent("portfolio_view", { surface: "modal" });
+  }, [active, variant]);
 
   const markBackupReminderHandled = () => {
     setShowBackupReminder(false);
@@ -322,7 +336,12 @@ export default function PortfolioModal({
             <div className="flex items-center gap-1">
               <Link
                 href="/portfolio"
-                onClick={onClose}
+                onClick={() => {
+                  trackEvent("portfolio_cta_click", {
+                    source: "portfolio_modal",
+                  });
+                  onClose();
+                }}
                 className="flex min-h-11 items-center rounded-lg px-3 text-xs font-bold text-emerald-700 transition hover:bg-emerald-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
               >
                 開啟完整頁
@@ -398,10 +417,16 @@ export default function PortfolioModal({
             <div className="grid grid-cols-2 gap-2 border-b border-slate-200 bg-slate-50 p-4 sm:grid-cols-3">
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
                 <div className="text-[11px] font-semibold text-emerald-700">
-                  {totals.estimateCount > 0 ? "已公告＋最近一次估算" : "今年已公告領息"}
+                  {totals.excludedCount > 0
+                    ? "已納入資料領息"
+                    : totals.estimateCount > 0
+                    ? "已公告＋最近一次估算"
+                    : "今年已公告領息"}
                 </div>
                 <div className="mt-1 text-xl font-black tracking-tight text-emerald-800">
-                  ${formatMoney(totals.income)}
+                  {totals.includedCount > 0
+                    ? `$${formatMoney(totals.income)}`
+                    : "—"}
                 </div>
               </div>
 
@@ -410,7 +435,9 @@ export default function PortfolioModal({
                   投入總成本
                 </div>
                 <div className="mt-1 text-xl font-black tracking-tight text-slate-900">
-                  ${formatMoney(totals.cost)}
+                  {totals.includedCount > 0
+                    ? `$${formatMoney(totals.cost)}`
+                    : "—"}
                 </div>
               </div>
               <div className="col-span-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 sm:col-span-1">
@@ -419,13 +446,25 @@ export default function PortfolioModal({
                 </div>
                 <div className="mt-1 flex items-center gap-1 text-xl font-black tracking-tight text-amber-700">
                   <TrendingUp size={16} />
-                  {totals.yieldRate.toFixed(2)}%
+                  {totals.includedCount > 0
+                    ? `${totals.yieldRate.toFixed(2)}%`
+                    : "—"}
                 </div>
               </div>
 
               {totals.estimateCount > 0 && (
                 <p className="col-span-2 text-[11px] leading-5 text-slate-500 sm:col-span-3">
                   {totals.estimateCount} 檔今年尚無配息資料，暫以最近一次事件估算；此數字不是完整全年預測。
+                </p>
+              )}
+
+              {totals.excludedCount > 0 && (
+                <p className="col-span-2 text-[11px] leading-5 text-rose-600 sm:col-span-3">
+                  {totals.excludedCount} 檔資料未納入組合試算
+                  {totals.loadFailedCount > 0
+                    ? `（${totals.loadFailedCount} 檔載入失敗）`
+                    : ""}
+                  。
                 </p>
               )}
 
@@ -561,73 +600,105 @@ export default function PortfolioModal({
                         />
                       </button>
                       <div className="text-right">
-                        <div className="text-sm font-black text-emerald-700">
-                          ${formatMoney(computed?.income || 0)}
-                        </div>
-                        <div className="text-[10px] text-slate-400">
-                          {computed?.usedEstimate ? "最近一次估算領息" : "今年已公告領息"}
-                        </div>
+                        {computed.dataState === "load_failed" ? (
+                          <>
+                            <div className="text-sm font-black text-rose-600">
+                              資料載入失敗
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              未納入組合試算
+                            </div>
+                          </>
+                        ) : computed.dataState === "no_data" ? (
+                          <>
+                            <div className="text-sm font-black text-slate-600">
+                              尚無可用股利資料
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              未納入組合試算
+                            </div>
+                          </>
+                        ) : computed.dataState === "loading" ? (
+                          <div className="text-sm font-bold text-slate-500">
+                            載入中…
+                          </div>
+                        ) : (
+                          <>
+                            <div className="text-sm font-black text-emerald-700">
+                              ${formatMoney(computed.income)}
+                            </div>
+                            <div className="text-[10px] text-slate-400">
+                              {computed.usedEstimate
+                                ? "最近一次估算領息"
+                                : "今年已公告領息"}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 
                     {/* 持有股數 + 每股成本 (可自訂，預設帶入現價) */}
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                      <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
-                        持有
-                        <EditableNumber
-                          type="number"
-                          min="0"
-                          step="1000"
-                          inputMode="numeric"
-                          value={shares}
-                          onCommit={(raw) =>
-                            onSharesChange(code, Math.max(0, Number(raw) || 0))
-                          }
-                          className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
-                        />
-                        股
-                      </label>
-                      <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
-                        成本
-                        <EditableNumber
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          inputMode="decimal"
-                          value={costInputValue}
-                          onCommit={(raw) => onCostChange(code, raw.trim())}
-                          placeholder={computed ? String(computed.marketPrice) : ""}
-                          className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
-                        />
-                        元
-                      </label>
-                    </div>
-
-                    <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400">
-                      <div className="flex items-center gap-3">
-                        <span>
-                          現金股利{" "}
-                          <span className="font-semibold text-slate-600">
-                            {computed ? computed.annualCash.toFixed(2) : "--"}
-                          </span>
-                        </span>
-                        <span>
-                          {computed?.isCustomCost ? "投報率" : "殖利率"}{" "}
-                          <span className="font-semibold text-amber-600">
-                            {computed ? `${computed.yieldRate.toFixed(2)}%` : "--"}
-                          </span>
-                        </span>
+                    {computed.includedInTotals && (
+                      <div className="mt-2 grid grid-cols-2 gap-2">
+                        <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
+                          持有
+                          <EditableNumber
+                            type="number"
+                            min="0"
+                            step="1000"
+                            inputMode="numeric"
+                            value={shares}
+                            onCommit={(raw) =>
+                              onSharesChange(code, Math.max(0, Number(raw) || 0))
+                            }
+                            className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
+                          />
+                          股
+                        </label>
+                        <label className="flex items-center gap-1 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-emerald-400">
+                          成本
+                          <EditableNumber
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            inputMode="decimal"
+                            value={costInputValue}
+                            onCommit={(raw) => onCostChange(code, raw.trim())}
+                            placeholder={String(computed.marketPrice || "")}
+                            className="min-w-0 flex-1 bg-transparent text-right font-mono text-sm font-bold text-slate-700 outline-none"
+                          />
+                          元
+                        </label>
                       </div>
-                      {computed && computed.isCustomCost && (
-                        <button
-                          type="button"
-                          onClick={() => onCostChange(code, "")}
-                          className="text-blue-500 transition hover:underline"
-                        >
-                          帶回現價 ${computed.marketPrice || "--"}
-                        </button>
-                      )}
-                    </div>
+                    )}
+
+                    {computed.includedInTotals && (
+                      <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-slate-400">
+                        <div className="flex items-center gap-3">
+                          <span>
+                            現金股利{" "}
+                            <span className="font-semibold text-slate-600">
+                              {computed.annualCash.toFixed(2)}
+                            </span>
+                          </span>
+                          <span>
+                            {computed.isCustomCost ? "投報率" : "殖利率"}{" "}
+                            <span className="font-semibold text-amber-600">
+                              {computed.yieldRate.toFixed(2)}%
+                            </span>
+                          </span>
+                        </div>
+                        {computed.isCustomCost && (
+                          <button
+                            type="button"
+                            onClick={() => onCostChange(code, "")}
+                            className="text-blue-500 transition hover:underline"
+                          >
+                            帶回現價 ${computed.marketPrice || "--"}
+                          </button>
+                        )}
+                      </div>
+                    )}
 
                     {computed?.usedEstimate && (
                       <div className="mt-1.5 text-[10px] text-slate-400">

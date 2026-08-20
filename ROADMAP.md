@@ -92,6 +92,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 - Phase 1 remains localStorage-only: no login, account database, cloud sync, or portfolio backend CRUD.
 - Modal is a quick view; `/portfolio` is the deep-linkable workspace.
 - Completed 2026-08-20. Modal and page share the same Portfolio component and pure calculation helpers. Static checks passed; runtime UI checks remain pending in a Node/browser-enabled environment.
+- Correctness follow-up completed 2026-08-20: Portfolio positions explicitly distinguish current-year data, estimates, successful responses without usable history, request failures, and loading. Unavailable positions are excluded and disclosed in totals. GA4 now separates CTA intent (`portfolio_cta_click`) from rendered workspace views (`portfolio_view`).
 
 ## Phase 2 — Evergreen SEO Acquisition
 
