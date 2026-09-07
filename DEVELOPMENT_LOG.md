@@ -1,5 +1,29 @@
 # Technical Development Log
 
+## 2026-09-04 – Screener Yield Quality Guard
+
+- Status: done
+- Priority: critical
+- Area: Screener, Yield Ranking, Financial Semantics
+- Files:
+
+  - components/screener/ScreenerClient.js
+  - components/ranking/RankingPage.js
+  - components/StockModal.js
+  - components/SeoContent.js
+  - components/stock/StockSeoArticle.js
+  - app/screener/page.js
+  - app/ranking/high-yield/page.js
+  - app/stock/[id]/page.js
+  - lib/yieldMetrics.mjs
+  - tests/yieldMetrics.test.mjs
+  - ROADMAP.md
+  - DEVELOPMENT_LOG.md
+- Why: Post-event stock splits could make a dividend expressed on the old per-share basis appear abnormally large against the latest split-adjusted price and dominate the first screen.
+- Impact: Screener, ranking, stock page, stock modal, and SEO copy now describe or use event-aligned yield. Values marked `review_required` remain disclosed as `待複核` in the screener but do not lead yield sorting, satisfy yield filters, or enter the public high-yield ranking. The ranking exposes aligned-event coverage instead of presenting latest price as the denominator; the investment calculator deliberately continues using the editable current/cost price as a user scenario.
+- Validation: Static handling/wording inspection, stale-formula search, frontend test/build checks where available, and diff checks.
+- Next: Owner will validate ordinary, split-affected, incomplete-reference, and review-required rows in the deployed UI.
+
 ## 2026-08-20 – Screener Next Pay Date and Ranking Visibility
 
 - Status: done

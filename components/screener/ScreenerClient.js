@@ -49,6 +49,10 @@ function evaluatedFillCount(row) {
   return row.evaluated_fill_events ?? row.total_ex_events ?? 0;
 }
 
+function isYieldRankable(row) {
+  return !row.annual_yield_status || row.annual_yield_status === "ok";
+}
+
 function formatShortDate(value) {
   return value ? value.slice(5).replace("-", "/") : "—";
 }
@@ -106,7 +110,7 @@ export default function ScreenerClient({ initialRows }) {
     const q = query.trim().toLowerCase();
 
     let list = (initialRows || []).filter((r) => {
-      if (yMin > 0 && !((r.annual_yield || 0) >= yMin)) return false;
+      if (yMin > 0 && !(isYieldRankable(r) && (r.annual_yield || 0) >= yMin)) return false;
       if (fMin > 0 && !(evaluatedFillCount(r) > 0 && r.fill_rate >= fMin)) return false;
       if (cMin > 0 && r.consecutive_years < cMin) return false;
       if (filters.freqs.length && !filters.freqs.includes(r.frequency)) return false;
@@ -120,6 +124,10 @@ export default function ScreenerClient({ initialRows }) {
 
     const dir = sortDesc ? -1 : 1;
     return list.sort((a, b) => {
+      if (sortKey === "annual_yield") {
+        const qualityDifference = Number(isYieldRankable(b)) - Number(isYieldRankable(a));
+        if (qualityDifference) return qualityDifference;
+      }
       let av = a[sortKey];
       let bv = b[sortKey];
       if (sortKey === "frequency") {
@@ -290,8 +298,15 @@ export default function ScreenerClient({ initialRows }) {
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5">
                     {r.annual_yield !== null && r.annual_yield !== undefined ? (
-                      <span className={`font-bold ${r.annual_yield >= 6 ? "text-amber-600" : "text-slate-800"}`}>
-                        {r.annual_yield}%
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className={`font-bold ${r.annual_yield >= 6 ? "text-amber-600" : "text-slate-800"}`}>
+                          {r.annual_yield}%
+                        </span>
+                        {r.annual_yield_status === "review_required" && (
+                          <span className="rounded bg-slate-100 px-1 py-0.5 text-[10px] font-bold text-slate-500">
+                            待複核
+                          </span>
+                        )}
                       </span>
                     ) : (
                       <span className="text-slate-400">--</span>

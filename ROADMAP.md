@@ -50,7 +50,7 @@ Dividend events -> stock research -> yield/fill research -> screener
 ### Notes / Decisions
 
 - `annual_cash` means current-calendar-year announced cash dividends stored by uGoodly.
-- `annual_yield` means that announced cash total divided by the latest stored price; it is not forward yield.
+- `annual_yield` sums event-aligned cash-dividend yields using each event's stored reference price. Incomplete reference coverage is not ranked, and values above 15% are marked for review and removed from default/high-yield ranking order.
 - `Dividend.updated_at` is maintenance time and is not automatically official-source publication time.
 - Main calendar remains pay-date-first in Phase 0; ex-date visibility remains in UpcomingFocus and stock detail.
 - Completed 2026-08-20. Backend unit/compile checks passed; frontend runtime checks remain unverified because Node/npm are unavailable in this workspace.

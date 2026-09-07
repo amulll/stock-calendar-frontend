@@ -13,6 +13,7 @@ import StockWatchlistActions from "../../../components/stock/StockWatchlistActio
 import StockFillSummary from "../../../components/stock/StockFillSummary";
 import { DEFAULT_BACKEND_URL } from "../../../lib/backend";
 import { getDividendType, exDateLabel } from "../../../lib/dividendEvent";
+import { getEventYield } from "../../../lib/yieldMetrics.mjs";
 import { buildStockMetadataTitle } from "../../../lib/stockMetadata.mjs";
 
 // 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
@@ -182,11 +183,8 @@ export default async function StockPage({ params }) {
     .filter((item) => item.income_composition && item.ex_date)
     .sort((a, b) => new Date(b.ex_date) - new Date(a.ex_date))[0] || null;
 
-  // 使用 info.daily_price 計算即時殖利率
-  let currentYieldRate = "--";
-  if (latestEvent.cash_dividend && info.daily_price > 0) {
-      currentYieldRate = ((latestEvent.cash_dividend / info.daily_price) * 100).toFixed(2);
-  }
+  const eventYield = getEventYield(latestEvent);
+  const currentYieldRate = eventYield === null ? "--" : eventYield.toFixed(2);
 
   // 準備結構化資料 (使用 info)
   const jsonLd = {
@@ -284,7 +282,7 @@ export default async function StockPage({ params }) {
                     ${currentYieldRate !== "--" && Number(currentYieldRate) > 5 ? "border-slate-300 bg-slate-50 text-slate-900" : "border-slate-200 bg-white text-slate-700"}
                 `}>
                   <div className="mb-1 text-[11px] font-semibold opacity-80">
-                    最新一期單次殖利率
+                    最新一期參考殖利率
                   </div>
                   <div className="flex items-center gap-2 text-xl font-black tracking-tight">
                     {currentYieldRate !== "--" ? `${currentYieldRate}%` : "--"}

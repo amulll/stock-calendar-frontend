@@ -18,6 +18,7 @@ import { startOfDay, parseISO } from "date-fns";
 import { useToast } from "../hooks/useToast";
 import { useStockDetail } from "../hooks/useStockDetail";
 import { getDividendType, exDateLabel, dividendAmountLabel } from "../lib/dividendEvent";
+import { getEventYield } from "../lib/yieldMetrics.mjs";
 
 const GOOGLE_CALENDAR_URL = "https://calendar.google.com/calendar/render";
 
@@ -96,12 +97,9 @@ export default function StockModal({
   }, [history, today]);
 
   const displayYield = useMemo(() => {
-    if (!currentEvent || !info?.daily_price) return "--";
-    const price = Number(info.daily_price);
-    const dividend = Number(currentEvent.cash_dividend);
-    if (!price || price <= 0) return "--";
-    return ((dividend / price) * 100).toFixed(2);
-  }, [currentEvent, info]);
+    const eventYield = getEventYield(currentEvent);
+    return eventYield === null ? "--" : eventYield.toFixed(2);
+  }, [currentEvent]);
 
   const displayMarket = useMemo(() => {
     if (!info?.market_type) return "—";
@@ -177,8 +175,8 @@ export default function StockModal({
         </p>
         {displayYield !== "--" && (
           <p>
-            以最新收盤價{" "}
-            <strong>{info.daily_price}</strong> 元計算，
+            以該次事件參考價{" "}
+            <strong>{currentEvent.stock_price}</strong> 元計算，
             <strong className="text-amber-600 ml-1">{displayYield}%</strong> 殖利率。
           </p>
         )}
@@ -320,7 +318,7 @@ export default function StockModal({
                       displayYield !== "--" ? "text-amber-700" : "text-slate-500"
                     }`}
                   >
-                    單次殖利率（依最新價）
+                    單次殖利率（事件價）
                   </div>
                   <div
                     className={`text-xl font-bold ${

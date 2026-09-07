@@ -48,14 +48,19 @@ const CONFIG = {
   "high-yield": {
     eyebrow: "今年已公告資料",
     title: "台股今年已公告殖利率排名",
-    intro: "以今年已入庫的現金股利合計除以最近收盤價；年初與公告季期間資料通常尚未完整。",
-    methodology: "今年已公告殖利率 = 當年度已入庫現金股利合計 ÷ 最新儲存收盤價。只列出已有正現金股利且有有效價格的股票；不加入尚未公告的配息，因此不是預估或遠期殖利率。不同公司的公告時點不同，季節中排名尤其不可視為全年比較。",
-    columns: ["今年已公告殖利率", "今年已公告現金股利", "最近收盤價", "歷史配息頻率"],
-    filter: (row) => Number(row.annual_cash) > 0 && row.annual_yield != null,
+    intro: "將今年每次已入庫現金股利配對該次除息前參考價計算，避免股票分割或減資造成分子、分母單位錯置。",
+    methodology: "今年已公告殖利率 = 當年度各次（現金股利 ÷ 該次除息前參考價）加總。所有正現金股利事件都必須有有效參考價才列入；超過 15% 的結果標記待複核並排除本排名。此指標不加入尚未公告的配息，因此不是預估或遠期殖利率；特別股利仍可能使數值顯著高於常態。",
+    columns: ["今年已公告殖利率", "已對齊／股利事件", "最近收盤價", "歷史配息頻率"],
+    filter: (row) =>
+      Number(row.annual_cash) > 0 &&
+      row.annual_yield != null &&
+      (!row.annual_yield_status || row.annual_yield_status === "ok"),
     sort: (a, b) => Number(b.annual_yield) - Number(a.annual_yield),
     cells: (row) => [
       `${Number(row.annual_yield || 0).toFixed(2)}%`,
-      `${Number(row.annual_cash || 0).toFixed(3)} 元`,
+      row.annual_yield_total_events != null
+        ? `${Number(row.annual_yield_calculated_events || 0)} / ${Number(row.annual_yield_total_events || 0)}`
+        : "—",
       row.daily_price ? `${Number(row.daily_price).toFixed(2)} 元` : "—",
       row.frequency_basis_year
         ? `${row.frequency || "未知"}（${row.frequency_basis_year}）`

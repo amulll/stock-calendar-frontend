@@ -1,5 +1,6 @@
 import { Info } from "lucide-react";
 import { getDividendType, exDateLabel } from "../../lib/dividendEvent";
+import { getEventYield } from "../../lib/yieldMetrics.mjs";
 
 // 個股頁底部的 SEO 說明文章：依最新一筆配息與歷史紀錄自動生成敘述
 export default function StockSeoArticle({ info, latestDividend, historicalRecords, metrics }) {
@@ -9,10 +10,8 @@ export default function StockSeoArticle({ info, latestDividend, historicalRecord
   const isStockOnly = getDividendType(latestDividend || {}) === "stock";
   const exLabel = exDateLabel(latestDividend || {});
 
-  let realtimeYield = 0;
-  if (cash_dividend && daily_price > 0) {
-    realtimeYield = ((cash_dividend / daily_price) * 100).toFixed(2);
-  }
+  const eventYield = getEventYield(latestDividend);
+  const referenceYield = eventYield === null ? null : eventYield.toFixed(2);
 
   const avgDividend =
     historicalRecords.length > 0
@@ -47,9 +46,14 @@ export default function StockSeoArticle({ info, latestDividend, historicalRecord
         ) : (
           <>
             的現金股利為{" "}
-            <strong>{Number(cash_dividend).toFixed(3)} 元</strong>。 以目前的最新收盤價{" "}
-            <strong>{daily_price || "--"} 元</strong> 計算， 其預估單次殖利率約為{" "}
-            <span className="font-bold text-slate-800">{realtimeYield}%</span>（依最新收盤價試算）。
+            <strong>{Number(cash_dividend).toFixed(3)} 元</strong>。
+            {referenceYield !== null && (
+              <>
+                {" "}以該次事件參考價 <strong>{latestDividend.stock_price} 元</strong>計算，
+                單次參考殖利率約為{" "}
+                <span className="font-bold text-slate-800">{referenceYield}%</span>。
+              </>
+            )}
           </>
         )}
       </p>
