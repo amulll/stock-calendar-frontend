@@ -164,6 +164,27 @@ Dividend events -> stock research -> yield/fill research -> screener
 - Phase 3 state labels now map the backend canonical filled, unfilled-after-window, observing, not-calculated, and not-applicable values.
 - No prediction, backtest engine, or separate dashboard was added; the new ranking plus stock summary already cover the useful exploration path with less duplication.
 
+## Phase 4 — Index Quality and Research Information Architecture
+
+- Status: `DONE`
+- Goal: Keep useful stock research discoverable while preventing thin, data-row-only pages from being promoted as a programmatic SEO inventory.
+- Scope: Full-dataset eligibility audit, shared indexability contract, sitemap selection and truthful `lastmod`, stock-page robots metadata, contextual stock links, and public data-method disclosure.
+
+### Tasks
+
+- [x] Add a full-dataset audit command that reports valid-event buckets, indexed/noindex totals, and eligibility reasons.
+- [x] Define one conservative eligibility rule: at least four valid payout events across two years, or a concrete current-year announcement.
+- [x] Keep low-depth pages usable but return `noindex, follow` and exclude them from sitemap output.
+- [x] Source sitemap stock URLs from the backend eligibility contract and emit only verified modification timestamps.
+- [x] Add same-industry links only to eligible research pages.
+- [x] Publish a public methodology page covering data sources, event-aligned yield, fill samples, current-share-basis estimates, and indexing limits.
+
+### Notes / Decisions
+
+- The current-year exception avoids hiding a newly announced, time-sensitive payout merely because its history is short.
+- Sitemap generation fails closed to static routes if the eligibility inventory cannot be read; it never falls back to advertising every stock row.
+- Production audit command: `python scripts/audit_seo_eligibility.py` with the production `DATABASE_URL` configured.
+
 ## Later / Deferred
 
 - Status: `DEFERRED`
@@ -189,3 +210,4 @@ Dividend events -> stock research -> yield/fill research -> screener
 | Phase 1 | DONE | Shared local Portfolio modal/page and stock activation | Static route/import/diff checks | localStorage-only; `/portfolio` noindex. |
 | Phase 2 | DONE | Two public rankings; fill-rate implementation retained | Static metadata/sitemap/internal-link checks | Fill-rate public launch deferred pending Owner-accepted source and coverage quality. |
 | Phase 3 | DONE | Stock fill summary, coverage, and state clarity | Backend metric tests + frontend static checks | Descriptive research only; no separate dashboard. |
+| Phase 4 | DONE | Shared eligibility, `noindex`, sitemap hygiene, related research links, methodology | Focused backend tests + frontend static checks | Deploy backend before frontend; tune only after reviewing the production audit. |

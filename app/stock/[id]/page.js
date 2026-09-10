@@ -10,6 +10,7 @@ import StockSeoArticle from "../../../components/stock/StockSeoArticle";
 import IncomeCompositionBar from "../../../components/stock/IncomeCompositionBar";
 import StockWatchlistActions from "../../../components/stock/StockWatchlistActions";
 import StockFillSummary from "../../../components/stock/StockFillSummary";
+import RelatedStocks from "../../../components/stock/RelatedStocks";
 import { DEFAULT_BACKEND_URL } from "../../../lib/backend";
 import { getDividendType, exDateLabel } from "../../../lib/dividendEvent";
 import { getEventYield } from "../../../lib/yieldMetrics.mjs";
@@ -86,6 +87,7 @@ export async function generateMetadata({ params }) {
         description: fallbackDescription,
         images: [STOCK_META_IMAGE],
       },
+      robots: { index: false, follow: true },
     };
   }
 
@@ -106,6 +108,10 @@ export async function generateMetadata({ params }) {
       "股利", "發放日", "除息日", "殖利率", "存股","配息日"],
     alternates: {
       canonical: `https://ugoodly.com/stock/${id}`,
+    },
+    robots: {
+      index: data.seo?.is_indexable === true,
+      follow: true,
     },
     openGraph: {
       title: `${info.stock_name} (${id}) 股利發放日與試算`,
@@ -381,6 +387,20 @@ export default async function StockPage({ params }) {
                 metrics={metrics}
                 isUpcomingEvent={hasUpcomingEvent}
               />
+            </section>
+
+            <RelatedStocks stocks={data.related_stocks} />
+
+            <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600">
+              <p>
+                資料來源、殖利率基準、填息樣本與股份分割換算方式，請參閱{" "}
+                <Link href="/methodology" className="font-semibold text-blue-700 hover:underline">資料來源與計算方法</Link>。
+              </p>
+              {data.seo?.is_indexable === false && (
+                <p className="mt-1 text-slate-500">
+                  此頁歷史資料仍可使用；目前未列入搜尋索引，直到累積足夠研究資料或出現當年度公告。
+                </p>
+              )}
             </section>
 
             <div className="mt-8">

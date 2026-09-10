@@ -1,5 +1,23 @@
 # Technical Development Log
 
+## 2026-09-10 — Stock Index Quality and Research Architecture
+
+- Status: done
+- Priority: high
+- Area: SEO, Indexing, Stock Research
+- Files:
+
+  - app/sitemap.js
+  - app/stock/[id]/page.js
+  - app/methodology/page.js
+  - components/stock/RelatedStocks.js
+  - ROADMAP.md
+  - DEVELOPMENT_LOG.md
+- Why: Every stock row was previously advertised to Search regardless of research depth, with no trusted modification time or stock-to-stock discovery path.
+- Impact: Stock pages now consume one backend eligibility decision. Low-depth pages remain accessible but use `noindex, follow`; the sitemap includes only eligible pages with source-derived `lastModified`; eligible same-industry research pages link to each other; visitors can inspect sources and calculation limits on `/methodology`.
+- Validation: Frontend helper tests and static route/import inspection completed. Runtime/browser verification remains deferred to deployment.
+- Next: Deploy backend before frontend, run the production audit command, and review the actual retained/excluded distribution before changing thresholds.
+
 ## 2026-09-10 – Split-Adjusted Calculator and Portfolio
 
 - Status: done
