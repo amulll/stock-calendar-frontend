@@ -3,6 +3,11 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowUpDown, ArrowDown, ArrowUp, Search, X } from "lucide-react";
+import {
+  isYieldDisplayable,
+  isYieldRankable,
+  yieldQualityRank,
+} from "../../lib/screenerYield.mjs";
 
 // 空白條件當作起點；preset 只是把這些欄位一次填好，使用者可再自行微調
 const EMPTY = {
@@ -47,10 +52,6 @@ function num(str) {
 
 function evaluatedFillCount(row) {
   return row.evaluated_fill_events ?? row.total_ex_events ?? 0;
-}
-
-function isYieldRankable(row) {
-  return !row.annual_yield_status || row.annual_yield_status === "ok";
 }
 
 function formatShortDate(value) {
@@ -125,8 +126,11 @@ export default function ScreenerClient({ initialRows }) {
     const dir = sortDesc ? -1 : 1;
     return list.sort((a, b) => {
       if (sortKey === "annual_yield") {
-        const qualityDifference = Number(isYieldRankable(b)) - Number(isYieldRankable(a));
+        const qualityDifference = yieldQualityRank(a) - yieldQualityRank(b);
         if (qualityDifference) return qualityDifference;
+        if (!isYieldDisplayable(a) && !isYieldDisplayable(b)) {
+          return a.stock_code.localeCompare(b.stock_code);
+        }
       }
       let av = a[sortKey];
       let bv = b[sortKey];
@@ -297,7 +301,7 @@ export default function ScreenerClient({ initialRows }) {
                     {r.daily_price ? `$${r.daily_price}` : "--"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5">
-                    {r.annual_yield !== null && r.annual_yield !== undefined ? (
+                    {isYieldDisplayable(r) && r.annual_yield !== null && r.annual_yield !== undefined ? (
                       <span className="inline-flex items-center gap-1.5">
                         <span className={`font-bold ${r.annual_yield >= 6 ? "text-amber-600" : "text-slate-800"}`}>
                           {r.annual_yield}%
@@ -309,7 +313,7 @@ export default function ScreenerClient({ initialRows }) {
                         )}
                       </span>
                     ) : (
-                      <span className="text-slate-400">--</span>
+                      <span className="text-xs font-semibold text-slate-400">待更新</span>
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 font-mono text-slate-700">

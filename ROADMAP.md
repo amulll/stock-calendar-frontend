@@ -49,6 +49,8 @@ Dividend events -> stock research -> yield/fill research -> screener
 
 ### Notes / Decisions
 
+- Current-holdings estimates consume a backend-adjusted per-share dividend that accounts for later share-changing corporate actions; historical event amounts remain shown on their original basis.
+- Deployment-skew guard completed 2026-09-07: Screener and high-yield rankings fail closed when the backend payload lacks canonical quality fields; current-holdings calculations likewise require the additive share-basis field.
 - `annual_cash` means current-calendar-year announced cash dividends stored by uGoodly.
 - `annual_yield` sums event-aligned cash-dividend yields using each event's stored reference price. Incomplete reference coverage is not ranked, and values above 15% are marked for review and removed from default/high-yield ranking order.
 - `Dividend.updated_at` is maintenance time and is not automatically official-source publication time.

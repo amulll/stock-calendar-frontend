@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowLeft, ListFilter } from "lucide-react";
 
 import RankingLandingTracker from "./RankingLandingTracker";
+import { isYieldRankable } from "../../lib/screenerYield.mjs";
 
 const MIN_FILL_SAMPLE = 5;
 
@@ -54,7 +55,7 @@ const CONFIG = {
     filter: (row) =>
       Number(row.annual_cash) > 0 &&
       row.annual_yield != null &&
-      (!row.annual_yield_status || row.annual_yield_status === "ok"),
+      isYieldRankable(row),
     sort: (a, b) => Number(b.annual_yield) - Number(a.annual_yield),
     cells: (row) => [
       `${Number(row.annual_yield || 0).toFixed(2)}%`,

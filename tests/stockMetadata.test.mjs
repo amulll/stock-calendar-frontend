@@ -3,12 +3,14 @@ import assert from "node:assert/strict";
 
 import {
   buildStockMetadataTitle,
+  getTaipeiDate,
   getTaipeiYear,
   hasDividendEventForYear,
 } from "../lib/stockMetadata.mjs";
 
 test("uses Taipei calendar year", () => {
   assert.equal(getTaipeiYear(new Date("2025-12-31T16:30:00Z")), 2026);
+  assert.equal(getTaipeiDate(new Date("2025-12-31T16:30:00Z")), "2026-01-01");
 });
 test("detects current-year ex-date or pay-date payout data", () => {
   assert.equal(

@@ -470,6 +470,9 @@ export default function PortfolioModal({
                     totals.noDataCount > 0
                       ? `${totals.noDataCount} 檔尚無可用股利資料`
                       : null,
+                    totals.basisUnavailableCount > 0
+                      ? `${totals.basisUnavailableCount} 檔股份基準換算資料待更新`
+                      : null,
                   ]
                     .filter(Boolean)
                     .join("、")}）。`}
@@ -621,6 +624,15 @@ export default function PortfolioModal({
                           <>
                             <div className="text-sm font-black text-slate-600">
                               尚無可用股利資料
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              未納入組合試算
+                            </div>
+                          </>
+                        ) : computed.dataState === "basis_unavailable" ? (
+                          <>
+                            <div className="text-sm font-black text-amber-700">
+                              股份基準待更新
                             </div>
                             <div className="text-xs text-slate-500">
                               未納入組合試算

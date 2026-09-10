@@ -2,7 +2,6 @@ import Link from "next/link";
 import { ArrowLeft, Banknote } from "lucide-react";
 import { notFound } from "next/navigation";
 import AdUnit from "../../../components/AdUnit";
-import { startOfDay, parseISO } from "date-fns";
 import { cache } from "react";
 import DividendCalculator from "../../../components/DividendCalculator";
 import DividendChart from "../../../components/DividendChart";
@@ -14,7 +13,7 @@ import StockFillSummary from "../../../components/stock/StockFillSummary";
 import { DEFAULT_BACKEND_URL } from "../../../lib/backend";
 import { getDividendType, exDateLabel } from "../../../lib/dividendEvent";
 import { getEventYield } from "../../../lib/yieldMetrics.mjs";
-import { buildStockMetadataTitle } from "../../../lib/stockMetadata.mjs";
+import { buildStockMetadataTitle, getTaipeiDate } from "../../../lib/stockMetadata.mjs";
 
 // 設定 ISR 快取時間：股利資料一天最多變一次，1 小時重新驗證足夠，
 // 大幅降低後端負載並加快 SEO 頁面的 TTFB
@@ -22,12 +21,8 @@ export const revalidate = 3600;
 
 const STOCK_META_IMAGE = "https://ugoodly.com/ugoodly_1200x630.png";
 
-function buildStockMetaDescription({ stockName, stockCode, dailyPrice }) {
-  return `免費使用股利計算機，查詢 ${stockName} (${stockCode}) 最新現金股利發放日、除權息日期與殖利率。${
-    dailyPrice
-      ? `目前股價 ${dailyPrice} 元，可即時試算投報率。`
-      : "可即時試算投報率與領息規劃。"
-  }`;
+function buildStockMetaDescription({ stockName, stockCode }) {
+  return `查詢 ${stockName} (${stockCode}) 現金股利發放日、除權息日期與事件參考殖利率；股利試算採換算至目前股份基準的每股金額。`;
 }
 
 function buildStockFallbackDescription(stockCode) {
@@ -98,7 +93,6 @@ export async function generateMetadata({ params }) {
   const metaDescription = buildStockMetaDescription({
     stockName: info.stock_name,
     stockCode: id,
-    dailyPrice: info.daily_price,
   });
 
   return {
@@ -152,7 +146,7 @@ export default async function StockPage({ params }) {
   // 解構 info 與 history
   const { info, metrics, history } = data;
   const displayMarket = (info.market_type === "TPEX" || info.market_type === "上櫃") ? "上櫃" : "上市";
-  const today = startOfDay(new Date());
+  const today = getTaipeiDate();
 
   // 找出「最新一期」配息 (用於顯示 Header 的殖利率、股利與試算機)。
   // 領息站定位：headline 以「有配發現金股利」的場次為主；純除權(配股、無現金)不主導
@@ -164,8 +158,7 @@ export default async function StockPage({ params }) {
 
   const futureEvents = sourceList.filter(item => {
       if (!item.ex_date) return false;
-      const exDate = parseISO(item.ex_date);
-      return exDate >= today;
+      return item.ex_date > today;
   });
 
   let latestEvent = null;
@@ -177,6 +170,8 @@ export default async function StockPage({ params }) {
 
   // 防呆
   if (!latestEvent) latestEvent = { cash_dividend: 0, ex_date: null, pay_date: null };
+  // 除權息日當天已來不及取得該次權利，只有尚未到期的事件才可用目前持股試算。
+  const hasUpcomingEvent = futureEvents.length > 0;
 
   // 最近一筆「有配息組成資料」的場次 (僅 ETF 有；一般個股為 null)
   const latestComposition = [...history]
@@ -340,11 +335,23 @@ export default async function StockPage({ params }) {
             <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,0.8fr)]">
               {/* 股利試算機 */}
               <section>
+                {latestEvent.adjusted_cash_dividend !== null && latestEvent.adjusted_cash_dividend !== undefined ? (
                   <DividendCalculator
                       stockName={info.stock_name}
-                      cashDividend={latestEvent.cash_dividend}
+                      cashDividend={latestEvent.adjusted_cash_dividend}
                       stockPrice={info.daily_price}
+                      originalCashDividend={latestEvent.cash_dividend}
+                      shareBasisFactor={latestEvent.share_basis_factor}
+                      isHistoricalEstimate={!hasUpcomingEvent}
                   />
+                ) : (
+                  <div className="h-full rounded-xl border border-amber-200 bg-amber-50 p-5">
+                    <h2 className="text-lg font-black text-slate-900">股份基準換算資料待更新</h2>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">
+                      為避免股票分割或減資造成試算金額錯置，目前暫不使用未完成股份基準確認的股利資料。
+                    </p>
+                  </div>
+                )}
               </section>
 
               {/* 歷年股利圖表 */}
@@ -371,8 +378,8 @@ export default async function StockPage({ params }) {
               <StockSeoArticle
                 info={info}
                 latestDividend={latestEvent}
-                historicalRecords={history}
                 metrics={metrics}
+                isUpcomingEvent={hasUpcomingEvent}
               />
             </section>
 

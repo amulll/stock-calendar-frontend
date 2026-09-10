@@ -11,9 +11,9 @@ test("uses all announced current-year cash events", () => {
     {
       info: { stock_name: "測試股", daily_price: 50 },
       history: [
-        { ex_date: "2026-02-01", pay_date: "2026-03-01", cash_dividend: 1 },
-        { ex_date: "2026-08-01", pay_date: "2026-09-01", cash_dividend: 2 },
-        { ex_date: "2025-08-01", pay_date: "2025-09-01", cash_dividend: 9 },
+        { ex_date: "2026-02-01", pay_date: "2026-03-01", cash_dividend: 1, adjusted_cash_dividend: 1 },
+        { ex_date: "2026-08-01", pay_date: "2026-09-01", cash_dividend: 2, adjusted_cash_dividend: 2 },
+        { ex_date: "2025-08-01", pay_date: "2025-09-01", cash_dividend: 9, adjusted_cash_dividend: 9 },
       ],
     },
     1000,
@@ -34,7 +34,7 @@ test("labels latest-event fallback as an estimate", () => {
     {
       info: { stock_name: "測試股", daily_price: 100 },
       history: [
-        { ex_date: "2025-06-01", pay_date: "2025-07-01", cash_dividend: 4 },
+        { ex_date: "2025-06-01", pay_date: "2025-07-01", cash_dividend: 4, adjusted_cash_dividend: 4 },
       ],
     },
     1000,
@@ -72,7 +72,7 @@ test("mixed totals exclude unavailable positions and disclose their counts", () 
     {
       info: { stock_name: "有資料股", daily_price: 50 },
       history: [
-        { ex_date: "2026-02-01", pay_date: "2026-03-01", cash_dividend: 2 },
+        { ex_date: "2026-02-01", pay_date: "2026-03-01", cash_dividend: 2, adjusted_cash_dividend: 2 },
       ],
     },
     1000,
@@ -97,4 +97,42 @@ test("mixed totals exclude unavailable positions and disclose their counts", () 
   assert.equal(totals.excludedCount, 2);
   assert.equal(totals.noDataCount, 1);
   assert.equal(totals.loadFailedCount, 1);
+});
+
+test("uses current-share-basis cash after a stock split", () => {
+  const computed = computeStockIncome(
+    {
+      info: { stock_name: "寶雅", daily_price: 71.7 },
+      history: [
+        {
+          ex_date: "2026-07-16",
+          pay_date: "2026-08-07",
+          cash_dividend: 25.5,
+          adjusted_cash_dividend: 2.55,
+          share_basis_factor: 10,
+        },
+      ],
+    },
+    1000,
+    2026,
+    ""
+  );
+
+  assert.equal(computed.annualCash, 2.55);
+  assert.equal(computed.income, 2550);
+});
+
+test("fails closed when the backend has not supplied share-basis data", () => {
+  const computed = computeStockIncome(
+    {
+      info: { stock_name: "舊版資料", daily_price: 50 },
+      history: [{ ex_date: "2026-02-01", cash_dividend: 5 }],
+    },
+    1000,
+    2026,
+    ""
+  );
+
+  assert.equal(computed.dataState, "basis_unavailable");
+  assert.equal(computed.includedInTotals, false);
 });

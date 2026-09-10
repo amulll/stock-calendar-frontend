@@ -3,7 +3,14 @@
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Calculator } from "lucide-react";
 
-export default function DividendCalculator({ stockName, cashDividend, stockPrice }) {
+export default function DividendCalculator({
+  stockName,
+  cashDividend,
+  stockPrice,
+  originalCashDividend = cashDividend,
+  shareBasisFactor = 1,
+  isHistoricalEstimate = false,
+}) {
   // 1. 狀態管理 (全部儲存為「帶逗號的字串」)
   const [priceStr, setPriceStr] = useState("");
   const [sharesStr, setSharesStr] = useState("1,000");
@@ -238,8 +245,19 @@ export default function DividendCalculator({ stockName, cashDividend, stockPrice
           </div>
         </h3>
         <span className="whitespace-nowrap rounded border border-slate-200 bg-white px-2 py-1 text-xs font-semibold text-slate-600 sm:ml-2">
-            現金股利: {cashDividend} 元
+            試算每股股利: {cashDividend} 元
         </span>
+      </div>
+      <div className="border-b border-slate-200 bg-blue-50 px-4 py-2 text-xs leading-5 text-blue-900">
+        {Number(shareBasisFactor) !== 1 ? (
+          <>
+            原事件每股 {originalCashDividend} 元，因後續股份換發按 {shareBasisFactor} 倍換算為目前股份基準每股 {cashDividend} 元。
+          </>
+        ) : isHistoricalEstimate ? (
+          <>以下以最近一期股利換算目前持股，僅供估算，不代表已取得或未來一定配發。</>
+        ) : (
+          <>以下使用目前股份基準試算，實際配發仍以公司公告及持有資格為準。</>
+        )}
       </div>
       
       <div className="grid gap-4 p-4 md:grid-cols-[1fr_0.9fr]">

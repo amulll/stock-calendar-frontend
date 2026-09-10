@@ -1,5 +1,47 @@
 # Technical Development Log
 
+## 2026-09-10 – Split-Adjusted Calculator and Portfolio
+
+- Status: done
+- Priority: critical
+- Area: Stock Calculator, Portfolio, Corporate-Action Compatibility
+- Files:
+
+  - app/stock/[id]/page.js
+  - components/DividendCalculator.js
+  - components/PortfolioModal.js
+  - components/stock/StockSeoArticle.js
+  - lib/portfolioMetrics.mjs
+  - tests/portfolioMetrics.test.mjs
+  - ROADMAP.md
+  - DEVELOPMENT_LOG.md
+- Why: A historical pre-split dividend could still be multiplied by a current post-split price or share count, recreating the abnormal yield and overstating expected cash flow.
+- Impact: Calculator and Portfolio consume `adjusted_cash_dividend`. The calculator discloses original event cash, the cumulative share-basis factor, and the converted current-basis amount. Missing additive backend fields fail closed instead of falling back to raw cash. The meaningless average of historical per-share dividends across changing share bases was removed, and metadata no longer promises a raw-dividend/latest-price calculation.
+- Validation: All 18 frontend helper tests passed with Bun, including focused Portfolio split and deployment-skew cases. Static calculator/Portfolio/SEO inspection and diff checks completed; production build remains unavailable because frontend dependencies are not installed.
+- Next: Deploy backend before frontend, then verify 5904 shows 2.55 per current-basis share, 2,550 for 1,000 shares, and the same amount in Portfolio.
+
+## 2026-09-07 – Deployment-Skew and Past-Event Calculator Guard
+
+- Status: done
+- Priority: critical
+- Area: Screener, Yield Ranking, Stock Calculator, Date Semantics
+- Files:
+
+  - components/screener/ScreenerClient.js
+  - components/ranking/RankingPage.js
+  - app/stock/[id]/page.js
+  - components/stock/StockSeoArticle.js
+  - lib/screenerYield.mjs
+  - lib/stockMetadata.mjs
+  - tests/screenerYield.test.mjs
+  - tests/stockMetadata.test.mjs
+  - ROADMAP.md
+  - DEVELOPMENT_LOG.md
+- Why: Production served the updated frontend against an older screener contract, so missing quality fields were interpreted as valid and stale latest-price yields led the table. A completed historical dividend was also being multiplied by the user's current share count despite possible split, reduction, or holding-period differences.
+- Impact: Payloads without the canonical quality status display `待更新` and cannot enter yield filters or rankings. Review-required values remain visible but non-rankable. The stock page uses the Taipei market date, completed events use historical wording, and current-holdings calculations fail closed until a compatible share-basis amount is available.
+- Validation: Focused helper tests added; static path/wording inspection and `git diff --check` completed. Node/browser runtime validation remains deferred because Node/npm are unavailable in this workspace.
+- Next: Owner should redeploy or reconnect the production backend, then verify 5904 in the screener and both future/past stock-event states.
+
 ## 2026-09-04 – Screener Yield Quality Guard
 
 - Status: done
