@@ -1,5 +1,17 @@
 # Technical Development Log
 
+## 2026-09-11 — Stock SSR Upstream Failure Visibility
+
+- Status: done
+- Priority: critical
+- Area: Stock SSR, SEO Failure Handling
+- Files:
+
+  - app/stock/[id]/page.js
+- Why: A backend stock-detail failure was collapsed into the same null result as a legitimate 404, allowing infrastructure fallback behavior to expose a soft-200 loading shell instead of an observable server error.
+- Impact: Only a real backend 404 is treated as a missing stock. Network errors and non-404 upstream responses now propagate as SSR failures, preserving monitoring visibility and preventing an empty calendar shell from masquerading as a valid stock page.
+- Validation: Frontend helper tests and `git diff --check` passed; production SSR recovery requires backend-first deployment of the timestamp normalization fix.
+
 ## 2026-09-10 — Stock Index Quality and Research Architecture
 
 - Status: done

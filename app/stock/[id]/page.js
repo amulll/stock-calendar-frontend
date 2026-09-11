@@ -43,11 +43,14 @@ const getStockData = cache(async (id) => {
       }
     });
 
-    if (!res.ok) return null;
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      throw new Error(`Stock detail API returned ${res.status} for ${id}`);
+    }
     return res.json(); // 預期回傳 { info: {...}, history: [...] }
   } catch (error) {
     console.error("Fetch stock error:", error);
-    return null;
+    throw error;
   }
 });
 
