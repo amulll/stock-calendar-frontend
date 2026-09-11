@@ -30,6 +30,12 @@ export default function Footer() {
             <Link href="/knowledge" className="hover:text-blue-600 transition">
               股市小教室
             </Link>
+            <Link href="/about" className="hover:text-blue-600 transition">
+              關於我們
+            </Link>
+            <Link href="/methodology" className="hover:text-blue-600 transition">
+              資料來源與計算方法
+            </Link>
             <Link href="/disclaimer" className="hover:text-blue-600 transition">
               免責聲明
             </Link>

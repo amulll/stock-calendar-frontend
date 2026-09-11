@@ -392,7 +392,7 @@ export default async function StockPage({ params }) {
               />
             </section>
 
-            <RelatedStocks stocks={data.related_stocks} />
+            <RelatedStocks groups={data.related_groups} stocks={data.related_stocks} />
 
             <section className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-600">
               <p>

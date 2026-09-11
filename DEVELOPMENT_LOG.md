@@ -1,5 +1,25 @@
 # Technical Development Log
 
+## 2026-09-11 — Related Research Link Groups and About Page
+
+- Status: done
+- Priority: high
+- Area: SEO Internal Links, E-E-A-T, Stock Research
+- Files:
+
+  - components/stock/RelatedStocks.js
+  - lib/relatedStocks.mjs
+  - tests/relatedStocks.test.mjs
+  - app/stock/[id]/page.js
+  - app/about/page.js
+  - app/sitemap.js
+  - components/Footer.js
+  - DEVELOPMENT_LOG.md
+- Why: Stock pages linked to zero other stock pages (the backend never populated industry data, so the same-industry section always rendered nothing), and `/about` returned 404, leaving the methodology page without its "who operates this" counterpart.
+- Impact: Stock pages render up to three labelled groups from backend `related_groups` — same industry, nearby ex-date, similar current-year announced yield — with date/yield context on each link. When the backend has not yet deployed the field, the section falls back to legacy `related_stocks`. New brand-level `/about` (tools, sources, editorial principles, contact/corrections) mirrors `/methodology`, carries `AboutPage` structured data, and is listed in the sitemap; the footer now links both `/about` and `/methodology` site-wide.
+- Validation: `bun test ./tests` (21 passed, including new related-section helper tests); changed JSX files transpile with Bun; `git diff --check`. Next.js build and browser verification remain deferred because Node is unavailable in this workspace.
+- Next: Deploy after the backend and its first industry sync, then verify stock-to-stock link counts on `/stock/5904`, `/stock/2548`, `/stock/00900` and that `/about` returns 200.
+
 ## 2026-09-11 — Stock SSR Upstream Failure Visibility
 
 - Status: done
