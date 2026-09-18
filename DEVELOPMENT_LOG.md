@@ -1,5 +1,28 @@
 # Technical Development Log
 
+## 2026-09-17 — Post-launch Correctness v2
+
+- Status: done
+- Priority: high
+- Area: Calculator Semantics, Data Freshness, Fill Samples, Structured Data, Regression Monitoring
+- Files:
+
+  - app/stock/[id]/page.js
+  - app/knowledge/page.js
+  - app/knowledge/stock-split-dividend-yield/page.js
+  - app/sitemap.js
+  - components/DividendCalculator.js
+  - components/screener/ScreenerClient.js
+  - lib/dividendPresentation.mjs
+  - tests/dividendPresentation.test.mjs
+  - scripts/check-production-seo.mjs
+  - .github/workflows/production-seo-smoke.yml
+  - ROADMAP.md
+- Why: Quarterly distributions could be read as annual calculator income, screener fill rates lacked samples, quote and dividend-maintenance dates were conflated, and stock pages repeated application markup. Prior SSR/index incidents also needed an executable production guard.
+- Impact: Non-annual calculators label one distribution explicitly; screener fill rates show success/evaluated plus low-coverage disclosure; stock and screener views separate quote and dividend timestamps. Stock pages now describe their visible history as `Dataset`, omit meta keywords, and retain breadcrumbs. The first original corporate-action article is published. A daily/manual smoke workflow checks SSR size, index/noindex differentiation, sitemap/lastmod consistency, and contextual links without changing eligibility rules.
+- Validation: `bun test` (24 passed, including a caller/component prop-contract guard for `isHistoricalEvent`); production smoke passed against 1,894 stock URLs / 1,894 lastmod entries, 136,095-byte 5904 SSR, 18 related links, deep `index` and thin `noindex`. Next build unavailable because dependencies are not installed locally.
+- Next: Owner browser-checks 00878 calculator wording, fill-sample wrapping, both freshness labels, and the new article; remaining editorial articles and listing-identity work stay on the roadmap.
+
 ## 2026-09-11 — Related Research Link Groups and About Page
 
 - Status: done
@@ -875,4 +898,3 @@
 - Owner: TBD
 - Note: 安裝依賴、產生 lockfile、串接 lint/test CI，以維護版本鎖定並提早攔截回歸問題。
 - Due: TBD
-

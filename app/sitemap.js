@@ -17,6 +17,7 @@ export default async function sitemap() {
     { url: `${BASE_URL}/ranking/consecutive-dividend`, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/ranking/high-yield`, changeFrequency: "daily", priority: 0.8 },
     { url: `${BASE_URL}/knowledge`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE_URL}/knowledge/stock-split-dividend-yield`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/methodology`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/about`, changeFrequency: "yearly", priority: 0.5 },
     { url: `${BASE_URL}/privacy`, changeFrequency: "yearly", priority: 0.3 },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Calculator } from "lucide-react";
+import { getRecurringPeriodLabel } from "../lib/dividendPresentation.mjs";
 
 export default function DividendCalculator({
   stockName,
@@ -9,7 +10,8 @@ export default function DividendCalculator({
   stockPrice,
   originalCashDividend = cashDividend,
   shareBasisFactor = 1,
-  isHistoricalEstimate = false,
+  isHistoricalEvent = false,
+  payoutFrequency = null,
 }) {
   // 1. 狀態管理 (全部儲存為「帶逗號的字串」)
   const [priceStr, setPriceStr] = useState("");
@@ -233,6 +235,7 @@ export default function DividendCalculator({
   const calculatedYield = currentPrice > 0 
     ? ((cashDividend / currentPrice) * 100).toFixed(2) 
     : 0;
+  const recurringPeriodLabel = getRecurringPeriodLabel(payoutFrequency);
 
   return (
     <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
@@ -249,14 +252,19 @@ export default function DividendCalculator({
         </span>
       </div>
       <div className="border-b border-slate-200 bg-blue-50 px-4 py-2 text-xs leading-5 text-blue-900">
-        {Number(shareBasisFactor) !== 1 ? (
-          <>
+        <p>
+          {Number(shareBasisFactor) !== 1 ? (
+            <>
             原事件每股 {originalCashDividend} 元，因後續股份換發按 {shareBasisFactor} 倍換算為目前股份基準每股 {cashDividend} 元。
-          </>
-        ) : isHistoricalEstimate ? (
-          <>以下以最近一期股利換算目前持股，僅供估算，不代表已取得或未來一定配發。</>
-        ) : (
-          <>以下使用目前股份基準試算，實際配發仍以公司公告及持有資格為準。</>
+            </>
+          ) : isHistoricalEvent ? (
+            <>以下以最近一期股利換算目前持股，僅供估算，不代表已取得或未來一定配發。</>
+          ) : (
+            <>以下使用目前股份基準試算，實際配發仍以公司公告及持有資格為準。</>
+          )}
+        </p>
+        {recurringPeriodLabel && (
+          <p className="mt-1 font-bold text-blue-950">{recurringPeriodLabel}</p>
         )}
       </div>
       

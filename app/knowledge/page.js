@@ -145,6 +145,19 @@ export default function KnowledgePage() {
           </div>
         </div>
 
+        <section className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-5 md:p-6">
+          <div className="text-xs font-black uppercase tracking-[0.14em] text-amber-800">資料正確性專題</div>
+          <h2 className="mt-2 text-xl font-black tracking-tight text-slate-950">
+            股票分割後，為什麼殖利率可能突然變成 30%？
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            用寶雅 5904 的 1 拆 10 實例，拆解歷史股利、目前股價與持股數的股份基準問題。
+          </p>
+          <Link href="/knowledge/stock-split-dividend-yield" className="mt-3 inline-flex text-sm font-black text-amber-900 hover:underline">
+            閱讀完整說明 →
+          </Link>
+        </section>
+
         {/* 目錄區塊 */}
         <nav className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
           <div className="text-sm text-slate-500 mb-2 font-medium">

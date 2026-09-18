@@ -107,8 +107,6 @@ export async function generateMetadata({ params }) {
       history,
     }),
     description: metaDescription,
-    keywords: [info.stock_name, id, "股利計算", "存股試算", "殖利率計算機", "股息試算",
-      "股利", "發放日", "除息日", "殖利率", "存股","配息日"],
     alternates: {
       canonical: `https://ugoodly.com/stock/${id}`,
     },
@@ -189,21 +187,21 @@ export default async function StockPage({ params }) {
 
   const eventYield = getEventYield(latestEvent);
   const currentYieldRate = eventYield === null ? "--" : eventYield.toFixed(2);
+  const historyDates = history.map((item) => item.ex_date).filter(Boolean).sort();
 
   // 準備結構化資料 (使用 info)
   const jsonLd = {
       "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": `${info.stock_name} 股利計算機`,
-      "applicationCategory": "FinanceApplication",
-      "operatingSystem": "Web",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "TWD"
-      },
-      "featureList": "股票股利試算, 殖利率換算, 投入成本計算",
-      "description": `線上免費試算 ${info.stock_name} (${id}) 現金股利與殖利率投報率。`
+      "@type": "Dataset",
+      "name": `${info.stock_name} (${id}) 歷年股利資料`,
+      "description": `${info.stock_name} (${id}) 的除權息日、現金股利、發放日、事件參考價與填息研究資料。`,
+      "url": `https://ugoodly.com/stock/${id}`,
+      "isAccessibleForFree": true,
+      "creator": { "@type": "Organization", "name": "uGoodly" },
+      ...(historyDates.length > 0
+        ? { "temporalCoverage": `${historyDates[0]}/${historyDates[historyDates.length - 1]}` }
+        : {}),
+      ...(data.data_maintained_at ? { "dateModified": data.data_maintained_at } : {})
   };
 
   const breadcrumbLd = {
@@ -255,6 +253,10 @@ export default async function StockPage({ params }) {
                 <h1 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">{info.stock_name}</h1>
                 <p className="mt-2 text-sm leading-6 text-slate-600">
                   股利發放、殖利率、歷史配息與試算工具。
+                </p>
+                <p className="mt-1 text-xs leading-5 text-slate-500">
+                  股價更新至 {info.last_trade_date || "—"}；股利資料維護至 {data.data_maintained_at?.slice(0, 10) || "—"}。
+                  兩者更新時間可能不同。
                 </p>
                 <div className="mt-3">
                   <StockWatchlistActions
@@ -351,7 +353,8 @@ export default async function StockPage({ params }) {
                       stockPrice={info.daily_price}
                       originalCashDividend={latestEvent.cash_dividend}
                       shareBasisFactor={latestEvent.share_basis_factor}
-                      isHistoricalEstimate={!hasUpcomingEvent}
+                      isHistoricalEvent={!hasUpcomingEvent}
+                      payoutFrequency={metrics?.frequency}
                   />
                 ) : (
                   <div className="h-full rounded-xl border border-amber-200 bg-amber-50 p-5">

@@ -8,6 +8,7 @@ import {
   isYieldRankable,
   yieldQualityRank,
 } from "../../lib/screenerYield.mjs";
+import { getFillRatePresentation } from "../../lib/dividendPresentation.mjs";
 
 // 空白條件當作起點；preset 只是把這些欄位一次填好，使用者可再自行微調
 const EMPTY = {
@@ -56,6 +57,11 @@ function evaluatedFillCount(row) {
 
 function formatShortDate(value) {
   return value ? value.slice(5).replace("-", "/") : "—";
+}
+
+function formatDate(value) {
+  if (!value) return "—";
+  return value.slice(0, 10).replaceAll("-", "/");
 }
 
 export default function ScreenerClient({ initialRows }) {
@@ -146,6 +152,15 @@ export default function ScreenerClient({ initialRows }) {
   }, [initialRows, filters, query, sortKey, sortDesc]);
 
   const visible = rows.slice(0, limit);
+  const priceUpdatedAt = (initialRows || []).reduce(
+    (latest, row) => (row.price_updated_at > latest ? row.price_updated_at : latest),
+    ""
+  );
+  const dividendMaintainedAt = (initialRows || []).reduce(
+    (latest, row) =>
+      row.data_maintained_at > latest ? row.data_maintained_at : latest,
+    ""
+  );
 
   const handleSort = (key) => {
     if (sortKey === key) setSortDesc((v) => !v);
@@ -192,6 +207,10 @@ export default function ScreenerClient({ initialRows }) {
         <h1 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">存股選股表</h1>
         <p className="mt-1 text-sm leading-6 text-slate-600">
           全市場 {initialRows?.length || 0} 檔 · 套用選股組合當起點，再自由微調條件。
+        </p>
+        <p className="mt-1 text-xs leading-5 text-slate-500">
+          股價更新至 {formatDate(priceUpdatedAt)}；股利資料維護至 {formatDate(dividendMaintainedAt)}。
+          兩者為不同資料流程，時間可能不同。
         </p>
 
         {/* 選股組合 (起點) */}
@@ -280,7 +299,9 @@ export default function ScreenerClient({ initialRows }) {
                 </td>
               </tr>
             ) : (
-              visible.map((r) => (
+              visible.map((r) => {
+                const fillPresentation = getFillRatePresentation(r);
+                return (
                 <tr key={r.stock_code} className="transition hover:bg-slate-50">
                   <td className="px-3 py-2.5">
                     <Link href={`/stock/${r.stock_code}`} className="group flex items-center gap-2">
@@ -324,14 +345,26 @@ export default function ScreenerClient({ initialRows }) {
                     )}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-slate-700">
-                    {evaluatedFillCount(r) > 0 ? `${r.fill_rate}%` : "--"}
+                    {fillPresentation ? (
+                      <span className="inline-flex flex-col">
+                        <span className="font-semibold">
+                          {fillPresentation.primary}
+                        </span>
+                        {fillPresentation.coverage && (
+                          <span className={`text-[10px] ${fillPresentation.isLowCoverage ? "font-semibold text-amber-700" : "text-slate-400"}`}>
+                            {fillPresentation.coverage}
+                            {fillPresentation.isLowCoverage ? " · 樣本待補" : ""}
+                          </span>
+                        )}
+                      </span>
+                    ) : "--"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-slate-700">
                     {r.consecutive_years > 0 ? `${r.consecutive_years} 年` : "--"}
                   </td>
                   <td className="whitespace-nowrap px-3 py-2.5 text-slate-600">{r.frequency}</td>
                 </tr>
-              ))
+              )})
             )}
           </tbody>
         </table>

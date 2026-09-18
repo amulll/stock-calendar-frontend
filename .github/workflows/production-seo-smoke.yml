@@ -1,0 +1,18 @@
+name: Production SEO Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 23 * * *"
+
+jobs:
+  verify-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Verify SSR, robots, sitemap, and related links
+        run: node scripts/check-production-seo.mjs

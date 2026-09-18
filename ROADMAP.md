@@ -185,6 +185,23 @@ Dividend events -> stock research -> yield/fill research -> screener
 - Sitemap generation fails closed to static routes if the eligibility inventory cannot be read; it never falls back to advertising every stock row.
 - Production audit command: `python scripts/audit_seo_eligibility.py` with the production `DATABASE_URL` configured.
 
+## Post-launch Correctness & Content — v2 (2026-09-17)
+
+- Status: `IN PROGRESS`
+- [x] Clarify that monthly/quarterly calculator values are one distribution, not annual income.
+- [x] Keep Portfolio on `adjusted_cash_dividend`; 5904 one-lot regression remains 2,550.
+- [x] Show fill-rate success/evaluated samples and flag historical coverage below 50%.
+- [x] Disclose quote date and dividend-maintenance date separately on stock and screener pages.
+- [x] Rename the calculator history flag to describe event state rather than an estimate source.
+- [x] Replace stock-page `SoftwareApplication` markup with `Dataset`; keep breadcrumbs and remove meta keywords.
+- [x] Publish the first original data-correctness article: stock splits and dividend-yield basis.
+- [x] Add a scheduled/manual production smoke check for SSR size, robots differentiation, sitemap consistency, and related links.
+- [ ] Publish the remaining fill-sample, date-semantics, and ETF frequency articles after editorial review.
+- [ ] Define delisting/code-reassignment states after an authoritative instrument-identity source exists.
+- [ ] Revisit eligibility hysteresis and optional GSC demand override only after the 2–3 month observation window.
+
+The eligibility threshold, sitemap selection, and related-stock algorithm remain frozen during the observation window. Editorial pages may proceed without changing stock index rules.
+
 ## Later / Deferred
 
 - Status: `DEFERRED`
