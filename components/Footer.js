@@ -27,6 +27,9 @@ export default function Footer() {
             <Link href="/screener" className="hover:text-blue-600 transition">
               存股選股表
             </Link>
+            <Link href="/ex-dividend" className="hover:text-blue-600 transition">
+              除權息月曆
+            </Link>
             <Link href="/knowledge" className="hover:text-blue-600 transition">
               股市小教室
             </Link>

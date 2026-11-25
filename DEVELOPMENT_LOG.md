@@ -1,5 +1,26 @@
 # Technical Development Log
 
+## 2026-11-25 — Monthly Ex-Dividend Browse Pages
+
+- Status: done (pending backend deploy)
+- Priority: medium
+- Area: SEO Discovery, Internal Linking, Editorial Pages
+- Files:
+
+  - app/ex-dividend/page.js
+  - app/ex-dividend/[month]/page.js
+  - lib/exDividendMonths.mjs
+  - lib/exDividendData.js
+  - tests/exDividendMonths.test.mjs
+  - app/sitemap.js
+  - components/Footer.js
+  - components/SeoContent.js
+  - scripts/check-production-seo.mjs
+- Why: Google confirmed stock pages are indexed but the homepage passes no crawlable links to them: calendar/list stocks are buttons opening a modal, and the grid/list view renders only after hydration. A separate server-rendered browse surface adds crawl paths without changing the interactive homepage.
+- Impact: `/ex-dividend` lists the Taipei-time month window (24 months back, 3 forward). `/ex-dividend/YYYY-MM` groups that month's events by ex-date (distinct from the pay-date-first homepage) with a summary, top event yields (≤15% review threshold), plain links to every listed `/stock/[id]`, and prev/next month links. Empty months are `noindex, follow`; malformed or out-of-window months render not-found (soft 404 with noindex, same as stock pages under the root `loading.js`). Upstream failure throws instead of caching an empty indexable page. Sitemap adds `/ex-dividend` plus only non-empty months, with lastmod from the newest `updated_at`; stock eligibility and stock sitemap selection are unchanged. Footer and homepage guide link to `/ex-dividend`. Smoke script now counts lastmod only inside stock URL blocks.
+- Validation: `node --test tests/*.test.mjs` (33 passed); `next build` passed; `next start` against a local mock backend confirmed 200 + `index, follow` + self canonical on a populated month, `noindex, follow` on an empty month, not-found metadata for `2026-1`/`abc`/out-of-window months, plain stock links, month links, and sitemap entries.
+- Next: Deploy backend `/api/dividends/by-ex-month` first. After deploy, browser-check layout on mobile and request indexing for `/ex-dividend` in GSC. Optional: link stock-page ex-dates to their month page; fix `/*?*date=` robots rule also matching `ex_date=`.
+
 ## 2026-09-17 — Post-launch Correctness v2
 
 - Status: done

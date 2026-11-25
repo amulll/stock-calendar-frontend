@@ -30,7 +30,10 @@ assert.doesNotMatch(robotsContent(deepPage), /noindex/i, "5904 unexpectedly has 
 assert.match(robotsContent(thinPage), /noindex/i, "8084 is not marked noindex");
 
 const stockUrls = sitemap.match(/<loc>https:\/\/ugoodly\.com\/stock\//g) || [];
-const lastModified = sitemap.match(/<lastmod>/g) || [];
+// 只計算個股 <url> 區塊內的 lastmod；除權息月份頁等其他路由也可能帶 lastmod
+const lastModified = (sitemap.match(/<url>[\s\S]*?<\/url>/g) || []).filter(
+  (block) => block.includes("<loc>https://ugoodly.com/stock/") && block.includes("<lastmod>")
+);
 assert.ok(stockUrls.length >= 1_000, `sitemap only contains ${stockUrls.length} stock URLs`);
 assert.equal(lastModified.length, stockUrls.length, "stock sitemap URLs and lastmod counts differ");
 assert.match(sitemap, /<loc>https:\/\/ugoodly\.com\/stock\/5904<\/loc>/, "5904 is missing from sitemap");

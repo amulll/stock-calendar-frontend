@@ -33,6 +33,12 @@ export default function SeoContent() {
             <p className="mt-2 text-sm leading-6">
               使用月份、股票搜尋與自選篩選查看現金股利發放日；近期除權息資訊顯示在日曆上方。
             </p>
+            <Link
+              href="/ex-dividend"
+              className="mt-3 inline-flex min-h-11 items-center text-sm font-bold text-blue-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+            >
+              依除息日看每月除權息一覽 →
+            </Link>
           </article>
 
           <article className="rounded-xl border border-slate-200 bg-slate-50 p-4">
