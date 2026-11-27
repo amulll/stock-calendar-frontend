@@ -11,7 +11,7 @@ import IncomeCompositionBar from "../../../components/stock/IncomeCompositionBar
 import StockWatchlistActions from "../../../components/stock/StockWatchlistActions";
 import StockFillSummary from "../../../components/stock/StockFillSummary";
 import RelatedStocks from "../../../components/stock/RelatedStocks";
-import { DEFAULT_BACKEND_URL } from "../../../lib/backend";
+import { getServerBackendUrl } from "../../../lib/backend";
 import { getDividendType, exDateLabel } from "../../../lib/dividendEvent";
 import { getEventYield } from "../../../lib/yieldMetrics.mjs";
 import { buildStockMetadataTitle, getTaipeiDate } from "../../../lib/stockMetadata.mjs";
@@ -32,7 +32,7 @@ function buildStockFallbackDescription(stockCode) {
 
 // 資料抓取函式
 const getStockData = cache(async (id) => {
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL;
+  const API_URL = getServerBackendUrl();
   const SERVICE_TOKEN = process.env.SERVICE_TOKEN;
 
   try {

@@ -86,14 +86,15 @@ YieldListModal
 
 ## Environment Notes
 
-The current repo uses more than one backend URL variable name:
+All server-side backend calls (SSR pages, ISR, sitemap, `/api/proxy`) go through `getServerBackendUrl()` in `lib/backend.js`, which reads at runtime, first match wins:
 
-- `BACKEND_INTERNAL_URL`: used by `/api/proxy`
-- `NEXT_PUBLIC_API_URL`: used by server-rendered pages
-- `API_URL`: used by sitemap generation before falling back to `NEXT_PUBLIC_API_URL`
-- `SERVICE_TOKEN`: used by SSR and proxy forwarding
+- `BACKEND_INTERNAL_URL`: runtime only. On the VPS it is `http://backend:8080` (Docker internal network). It is not set during `next build`, so pages pre-rendered at build time still use the public URL and the build does not need the internal network.
+- `API_URL`: legacy sitemap variable, kept for compatibility.
+- `NEXT_PUBLIC_API_URL`: the public backend URL, inlined at build time.
+- `DEFAULT_BACKEND_URL` in `lib/backend.js`: last fallback.
+- `SERVICE_TOKEN`: used by SSR and proxy forwarding.
 
-Keep those backend URL variables pointed at the same backend target, or you will split traffic across different environments.
+The browser never calls the backend directly; client components go through `/api/proxy`. Do not call `getServerBackendUrl()` from a client component.
 
 ## Deployment Model
 

@@ -1,4 +1,4 @@
-import { DEFAULT_BACKEND_URL } from "../lib/backend";
+import { getServerBackendUrl } from "../lib/backend";
 import { getExMonthDividends } from "../lib/exDividendData";
 import { getMonthWindow, monthSlug, summarizeMonth } from "../lib/exDividendMonths.mjs";
 
@@ -38,7 +38,7 @@ async function getExDividendMonthRoutes() {
 }
 
 export default async function sitemap() {
-  const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || DEFAULT_BACKEND_URL;
+  const apiUrl = getServerBackendUrl();
   const serviceToken = process.env.SERVICE_TOKEN;
   const staticRoutes = [
     { url: BASE_URL, changeFrequency: "daily", priority: 1.0 },
