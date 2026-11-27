@@ -25,9 +25,13 @@ export async function GET(request, { params }) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // 只使用 Next/runtime 提供的 IP，不轉發瀏覽器可偽造的 x-forwarded-for。
-  // 若部署平台未提供 request.ip，後端會退回代理來源 IP 做限流。
-  const clientIp = request.ip || "";
+  // 後端依這個 IP 為每位使用者分開限流。不轉發瀏覽器可偽造的 x-forwarded-for。
+  // - request.ip：只有部分平台（例如 Vercel）會提供，自架的 Next.js standalone 是空的。
+  // - x-real-ip：VPS 上由 Caddy 用 `header_up X-Real-IP {remote_host}` 覆寫成真實來源 IP，
+  //   瀏覽器自己帶的值會被蓋掉。前端容器只能經 Caddy 連到（不對外開 port），所以可信。
+  //   若改部署到不會覆寫這個 header 的地方，要拿掉這個來源，否則使用者可偽造 IP 繞過限流。
+  // 兩者都沒有時，後端會退回代理來源 IP 做限流（所有使用者共用額度）。
+  const clientIp = request.ip || request.headers.get("x-real-ip")?.trim() || "";
 
   try {
     const url = `${BACKEND_URL}/${path}${searchParams ? `?${searchParams}` : ""}`;
